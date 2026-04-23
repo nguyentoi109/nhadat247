@@ -1,0 +1,66 @@
+.thumb{
+    width: 100%;
+    height: 0;
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+    float: left;
+	img, iframe{
+		width: 100% !important;
+		height: 100% !important;
+		position: absolute;
+		left: 0;
+		top: 0;
+		float: left;
+	}
+}
+.thumb-video{
+	width: 100%;
+	height: 1px;
+	position: relative;
+	padding-bottom: 56.25%;
+	display: block;
+	overflow: hidden;
+}
+.thumb-full{
+	width: 100%;
+	position: relative;
+}
+.thumb-list{
+	width: 300px;
+	float: left;
+	margin-right: 10px;
+	position: relative;
+}
+.thumb-5x3{
+	width: 100%;
+	height: 1px;
+	position: relative;
+	padding-bottom: 60%;
+	display: block;
+	overflow: hidden;
+	border-radius: 2px;
+	&:hover{
+		img{
+			transform: scale(1.1);
+		}
+	}
+	img{
+		width: 100%;
+		height: 100%;
+		position: absolute;
+		left: 0;
+		top: 0;
+		transition: all .4s;		
+	}
+}
+
+.thumb-1x1{
+	@extend .thumb-5x3;
+	padding-bottom: 100%;
+}
+
+.thumb-4x3{
+	@extend .thumb-5x3;
+	padding-bottom: 75%;
+}

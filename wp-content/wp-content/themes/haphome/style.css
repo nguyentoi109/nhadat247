@@ -1,0 +1,32 @@
+/*
+	Theme Name: HAP Post
+	Theme URI: http://hmdesign.net
+	Description: HTML5 Blank WordPress Theme
+	Version: 1.4.3
+	Author: HungHQ
+	Author URI: http://hmdesign.net
+	Tags: Blank, HTML5, CSS3
+
+	License: MIT
+	License URI: http://opensource.org/licenses/mit-license.php
+*/
+
+/*------------------------------------*\
+    PRINT
+\*------------------------------------*/
+
+@media only screen and (max-width:1000px){
+	header {
+		height:65px !important;
+	}
+	header .logo img{
+		height:39px !important;
+		margin-top: 6px;
+	}
+	.login{
+		font-size:0;
+	}
+	.login .ti-lock{
+		font-size:1.6rem;
+	}
+}

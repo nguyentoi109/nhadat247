@@ -1,0 +1,101 @@
+<?php 
+/* Template Name: Trang chủ */ 
+get_header();
+?>
+
+<?php if ( !wp_is_mobile() ){ ?>
+<section class="featured-news">
+	<div class="container">
+		<?php
+			$query = new WP_Query(array(
+				'post_type'=>'post',
+				'category_name'=> 'tin-tuc-bat-dong-san',
+				'orderby' => 'ID',
+				'order' => 'DESC',
+				'posts_per_page' => 1,
+			));
+			if ($query->have_posts()): while ($query->have_posts()) : $query->the_post();
+
+		?>
+			<article id="post-<?php the_ID(); ?>" class="top-news wow fadeInUp" >
+				<?php if ( has_post_thumbnail()) : ?>
+				<div class="thumb-list">
+					<a class="thumb-5x3" href="<?php the_permalink(); ?>" title="<?php the_title(); ?>">
+						<?php the_post_thumbnail('thumb5x3'); ?>
+					</a>
+				</div>
+				<?php endif; ?>
+				<h1 class="title-post">
+					<a href="<?php the_permalink(); ?>" title="<?php the_title(); ?>"><?php the_title(); ?></a>
+				</h1>
+				<p class="des"><?php echo html5wp_excerpt('html5wp_index'); ?></p>
+			</article>
+		<?php endwhile; wp_reset_query();?>
+		<?php endif; ?>
+		
+		<ul class="sub-featured">
+			<?php
+				$query = new WP_Query(array(
+					'post_type'=>'post',
+					'category_name'=> 'tin-tuc-bat-dong-san',
+					'offset'=> '1',
+					'orderby' => 'ID',
+					'order' => 'DESC',
+					'posts_per_page' => 4,
+				));
+				if ($query->have_posts()): while ($query->have_posts()) : $query->the_post();
+
+			?>
+				<li id="post-<?php the_ID(); ?>" class="wow fadeInUp" >
+					<?php if ( has_post_thumbnail()) : ?>
+					<div class="thumb-list">
+						<a class="thumb-5x3" href="<?php the_permalink(); ?>" title="<?php the_title(); ?>">
+							<?php the_post_thumbnail('thumb5x3'); ?>
+						</a>
+					</div>
+					<?php endif; ?>
+					<h3 class="title-post">
+						<a href="<?php the_permalink(); ?>" title="<?php the_title(); ?>"><?php the_title(); ?></a>
+					</h3>
+				</li>
+			<?php endwhile; wp_reset_query();?>
+			<?php endif; ?>
+		</ul>
+		
+		<div class="ads">
+			<?php if(!function_exists('dynamic_sidebar') || !dynamic_sidebar('widget-adstop')) ?>
+		</div>
+	</div>
+</section>
+<?php } ?>
+
+<h2 class="title-section"><span>BẤT ĐỘNG SẢN NỔI BẬT</span></h2>
+<section class="featured-real grid owl-carousel">
+	<div class="list-featured-real">
+		<?php get_template_part('featured-real'); ?>
+	</div>
+</section>
+
+<!--Banner-->
+
+<style>
+	.banner{margin-bottom: 30px;}
+	.banner img{width: 100%;float: left;}
+</style>
+<section class="container banner">
+	<?php if ( wp_is_mobile() ){ ?>
+	<img src="<?php echo get_template_directory_uri(); ?>/img/banner-mua-dat-binh-duong-gia-cao.gif" alt="Mua đất Bình Dương giá cao">
+	<?php } else { ?>
+	<img src="<?php echo get_template_directory_uri(); ?>/img/banner-ban-dat-binh-duong.gif" alt="Bán đất Bình Dương">
+	<?php } ?>
+</section>
+
+<!--End Banner-->
+
+<h2 class="title-section"><span>TIN MỚI</span></h2>
+<section class="grid list-all">
+	<?php get_template_part('all-property'); ?>
+</section>
+
+
+<?php get_footer(); ?>

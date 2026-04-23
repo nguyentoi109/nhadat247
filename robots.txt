@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /wp-admin/
+Allow: /
+Sitemap: https://haphome.vn/sitemap_index.xml

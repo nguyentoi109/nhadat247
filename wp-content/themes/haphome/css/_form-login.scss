@@ -1,0 +1,40 @@
+.user{
+  .popup-search-property{
+    background: none;
+    box-shadow: none;
+  }
+}
+.section-form-login{
+  width: 100%;
+  max-width: 380px;
+  background: #fff;
+  padding: 30px;
+  border-radius: 3px;
+  margin: 0 auto;
+  #loginform{
+    width: 100%;
+    float: left;
+    border-bottom: 1px solid $color-border;
+    padding-top: 20px;
+    margin-bottom: 20px;
+  }
+  p{
+    width: 100%;
+    float: left;
+    margin-bottom: 15px;
+    label{
+      font-size: 1.6rem;
+      display: block;
+      margin-bottom: 3px;
+    }
+  }
+  .login-remember{
+    input[type="checkbox"]{
+      margin-right: 10px;
+    }
+  }
+  
+  .lost-password{
+    font-size: 1.3rem;
+  }
+}

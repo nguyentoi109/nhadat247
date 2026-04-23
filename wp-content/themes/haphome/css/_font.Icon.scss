@@ -1,0 +1,211 @@
+/* MaterialDesignIcons.com */
+@font-face {
+    font-family: "Material Design Icons";
+    src: url("../fonts/materialdesignicons-webfont.eot?v=3.0.39");
+    src: url("../fonts/materialdesignicons-webfont.eot?#iefix&v=3.0.39") format("embedded-opentype"), url("../fonts/materialdesignicons-webfont.woff2?v=3.0.39") format("woff2"), url("../fonts/materialdesignicons-webfont.woff?v=3.0.39") format("woff"), url("../fonts/materialdesignicons-webfont.ttf?v=3.0.39") format("truetype"), url("../fonts/materialdesignicons-webfont.svg?v=3.0.39#materialdesigniconsregular") format("svg");
+    font-weight: normal;
+    font-style: normal
+}
+.mdi:before,
+.mdi-set {
+    display: inline-block;
+    font: normal normal normal 24px/1 "Material Design Icons";
+    font-size: inherit;
+    text-rendering: auto;
+    line-height: inherit;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale
+}
+
+.mdi-spin:before {
+    -webkit-animation: mdi-spin 2s infinite linear;
+            animation: mdi-spin 2s infinite linear;
+}
+
+@-webkit-keyframes mdi-spin {
+    0% {
+      -webkit-transform: rotate(0deg);
+              transform: rotate(0deg);
+    }
+    100% {
+      -webkit-transform: rotate(359deg);
+              transform: rotate(359deg);
+    }
+}
+
+@keyframes mdi-spin {
+    0% {
+      -webkit-transform: rotate(0deg);
+              transform: rotate(0deg);
+    }
+    100% {
+      -webkit-transform: rotate(359deg);
+              transform: rotate(359deg);
+    }
+} 
+
+.mdi-silverware-fork-knife:before {
+    content: "\FA6F"
+}
+.mdi-cellphone-basic:before {
+    content: "\F11E"
+}
+.mdi-chart-bar-stacked:before {
+    content: "\F769"
+}
+.mdi-chevron-left:before {
+    content: "\F141"
+}.mdi-chevron-right:before {
+    content: "\F142"
+}
+.mdi-arrow-up:before {
+    content: "\F05D"
+}
+.mdi-city-variant-outline:before {
+    content: "\FA36"
+}
+.mdi-google-plus:before {
+    content: "\F2BD"
+}
+.mdi-facebook:before {
+    content: "\F20C"
+}
+.mdi-twitter:before {
+    content: "\F544"
+}
+.mdi-youtube:before {
+    content: "\F5C3"
+}
+.mdi-phone:before {
+    content: "\F3F2"
+}
+.mdi-phone-in-talk:before {
+    content: "\f3f6"
+}
+.mdi-home-outline:before {
+    content: "\F6A0"
+}
+.mdi-email-outline:before {
+    content: "\F1F0"
+}
+.mdi-web:before {
+    content: "\F59F"
+}
+.mdi-map-marker-outline:before {
+    content: "\F7D8"
+}
+.mdi-magnify:before {
+    content: "\F349"
+}
+.mdi-square-inc:before {
+    content: "\f4ca"
+}
+.mdi-menu:before {
+    content: "\f35c"
+}
+.mdi-window-close:before {
+    content: "\f5ad"
+}
+.mdi-image:before {
+    content: "\F2E9"
+}
+.mdi-clock-outline:before {
+    content: "\f150"
+}
+.mdi-arrow-expand-horizontal:before {
+    content: "\f84d"
+}
+.mdi-compass-outline:before {
+    content: "\f18c"
+}
+.mdi-square-edit-outline:before {
+    content: "\f90b"
+}
+.mdi-delete-outline:before {
+    content: "\f9e6"
+}
+.mdi-tag-outline:before {
+    content: "\f4fc"
+}
+.mdi-login-variant:before {
+    content: "\f5fc"
+}
+.mdi-logout-variant:before {
+    content: "\f5fd"
+}
+.mdi-format-list-bulleted:before {
+    content: "\f279"
+}
+.mdi-map-legend:before {
+    content: "\fa00"
+}
+.mdi-eye-outline:before {
+    content: "\f6cf"
+}
+.mdi-alert-circle-outline:before {
+    content: "\f5d6"
+}
+.mdi-home-city-outline:before {
+    content: "\fcf2"
+}
+.mdi-account-outline:before {
+    content: "\f013"
+}
+.mdi-home-plus:before {
+    content: "\f974"
+}
+.mdi-card-text-outline:before {
+    content: "\fb54"
+}
+.mdi-star-circle-outline:before {
+    content: "\f9a3"
+}
+.mdi-alpha-z:before {
+    content: "\005a"
+}
+.mdi-facebook-messenger:before {
+    content: "\f20e"
+}
+.mdi-settings-outline:before {
+    content: "\f8ba"
+}
+.mdi-close:before {
+    content: "\f156"
+}
+.mdi-finance:before {
+    content: "\f81e"
+}
+
+
+.ic-live {
+	font-size: 9px;text-transform: uppercase;height: 10px;line-height: 10px;display: inline-block;vertical-align: middle;color: #9F224E;
+}
+.ic-live:before {
+	-webkit-border-radius: 50%;border-radius: 50%;display: block;position: relative;width: 10px;height: 10px;content: ''; background: #9F224E;box-shadow: 0 0 0 rgba(22, 160, 133, 0.4); margin-right: 5px;vertical-align: initial;-webkit-animation: live-pulse 1s infinite;-moz-animation: live-pulse 1s infinite;-o-animation: live-pulse 1s infinite;animation: live-pulse 1s infinite;float: left;top: -1px;
+}
+    
+@-webkit-keyframes live-pulse {
+  0% {
+	-webkit-box-shadow: 0 0 0 0 rgba(22, 160, 133, 0.4);
+  }
+  70% {
+	  -webkit-box-shadow: 0 0 0 10px rgba(22, 160, 133, 0);
+  }
+  100% {
+	  -webkit-box-shadow: 0 0 0 0 rgba(22, 160, 133, 0);
+  }
+}
+@keyframes live-pulse {
+  0% {
+	-moz-box-shadow: 0 0 0 0 rgba(22, 160, 133, 0.4);
+	box-shadow: 0 0 0 0 rgba(22, 160, 133, 0.4);
+  }
+  70% {
+	  -moz-box-shadow: 0 0 0 10px rgba(22, 160, 133, 0);
+	  box-shadow: 0 0 0 10px rgba(22, 160, 133, 0);
+  }
+  100% {
+	  -moz-box-shadow: 0 0 0 0 rgba(22, 160, 133, 0);
+	  box-shadow: 0 0 0 0 rgba(22, 160, 133, 0);
+  }
+}
