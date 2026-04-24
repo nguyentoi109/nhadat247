@@ -2,21 +2,21 @@
 	$query = new WP_Query(array(
 		'post_type'=>'property',
 		'tax_query' => array(
-			array (
+			array(
 				'taxonomy' => 'property_status',
-				'field' => 'id',
-				'terms' => 6,
-				),
-			array (
+				'field'    => 'term_id',
+				'terms'    => 6,
+			),
+			array(
 				'taxonomy' => 'property_type',
-				'field' => 'id',
-				'terms' => 9,
-				),
-			array (
+				'field'    => 'term_id',
+				'terms'    => 9,
+			),
+			array(
 				'taxonomy' => 'property_location',
-				'field' => 'id',
-				'terms' => 12,
-				),
+				'field'    => 'term_id',
+				'terms'    => 12,
+			),
 		),
 		'post_status'=>'publish',
 		'orderby' => 'ID',

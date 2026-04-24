@@ -2,21 +2,21 @@
 	$query = new WP_Query(array(
 		'post_type'=>'property',
 		'tax_query' => array(
-			array (
+			array(
 				'taxonomy' => 'property_status',
-				'field' => 'id',
-				'terms' => 6,
-				),
-			array (
+				'field'    => 'term_id',
+				'terms'    => 6,
+			),
+			array(
 				'taxonomy' => 'property_type',
-				'field' => 'id',
-				'terms' => 11,
-				),
-			array (
+				'field'    => 'term_id',
+				'terms'    => 11,
+			),
+			array(
 				'taxonomy' => 'property_location',
-				'field' => 'id',
-				'terms' => 12,
-				),
+				'field'    => 'term_id',
+				'terms'    => 12,
+			),
 		),
 		'post_status'=>'publish',
 		'orderby' => 'ID',
@@ -26,9 +26,6 @@
 
 	if ($query->have_posts()): while ($query->have_posts()) : $query->the_post();
 	
-	/* $price = rwmb_meta( 'prefix-price' );
-	$unit = rwmb_meta( 'prefix-unit' );
-	$area = rwmb_meta( 'prefix-area' ); */
 ?>
 
 	<!-- article -->

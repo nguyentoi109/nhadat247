@@ -2,21 +2,21 @@
 	$query = new WP_Query(array(
 		'post_type'=>'property',
 		'tax_query' => array(
-			array (
+			array(
 				'taxonomy' => 'property_status',
-				'field' => 'id',
-				'terms' => 7,
-				),
-			array (
+				'field'    => 'term_id',
+				'terms'    => 7,
+			),
+			array(
 				'taxonomy' => 'property_type',
-				'field' => 'id',
-				'terms' => 10,
-				),
-			array (
+				'field'    => 'term_id',
+				'terms'    => 10,
+			),
+			array(
 				'taxonomy' => 'property_location',
-				'field' => 'id',
-				'terms' => 12,
-				),
+				'field'    => 'term_id',
+				'terms'    => 12,
+			),
 		),
 		'post_status'=>'publish',
 		'orderby' => 'ID',
@@ -35,7 +35,7 @@
 	<?php get_template_part('loop-property/item-property'); ?>
 	<!-- /article -->
 
-<?php endwhile; wp_reset_query();?>
+<?php endwhile; wp_reset_postdata();;?>
 <?php if (function_exists('wp_pagenavi')) { wp_pagenavi( array( 'query' => $query ) ); } ?>
 <?php else: ?>
 

@@ -1,5 +1,5 @@
 <div class="container clear">
-		<a title="Chính chủ bán gấp đất TP Đồng Xoài ngay trung tâm thương mại giá rẻ hời cho đầu tư" target="_blank" href="https://haphome.vn/bat-dong-san/chinh-chu-ban-gap-dat-tp-dong-xoai-ngay-trung-tam-thuong-mai-gia-re-hoi-cho-dau-tu"><img src="https://haphome.vn/wp-content/uploads/2022/08/banner-ban-dat-trung-tam-thanh-pho-dong-xoai-1.gif" alt="Chính chủ bán gấp đất TP Đồng Xoài ngay trung tâm thương mại giá rẻ hời cho đầu tư" style="width: 100%;float: left;margin: 30px 0; "></a>
+		<!-- <a title="Chính chủ bán gấp đất TP Đồng Xoài ngay trung tâm thương mại giá rẻ hời cho đầu tư" target="_blank" href="https://haphome.vn/bat-dong-san/chinh-chu-ban-gap-dat-tp-dong-xoai-ngay-trung-tam-thuong-mai-gia-re-hoi-cho-dau-tu"><img src="https://haphome.vn/wp-content/uploads/2022/08/banner-ban-dat-trung-tam-thanh-pho-dong-xoai-1.gif" alt="Chính chủ bán gấp đất TP Đồng Xoài ngay trung tâm thương mại giá rẻ hời cho đầu tư" style="width: 100%;float: left;margin: 30px 0; "></a> -->
 	</div>
 <section class="footer-link">
 		<div class="container">
@@ -8,7 +8,7 @@
 				<li><h5><a href="<?php echo home_url('binh-duong'); ?>" title="Bán đất Bình Dương" >Bán đất Bình Dương </a> </h5> </li>
 				<li><h5><a href="<?php echo home_url('binh-duong'); ?>" title="Dat Binh Duong gia re" >Dat Binh Duong gia re </a> </h5> </li>
 				<li><h5><a href="<?php echo home_url('binh-duong'); ?>" title="Bán đất Bình Dương giá rẻ" >Bán đất Bình Dương giá rẻ </a> </h5> </li>
-				<li><h5><a href="<?php echo home_url(binh-duong); ?>" title="Đất nền Bình Dương" >Đất nền Bình Dương </a> </h5> </li>
+				<li><h5><a href="<?php echo home_url('binh-duong'); ?>" title="Đất nền Bình Dương" >Đất nền Bình Dương </a> </h5> </li>
 				<li><h5><a href="<?php echo home_url(); ?>" title="Sàn GD BĐS Bình Dương" >Sàn GD BĐS Bình Dương </a> </h5> </li>
 				<li><h5><a href="<?php echo home_url(); ?>" title="Tin tức Bình Dương" >Tin tức Bình Dương </a> </h5> </li>
 				<li><h5><a href="<?php echo home_url(); ?>" title="Dự án đất Bình Dương" >Dự án đất Bình Dương </a> </h5> </li>

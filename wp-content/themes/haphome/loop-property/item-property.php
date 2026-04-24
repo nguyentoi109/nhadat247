@@ -1,53 +1,55 @@
-<article id="post-<?php the_ID(); ?>" class="list-news swiper-slide wow fadeInUp"  >
-    <?php
-      $price = rwmb_meta( 'prefix-price' );
-	  $unit = rwmb_meta( 'prefix-unit' );
-      $area = rwmb_meta( 'prefix-area' );
-      $address = rwmb_meta( 'prefix-address' );
-      $post_link = rwmb_meta( 'prefix-post' );
-	  $phone_custom = rwmb_meta( 'prefix-phone-custom' );
-      $status_terms = get_the_terms( $post->ID,"property_status" );
-    ?>
-	  <div class="header-list-news">
-      <span class="price">
-			<strong><span class="ti-tag"></span>Giá: </strong>
-			<span class="num">
-			<?php echo number_format($price, 0,",","."); ?>
-			</span>
-			<?php
-				if($unit){
-				if($unit == 'trieu'){
-					echo ' triệu';
-				}
-				if($unit == 'ty'){
-					echo ' tỷ';
-				}
-				}else{
-				echo ' đ';
-				}
-			?>
-		</span>
-    </div>
-		<?php if ( has_post_thumbnail()) : ?>
-			<div class="thumb-list">
-				<a class="thumb-4x3" href="<?php the_permalink(); ?>" title="<?php the_title(); ?>">
-					<?php the_post_thumbnail('thumb5x3'); ?>
-				</a>
-				<span class="status">
-					<?php
-						if(!empty( $status_terms )){
-							$status_count = 0;
-							foreach( $status_terms as $term ){
-								if( $status_count > 0 ){
-									echo ', ';
-								}
-								echo $term->name;
-							}
-						}
-					?>					 
-				</span>
-			</div>
-		<?php endif; ?>
+<article id="post-<?php the_ID(); ?>" class="list-news swiper-slide wow fadeInUp">
+
+<?php
+$post_id = get_the_ID();
+
+$price = rwmb_meta('prefix-price');
+$unit = rwmb_meta('prefix-unit');
+$area = rwmb_meta('prefix-area');
+$address = rwmb_meta('prefix-address');
+$post_link = rwmb_meta('prefix-post');
+$phone_custom = rwmb_meta('prefix-phone-custom');
+
+$status_terms = get_the_terms($post_id, "property_status");
+$price = (float)$price;
+?>
+
+<div class="header-list-news">
+    <span class="price">
+        <strong><span class="ti-tag"></span>Giá: </strong>
+
+        <span class="num">
+            <?php echo $price > 0 ? number_format($price, 0, ",", ".") : 'Liên hệ'; ?>
+        </span>
+
+        <?php
+        if ($price > 0) {
+            if ($unit == 'trieu') echo ' triệu';
+            elseif ($unit == 'ty') echo ' tỷ';
+            else echo ' đ';
+        }
+        ?>
+    </span>
+</div>
+		<?php if (has_post_thumbnail()) : ?>
+<div class="thumb-list">
+    <a class="thumb-4x3" href="<?php the_permalink(); ?>">
+        <?php the_post_thumbnail('thumb5x3'); ?>
+    </a>
+
+    <span class="status">
+        <?php
+        if (!empty($status_terms) && !is_wp_error($status_terms)) {
+            $names = [];
+            foreach ($status_terms as $term) {
+                $names[] = $term->name;
+            }
+            echo implode(', ', $names);
+        }
+        ?>
+    </span>
+</div>
+<?php endif; ?>
 		<!-- /post thumbnail -->
 
 		<div class="content">

@@ -24,11 +24,29 @@ get_header();
 
 <?php get_template_part('news/news-home'); ?>
   
-  <div class="popular clear">
+  <!-- <div class="popular clear">
     <h2 class="title-section"><span>Quan tâm nhiều</span></h2>
     <div class="popular-real grid swiper-container">
        <div class="list-popular-real swiper-wrapper">
-         <?php get_template_part('popular-real'); ?>
+         <?php //get_template_part('popular-real'); ?>
+       </div>
+    </div>
+
+    <span class="btn-prev">
+        <span class="ti-arrow-left"></span>
+    </span>
+    <span class="btn-next">
+      <span class="ti-arrow-right"></span>
+    </span>
+    
+    <div class="swiper-pagination"></div>
+  </div> -->
+
+  <div class="popular clear">
+    <h2 class="title-section"><span>Bất động sản ngộp</span></h2>
+    <div class="popular-real grid swiper-container">
+       <div class="list-popular-real swiper-wrapper">
+         <?php get_template_part('bat-dong-san-ngop'); ?>
        </div>
     </div>
 

@@ -688,5 +688,6 @@ function remove_json_api()
 }
 add_action('after_setup_theme', 'remove_json_api');
 ///////////////////
-
+function html5blank_conditional_scripts() {}
+function html5_blank_view_article() {}
 

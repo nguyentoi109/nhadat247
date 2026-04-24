@@ -4,17 +4,17 @@
 		'tax_query' => array(
 			array (
 				'taxonomy' => 'property_status',
-				'field' => 'id',
+				'field' => 'term_id',
 				'terms' => 6,
 				),
 			array (
 				'taxonomy' => 'property_type',
-				'field' => 'id',
+				'field' => 'term_id',
 				'terms' => 10,
 				),
 			array (
 				'taxonomy' => 'property_location',
-				'field' => 'id',
+				'field' => 'term_id',
 				'terms' => 12,
 				'include_children' => true,
 				),
