@@ -696,6 +696,7 @@ function custom_property_posts_per_page($query) {
     }
 }
 add_action('pre_get_posts', 'custom_property_posts_per_page');
+add_filter('show_admin_bar', '__return_false');
 ///////////////////
 function html5blank_conditional_scripts() {}
 function html5_blank_view_article() {}

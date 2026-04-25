@@ -1,4 +1,4 @@
-<div class="menu">
+<!-- <div class="menu">
   <input id="mc_bnt" class="menu-toggler" type="checkbox">
   <span class="close"><span class="ti-eye"></span></span>
   <ul>
@@ -21,4 +21,4 @@
       <a class="" href="<?php echo home_url(); ?>" title="HAP Home"><span class="ti-home"></span></a>
     </li>
   </ul>
-</div>
+</div> -->

@@ -51,12 +51,12 @@ get_header();
 					<iframe src="<?= $file['url']; ?>" width="100%" height="500px"> </iframe>
 				</div>
 				
-				<a class="link-download" title="<?= $file['name']; ?>" target="_blank"  href="<?= $file['url']; ?>">Tải file</a>
+				<!-- <a class="link-download" title="<?= $file['name']; ?>" target="_blank"  href="<?= $file['url']; ?>">Tải file</a> -->
 			<?php endforeach ?>
 
 			<p class="cat-detail"><?php _e( 'Danh mục: ', 'html5blank' ); the_category(', ');?></p>	
 
-			<p class="control-post"><?php edit_post_link(); ?></p>
+			<!-- <p class="control-post"><?php //edit_post_link(); ?></p> -->
 
 
 		</article>

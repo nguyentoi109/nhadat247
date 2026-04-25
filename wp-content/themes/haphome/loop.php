@@ -28,7 +28,7 @@
 				<?php html5wp_excerpt('html5wp_index');?>
 			</div>
 
-			<p class="control-post"><?php edit_post_link(); ?></p>
+			<!-- <p class="control-post"><?php //edit_post_link(); ?></p> -->
 		</div>
 
 	</article>
