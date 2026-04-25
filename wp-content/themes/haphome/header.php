@@ -73,11 +73,11 @@
 
         <!--Banner Top-->
         <?php 
-        if( wp_is_mobile() ){
-          get_template_part('banner/banner-top-mobile');
-        }else{
-          get_template_part('banner/banner-top');
-        }
+        // if( wp_is_mobile() ){
+        //   get_template_part('banner/banner-top-mobile');
+        // }else{
+        //   get_template_part('banner/banner-top');
+        // }
         ?>
         <!--End Banner Top-->
         <!-- header -->
