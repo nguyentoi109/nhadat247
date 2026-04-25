@@ -687,6 +687,15 @@ function remove_json_api()
     remove_action('wp_head', 'wp_oembed_add_host_js');
 }
 add_action('after_setup_theme', 'remove_json_api');
+
+function custom_property_posts_per_page($query) {
+    if (!is_admin() && $query->is_main_query()) {
+        if (isset($_GET['post_type']) && $_GET['post_type'] == 'property') {
+            $query->set('posts_per_page', 12);
+        }
+    }
+}
+add_action('pre_get_posts', 'custom_property_posts_per_page');
 ///////////////////
 function html5blank_conditional_scripts() {}
 function html5_blank_view_article() {}
