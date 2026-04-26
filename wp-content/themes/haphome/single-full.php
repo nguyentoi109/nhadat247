@@ -10,7 +10,7 @@ get_header();
 <!--breadcrumbs-->
 <section class="container">
 	<?php 
-		if ( function_exists('yoast_breadcrumb') ) {yoast_breadcrumb('<p id="breadcrumbs" class="breadcrumbs">','</p>');} 
+		//if ( function_exists('yoast_breadcrumb') ) {yoast_breadcrumb('<p id="breadcrumbs" class="breadcrumbs">','</p>');} 
 	 ?>
 </section>
 <!--End breadcrumbs-->

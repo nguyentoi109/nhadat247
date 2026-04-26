@@ -64,8 +64,6 @@
 
     <?php wp_head(); ?>
 
-    <link rel='stylesheet' id='main-css'  href="<?php echo get_template_directory_uri() ?>/css/pannellum.css" media='all' />
-
 
 </head>
 
@@ -75,14 +73,13 @@
 
         <!--Banner Top-->
         <?php 
-        if( wp_is_mobile() ){
-          get_template_part('banner/banner-top-mobile');
-        }else{
-          get_template_part('banner/banner-top');
-        }
+        // if( wp_is_mobile() ){
+        //   get_template_part('banner/banner-top-mobile');
+        // }else{
+        //   get_template_part('banner/banner-top');
+        // }
         ?>
         <!--End Banner Top-->
-
         <!-- header -->
         <header class="header clear" role="banner">
             <div class="container clear flexbox">
@@ -105,6 +102,7 @@
                 <!-- /logo -->
                 
                 <a href="<?php echo home_url('tinh-lai-suat-vay'); ?>" class="link link-featured"><span class="ti-bar-chart-alt"></span> <?php echo wp_is_mobile() ?  'Tính lãi' : 'Tính lãi suất' ?>  </a>
+                
             </div>
             <span class="mobile-menu"><span class="ti-menu"></span></span>
         </header>

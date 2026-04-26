@@ -1,12 +1,12 @@
-<?php get_header('single-property'); ?>
+<?php get_header(); ?>
 <!--breadcrumbs-->
 
 <!--End breadcrumbs-->
 <!-- section container-->
 <section id="breadcrumbs" class="breadcrumbs">
-    <?php 
-		if ( function_exists('yoast_breadcrumb') ) {yoast_breadcrumb('<p id="breadcrumbs" class="container">','</p>');} 
-	 ?>
+    <!-- <?php 
+		//if ( function_exists('yoast_breadcrumb') ) {yoast_breadcrumb('<p id="breadcrumbs" class="container">','</p>');} 
+	 ?> -->
 </section>
 
 <section class="container detail-page">
@@ -178,20 +178,20 @@
             <h1><?php the_title(); ?></h1>
 
             <p class="price">
-                <strong><span class="ti-tag"></span> Giá:
-                </strong><span><?php echo number_format($price, 0,'','.'); ?></span>
-                <?php 
-          if($unit){
-            if($unit == 'trieu'){
-              echo 'Triệu';
-            }
-            if($unit == 'ty'){
-              echo 'Tỷ';
-            }
-          }else{
-            echo 'đ';
-          }
-        ?>
+                <strong><span class="ti-tag"></span> Giá:</strong>
+                <span>
+                    <?php 
+                    if (!empty($price)) {
+                        echo number_format((float)$price, 0, '', '.');
+                        if ($unit == 'trieu') echo ' Triệu';
+                        elseif ($unit == 'ty') echo ' Tỷ';
+                        else echo ' đ';
+                    } else {
+                        echo 'Liên hệ';
+                    }
+                    ?>
+                </span>
+            </p>
             </p>
             <?php //echo $unit == 'ty' ? ' selected' : ''?>
 
@@ -337,11 +337,11 @@
         </article>
         <!-- /article -->
         <?php
-				$delete_post_link = get_delete_post_link( $post->ID, '' );
-				if ( ! empty( $delete_post_link ) ) { ?>
-        <a style="color: red;" class="master-del" href="<?php echo esc_url( $delete_post_link ); ?>"><i
-                class="ti-trash"></i></a> |
-        <?php edit_post_link('<i class="ti-pencil"></i>'); }// Always handy to have Edit Post Links available ?>
+				//$delete_post_link = get_delete_post_link( $post->ID, '' );
+				//if ( ! empty( $delete_post_link ) ) { ?>
+        <!-- <a style="color: red;" class="master-del" href="<?php echo esc_url( $delete_post_link ); ?>"><i
+                class="ti-trash"></i></a>  -->
+        <?php //edit_post_link('<i class="ti-pencil"></i>'); }// Always handy to have Edit Post Links available ?>
         <?php endwhile; ?>
 
         <?php else: ?>
@@ -365,6 +365,6 @@
 <?php get_template_part('related-type'); ?>
 
 <?php 
-	get_template_part('footer-contact-mobile-detail');	
-	get_footer('single-property'); 
+	//get_template_part('footer-contact-mobile-detail');	
+	//get_footer('single-property'); 
 ?>
