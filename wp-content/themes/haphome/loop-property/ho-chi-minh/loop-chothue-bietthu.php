@@ -2,21 +2,21 @@
 	$query = new WP_Query(array(
 		'post_type'=>'property',
 		'tax_query' => array(
-			array(
+			array (
 				'taxonomy' => 'property_status',
-				'field'    => 'term_id',
-				'terms'    => 7,
-			),
-			array(
+				'field' => 'term_id',
+				'terms' => 7,
+				),
+			array (
 				'taxonomy' => 'property_type',
-				'field'    => 'term_id',
-				'terms'    => 8,
-			),
-			array(
+				'field' => 'term_id',
+				'terms' => 8,
+				),
+			array (
 				'taxonomy' => 'property_location',
-				'field'    => 'term_id',
-				'terms'    => 54,
-			),
+				'field' => 'term_id',
+				'terms' => 54,
+				),
 		),
 		'post_status'=>'publish',
 		'orderby' => 'ID',
@@ -28,11 +28,12 @@
 	
 	/* $price = rwmb_meta( 'prefix-price' );
 	$unit = rwmb_meta( 'prefix-unit' );
-	$area = rwmb_meta( 'prefix-area' );
-	$status = rwmb_meta( 'prefix-status' ); */
+	$area = rwmb_meta( 'prefix-area' ); */
 ?>
 
-<?php get_template_part('loop-property/item-property'); ?>
+	<!-- article -->
+	<?php get_template_part('loop-property/item-property'); ?>
+	<!-- /article -->
 
 <?php endwhile; wp_reset_query();?>
 <?php if (function_exists('wp_pagenavi')) { wp_pagenavi( array( 'query' => $query ) ); } ?>

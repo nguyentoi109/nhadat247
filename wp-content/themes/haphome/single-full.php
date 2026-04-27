@@ -1,12 +1,4 @@
-<?php 
-/* 
-Template Name: Single Full 
-Template Post Type: post
-*/
-
-get_header(); 
-
-?>
+<?php get_header(); ?>
 <!--breadcrumbs-->
 <section class="container">
 	<?php 
