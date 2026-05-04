@@ -42,35 +42,36 @@ if ($query->have_posts()) :
   <div class="container list-style">
 
     <?php while ($query->have_posts()) : $query->the_post(); ?>
+      <?php
+        $price = rwmb_meta('prefix-price');
+        $unit  = rwmb_meta('prefix-unit');
+        $area  = rwmb_meta('prefix-area');
+
+        $price_value = is_numeric($price) ? (float)$price : 0;
+      ?>
 
       <!-- <article id="post-<?php //the_ID(); ?>" <?php //post_class('list-news wow fadeInUp'); ?>> -->
-       <article id="post-<?php the_ID(); ?>" <?php post_class('list-news'); ?>>
-
-        <?php
-          $price = rwmb_meta('prefix-price');
-          $area  = rwmb_meta('prefix-area');
-          $unit = rwmb_meta('prefix-unit');
-          $status_terms = get_the_terms(get_the_ID(), "property_status");
-        ?>
+      <article id="post-<?php the_ID(); ?>" <?php post_class('list-news'); ?>>
 
         <div class="header-list-news">
           <span class="price">
-              <strong><span class="ti-tag"></span>Giá: </strong>
+            <strong><span class="ti-tag"></span> Giá:</strong>
 
-              <span class="num">
-                  <?php echo $price > 0 ? number_format($price, 0, ",", ".") : 'Liên hệ'; ?>
-              </span>
+            <span class="num">
+              <?php echo $price_value > 0 ? number_format($price_value, 0, ",", ".") : 'Liên hệ'; ?>
+            </span>
 
-              <?php
-              if ($price > 0) {
-                  if ($unit == 'trieu') echo ' triệu';
-                  elseif ($unit == 'ty') echo ' tỷ';
-                  else echo ' đ';
-              }
-              ?>
+            <?php
+            if ($price_value > 0) {
+                if ($unit == 'trieu') echo ' triệu';
+                elseif ($unit == 'ty') echo ' tỷ';
+                else echo ' đ';
+            }
+            ?>
           </span>
         </div>
 
+        <!-- IMAGE -->
         <?php if (has_post_thumbnail()) : ?>
           <div class="thumb-list">
             <a class="thumb-4x3" href="<?php the_permalink(); ?>">
@@ -91,47 +92,67 @@ if ($query->have_posts()) :
           </div>
         <?php endif; ?>
 
+        <!-- CONTENT -->
         <div class="content">
+
           <h3 class="title-post">
             <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
           </h3>
 
+          <div class="des">
+            <?php html5wp_excerpt('html5wp_index'); ?>
+          </div>
+
           <div class="meta">
             <span class="area">
               <strong><span class="ti-ruler"></span>:</strong>
-              <?php echo $area ?: '0'; ?> m<sup>2</sup>
+              <?php echo esc_html($area); ?> m²
+            </span> |
+
+            <span class="location">
+              <strong><span class="ti-location-pin"></span>:</strong>
+              <?php
+              $loc = get_the_terms(get_the_ID(), "property_location");
+              if (!empty($loc)) {
+                  $i = 0;
+                  foreach ($loc as $t) {
+                      if ($i++ > 0) echo ', ';
+                      echo $t->name;
+                  }
+              } else {
+                  echo '&nbsp;';
+              }
+              ?>
             </span>
           </div>
 
           <div class="footer-content">
             <div class="author"><?php get_template_part("meta-user"); ?></div>
-            <div class="date">
-              <span class="ti-calendar"></span>
-              <?php the_time('d/m/Y'); ?>
-            </div>
+            <div class="date"><span class="ti-calendar"></span> <?php the_time('d/m/Y'); ?></div>
           </div>
+
         </div>
 
         <div class="side-content">
 
           <span class="price">
-            <strong><span class="ti-tag"></span>Giá: </strong>
+            <strong><span class="ti-tag"></span> Giá:</strong>
 
             <span class="num">
-                <?php echo $price > 0 ? number_format($price, 0, ",", ".") : 'Liên hệ'; ?>
+              <?php echo $price_value > 0 ? number_format($price_value, 0, ",", ".") : 'Liên hệ'; ?>
             </span>
 
             <?php
-            if ($price > 0) {
+            if ($price_value > 0) {
                 if ($unit == 'trieu') echo ' triệu';
                 elseif ($unit == 'ty') echo ' tỷ';
                 else echo ' đ';
             }
             ?>
-        </span>
-         <?php html5wp_excerpt('html5wp_index'); ?>
+          </span>
 
           <a href="<?php the_permalink(); ?>" class="btn">Xem chi tiết</a>
+
         </div>
 
       </article>

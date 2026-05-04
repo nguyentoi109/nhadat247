@@ -1,49 +1,37 @@
 <?php
 global $post;
 
-$postlocation = 'property';
-$property_status2 = 'property_status';
-$property_location = 'property_location';
+if (!$post) return;
 
-$tax_property_status2 = get_the_terms($post->ID, $property_status2);
-$tax_property_location = get_the_terms($post->ID, $property_location);
+$status_terms = get_the_terms($post->ID, 'property_status');
+$location_terms = get_the_terms($post->ID, 'property_location');
 
-if (!empty($tax_property_status2) && !empty($tax_property_location)) :
+if (!empty($status_terms) && !is_wp_error($status_terms) &&
+    !empty($location_terms) && !is_wp_error($location_terms)) :
 
-$status2_ids = array();
-$location_ids = array();
+    $status_ids = wp_list_pluck($status_terms, 'term_id');
+    $location_ids = wp_list_pluck($location_terms, 'term_id');
 
-foreach ($tax_property_status2 as $t) {
-    $status2_ids[] = $t->term_id;
-}
-
-foreach ($tax_property_location as $t) {
-    $location_ids[] = $t->term_id;
-}
-
-$args = array(
-    'post_type' => $postlocation,
-    'post__not_in' => array($post->ID),
-    'posts_per_page' => 4,
-    'ignore_sticky_posts' => 1,
-    'tax_query' => array(
-        'relation' => 'AND',
-        array(
-            'taxonomy' => 'property_status',
-            'field'    => 'term_id',
-            'terms'    => $status2_ids,
+    $query = new WP_Query(array(
+        'post_type' => 'property',
+        'post__not_in' => array($post->ID),
+        'posts_per_page' => 4,
+        'tax_query' => array(
+            'relation' => 'AND',
+            array(
+                'taxonomy' => 'property_status',
+                'field'    => 'term_id',
+                'terms'    => $status_ids,
+            ),
+            array(
+                'taxonomy' => 'property_location',
+                'field'    => 'term_id',
+                'terms'    => $location_ids,
+            ),
         ),
-        array(
-            'taxonomy' => 'property_location',
-            'field'    => 'term_id',
-            'terms'    => $location_ids,
-        ),
-    ),
-);
+    ));
 
-$query = new WP_Query($args);
-
-if ($query->have_posts()) :
+    if ($query->have_posts()) :
 ?>
 
 <section class="related related-area">
@@ -53,24 +41,31 @@ if ($query->have_posts()) :
 
     <?php while ($query->have_posts()) : $query->the_post(); ?>
 
-      <!-- <article id="post-<?php //the_ID(); ?>" <?php //post_class('list-news wow fadeInUp'); ?>> -->
+      <?php
+        $price = rwmb_meta('prefix-price');
+        $unit  = rwmb_meta('prefix-unit');
+        $area  = rwmb_meta('prefix-area');
+
+        $price_value = is_numeric($price) ? (float)$price : 0;
+      ?>
+
       <article id="post-<?php the_ID(); ?>" <?php post_class('list-news'); ?>>
-
-        <?php
-          $price = rwmb_meta('prefix-price');
-          $area = rwmb_meta('prefix-area');
-          $address = rwmb_meta('prefix-address');
-          $unit = rwmb_meta('prefix-unit');
-
-          $status_terms = get_the_terms(get_the_ID(), "property_status");
-        ?>
 
         <div class="header-list-news">
           <span class="price">
-            <strong>
-              <span class="ti-tag"></span>Giá:
-              <span class="num"><?php echo number_format($price, 0, ",", "."); ?> đ</span>
-            </strong>
+            <strong><span class="ti-tag"></span> Giá:</strong>
+
+            <span class="num">
+              <?php echo $price_value > 0 ? number_format($price_value, 0, ",", ".") : 'Liên hệ'; ?>
+            </span>
+
+            <?php
+            if ($price_value > 0) {
+                if ($unit == 'trieu') echo ' triệu';
+                elseif ($unit == 'ty') echo ' tỷ';
+                else echo ' đ';
+            }
+            ?>
           </span>
         </div>
 
@@ -95,14 +90,20 @@ if ($query->have_posts()) :
         <?php endif; ?>
 
         <div class="content">
+
           <h3 class="title-post">
             <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
           </h3>
 
+          <!-- ✅ MÔ TẢ -->
+          <div class="des">
+            <?php html5wp_excerpt('html5wp_index'); ?>
+          </div>
+
           <div class="meta">
             <span class="area">
               <strong><span class="ti-ruler"></span>:</strong>
-              <?php echo $area; ?> m<sup>2</sup>
+              <?php echo esc_html($area); ?> m²
             </span> |
 
             <span class="location">
@@ -119,22 +120,6 @@ if ($query->have_posts()) :
                   echo '&nbsp;';
               }
               ?>
-            </span> |
-
-            <span class="direction">
-              <strong><span class="ti-direction-alt"></span>:</strong>
-              <?php
-              $dir = get_the_terms(get_the_ID(), "property_direction");
-              if (!empty($dir)) {
-                  $i = 0;
-                  foreach ($dir as $t) {
-                      if ($i++ > 0) echo ', ';
-                      echo $t->name;
-                  }
-              } else {
-                  echo '&nbsp;';
-              }
-              ?>
             </span>
           </div>
 
@@ -142,29 +127,30 @@ if ($query->have_posts()) :
             <div class="author"><?php get_template_part("meta-user"); ?></div>
             <div class="date"><span class="ti-calendar"></span> <?php the_time('d/m/Y'); ?></div>
           </div>
+
         </div>
 
+        <!-- SIDE -->
         <div class="side-content">
 
-
           <span class="price">
-            <strong><span class="ti-tag"></span>Giá: </strong>
+            <strong><span class="ti-tag"></span> Giá:</strong>
 
             <span class="num">
-                <?php echo $price > 0 ? number_format($price, 0, ",", ".") : 'Liên hệ'; ?>
+              <?php echo $price_value > 0 ? number_format($price_value, 0, ",", ".") : 'Liên hệ'; ?>
             </span>
 
             <?php
-            if ($price > 0) {
+            if ($price_value > 0) {
                 if ($unit == 'trieu') echo ' triệu';
                 elseif ($unit == 'ty') echo ' tỷ';
                 else echo ' đ';
             }
             ?>
-        </span>
-          <?php html5wp_excerpt('html5wp_index'); ?>
+          </span>
 
           <a href="<?php the_permalink(); ?>" class="btn">Xem chi tiết</a>
+
         </div>
 
       </article>
@@ -174,5 +160,8 @@ if ($query->have_posts()) :
   </div>
 </section>
 
-<?php endif; wp_reset_postdata(); ?>
-<?php endif; ?>
+<?php
+    endif;
+    wp_reset_postdata();
+endif;
+?>

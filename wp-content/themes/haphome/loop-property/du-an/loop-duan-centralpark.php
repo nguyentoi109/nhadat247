@@ -5,7 +5,7 @@ $query = new WP_Query(array(
         array(
             'taxonomy' => 'property_type',
             'field' => 'term_id',
-            'terms' => 76,
+            'terms' => 72,
         ),
     ),
     'post_status' => 'publish',
