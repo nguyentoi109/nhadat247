@@ -96,7 +96,8 @@ if ($categories)
         {
             $my_query->the_post();
             ?>
-            <article id="post-<?php the_ID(); ?>" class="list-news  wow fadeInUp">
+            <!-- <article id="post-<?php //the_ID(); ?>" class="list-news  wow fadeInUp"> -->
+			<article id="post-<?php the_ID(); ?>" class="list-news">
 				<?php if ( has_post_thumbnail()) : ?>
 					<div class="thumb-full">
 						<a href="<?php the_permalink(); ?>" title="<?php the_title(); ?>" class="thumb-5x3">

@@ -35,7 +35,9 @@ get_header();
 					?>
 
 					<!-- article -->
-					<article id="post-<?php the_ID(); ?>" <?php post_class('list-news wow fadeInUp'); ?>>
+					<!-- <article id="post-<?php //the_ID(); ?>" <?php //post_class('list-news wow fadeInUp'); ?>> -->
+					<article id="post-<?php the_ID(); ?>" <?php post_class('list-news'); ?>>
+
 
 						<!-- PRICE -->
 						<div class="header-list-news">

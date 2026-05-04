@@ -1,4 +1,6 @@
-<article id="post-<?php the_ID(); ?>" class="list-news swiper-slide wow fadeInUp">
+<!-- <article id="post-<?php //the_ID(); ?>" class="list-news swiper-slide wow fadeInUp"> -->
+<article id="post-<?php the_ID(); ?>" class="list-news swiper-slide">
+
 
 <?php
 $post_id = get_the_ID();

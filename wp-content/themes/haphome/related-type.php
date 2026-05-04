@@ -37,27 +37,37 @@ if ($query->have_posts()) :
 ?>
 
 <section class="related related-type">
-  <h2 class="title-section wow fadeInUp"><span>TIN CÙNG LOẠI</span></h2>
+  <h2 class="title-section"><span>TIN CÙNG LOẠI</span></h2>
 
   <div class="container list-style">
 
     <?php while ($query->have_posts()) : $query->the_post(); ?>
 
-      <article id="post-<?php the_ID(); ?>" <?php post_class('list-news wow fadeInUp'); ?>>
+      <!-- <article id="post-<?php //the_ID(); ?>" <?php //post_class('list-news wow fadeInUp'); ?>> -->
+       <article id="post-<?php the_ID(); ?>" <?php post_class('list-news'); ?>>
 
         <?php
           $price = rwmb_meta('prefix-price');
           $area  = rwmb_meta('prefix-area');
-
+          $unit = rwmb_meta('prefix-unit');
           $status_terms = get_the_terms(get_the_ID(), "property_status");
         ?>
 
         <div class="header-list-news">
           <span class="price">
-            <strong>
-              <span class="ti-tag"></span>Giá:
-              <span class="num"><?php echo number_format((float)$price, 0, ",", "."); ?> đ</span>
-            </strong>
+              <strong><span class="ti-tag"></span>Giá: </strong>
+
+              <span class="num">
+                  <?php echo $price > 0 ? number_format($price, 0, ",", ".") : 'Liên hệ'; ?>
+              </span>
+
+              <?php
+              if ($price > 0) {
+                  if ($unit == 'trieu') echo ' triệu';
+                  elseif ($unit == 'ty') echo ' tỷ';
+                  else echo ' đ';
+              }
+              ?>
           </span>
         </div>
 
@@ -103,14 +113,23 @@ if ($query->have_posts()) :
         </div>
 
         <div class="side-content">
-          <?php html5wp_excerpt('html5wp_index'); ?>
 
           <span class="price">
-            <strong>
-              <span class="ti-tag"></span>Giá:
-              <span class="num"><?php echo number_format((float)$price, 0, ",", "."); ?> đ</span>
-            </strong>
-          </span>
+            <strong><span class="ti-tag"></span>Giá: </strong>
+
+            <span class="num">
+                <?php echo $price > 0 ? number_format($price, 0, ",", ".") : 'Liên hệ'; ?>
+            </span>
+
+            <?php
+            if ($price > 0) {
+                if ($unit == 'trieu') echo ' triệu';
+                elseif ($unit == 'ty') echo ' tỷ';
+                else echo ' đ';
+            }
+            ?>
+        </span>
+         <?php html5wp_excerpt('html5wp_index'); ?>
 
           <a href="<?php the_permalink(); ?>" class="btn">Xem chi tiết</a>
         </div>

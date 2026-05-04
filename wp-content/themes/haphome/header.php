@@ -101,8 +101,15 @@
                 <?php } ?>
                 <!-- /logo -->
                 
-                <a href="<?php echo home_url('tinh-lai-suat-vay'); ?>" class="link link-featured"><span class="ti-bar-chart-alt"></span> <?php echo wp_is_mobile() ?  'Tính lãi' : 'Tính lãi suất' ?>  </a>
-                
+               <div class="header-right">
+                    <a href="<?php echo home_url('tinh-lai-suat-vay'); ?>" class="link link-featured">
+                        <span class="ti-bar-chart-alt"></span> <?php echo wp_is_mobile() ? 'Tính lãi' : 'Tính lãi suất' ?>
+                    </a>
+                    
+                    <a href="<?php echo home_url('chuyen-doi-dia-chi'); ?>" class="link link-featured">
+                        <span class="ti-location-pin"></span> <?php echo wp_is_mobile() ? 'Đổi địa chỉ' : 'Chuyển đổi địa chỉ' ?>
+                    </a>
+                </div>
             </div>
             <span class="mobile-menu"><span class="ti-menu"></span></span>
         </header>

@@ -24,7 +24,9 @@
 ?>
 
 	<!-- article -->
-	<article id="post-<?php the_ID(); ?>" class="list-news swiper-slide wow fadeInUp"  >
+	<!-- <article id="post-<?php //the_ID(); ?>" class="list-news swiper-slide wow fadeInUp"  > -->
+		<article id="post-<?php the_ID(); ?>" class="list-news swiper-slide"  >
+
     <?php
       $price = rwmb_meta( 'prefix-price' );
       $unit = rwmb_meta( 'prefix-unit' );

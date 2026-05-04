@@ -7,7 +7,7 @@ get_header();
 <section class="container wrap-content">
 	<main role="main" class="full-page">
 		<div class="list-style">
-			<?php get_template_part('loop-property/binh-duong/loop-canban-biethtu'); ?>
+			<?php get_template_part('loop-property/binh-duong/loop-canban-bietthu'); ?>
 		</div>
 	</main>
 </section>

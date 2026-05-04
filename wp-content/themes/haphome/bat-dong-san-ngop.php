@@ -9,7 +9,7 @@ $query = new WP_Query(array(
         ),
     ),
     'orderby' => 'date',
-    'order' => 'ASC',
+    'order' => 'DESC',
     'posts_per_page' => 18,
 ));
 

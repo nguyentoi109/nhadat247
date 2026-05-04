@@ -17,7 +17,8 @@ if ($query->have_posts()):
 	<h2 class="title-block">Tin tức Bất động sản</h2>
 	<div class="list-news-block">
 		<?php while ($query->have_posts()) : $query->the_post(); ?>
-		<article id="post-<?php the_ID(); ?>" class="item-news wow fadeInUp" >
+		<!-- <article id="post-<?php //the_ID(); ?>" class="item-news wow fadeInUp" > -->
+		<article id="post-<?php the_ID(); ?>" class="item-news 
 			<?php if ( has_post_thumbnail()) : ?>
 				<div class="thumb-list">
 					<a class="thumb-1x1" href="<?php the_permalink(); ?>" title="<?php the_title(); ?>">
@@ -51,7 +52,8 @@ if ($query->have_posts()):
 	<h2 class="title-block">Kiến thức Bất động sản</h2>
 	<div class="list-news-block">
 		<?php while ($query->have_posts()) : $query->the_post(); ?>
-		<article id="post-<?php the_ID(); ?>" class="item-news wow fadeInUp" >
+		<!-- <article id="post-<?php //the_ID(); ?>" class="item-news wow fadeInUp" > -->
+		<article id="post-<?php the_ID(); ?>" class="item-news" >
 			<?php if ( has_post_thumbnail()) : ?>
 				<div class="thumb-list">
 					<a class="thumb-1x1" href="<?php the_permalink(); ?>" title="<?php the_title(); ?>">
@@ -85,7 +87,8 @@ if ($query->have_posts()):
 	<h2 class="title-block">Phong thủy</h2>
 	<div class="list-news-block">
 		<?php while ($query->have_posts()) : $query->the_post(); ?>
-		<article id="post-<?php the_ID(); ?>" class="item-news wow fadeInUp" >
+		<!-- <article id="post-<?php //the_ID(); ?>" class="item-news wow fadeInUp" > -->
+		<article id="post-<?php the_ID(); ?>" class="item-news" >
 			<?php if ( has_post_thumbnail()) : ?>
 				<div class="thumb-list">
 					<a class="thumb-1x1" href="<?php the_permalink(); ?>" title="<?php the_title(); ?>">

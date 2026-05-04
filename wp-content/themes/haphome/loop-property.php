@@ -9,7 +9,8 @@
 ?>
 
 <!-- article -->
-<article id="post-<?php the_ID(); ?>" class="list-news swiper-slide wow fadeInUp">
+<!-- <article id="post-<?php //the_ID(); ?>" class="list-news swiper-slide wow fadeInUp"> -->
+<article id="post-<?php the_ID(); ?>" class="list-news swiper-slide">
 
     <div class="header-list-news">
         <span class="price">

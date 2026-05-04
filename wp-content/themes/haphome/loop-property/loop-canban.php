@@ -23,7 +23,9 @@
 ?>
 
 	<!-- article -->
-	<article id="post-<?php the_ID(); ?>" class="list-news swiper-slide wow fadeInUp"  >
+	<!-- <article id="post-<?php //the_ID(); ?>" class="list-news swiper-slide wow fadeInUp"  > -->
+		<article id="post-<?php the_ID(); ?>" class="list-news swiper-slide"  >
+
     <?php
       $address = rwmb_meta( 'prefix-address' );
       $status_terms = get_the_terms( $post->ID,"property_status" );

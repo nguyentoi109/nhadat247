@@ -11,7 +11,8 @@
 		if ($query->have_posts()): while ($query->have_posts()) : $query->the_post();
 
 	?>
-		<article id="post-<?php the_ID(); ?>" class="list wow fadeInUp" >
+		<!-- <article id="post-<?php //the_ID(); ?>" class="list wow fadeInUp" > -->
+		<article id="post-<?php the_ID(); ?>" class="list" >
 			<?php if ( has_post_thumbnail()) : ?>
 				<div class="thumb-list">
 					<a class="thumb-5x3" href="<?php the_permalink(); ?>" title="<?php the_title(); ?>">

@@ -1,8 +1,242 @@
+<style>
+  /* =========================
+   STYLE CHO FORM TÍNH LÃI SUẤT
+   ========================= */
+
+.form-tinh-lai {
+    max-width: 1100px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    box-sizing: border-box;
+}
+
+.form-tinh-lai .title-block {
+    text-align: center;
+    font-size: 24px;
+    font-weight: normal;
+    font-family: 'Lexend', Roboto, Arial !important;
+    color: #e03c31;
+    margin-bottom: 30px;
+}
+
+.form-tinh-lai .row {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.form-tinh-lai .left,
+.form-tinh-lai .right {
+    flex: 1;
+}
+
+.form-tinh-lai input,
+.form-tinh-lai select {
+    width: 100% !important;
+    height: 50px !important;
+    border: 1px solid #ddd !important;
+    border-radius: 12px !important;
+    padding: 0 16px !important;
+    font-size: 15px !important;
+    background: #fff !important;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+.form-tinh-lai input:focus,
+.form-tinh-lai select:focus {
+    border-color: #e03c31 !important;
+    box-shadow: 0 0 0 3px rgba(224, 60, 49, 0.1);
+    outline: none;
+}
+
+#devvn_pc_interest {
+    width: 100%;
+    height: 52px;
+    background: #e03c31;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#devvn_pc_interest:hover {
+    background: #c12a22;
+}
+
+/* =========================
+   MODAL RESULT
+   ========================= */
+
+.devvn_modal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    overflow-y: auto;
+    padding: 40px 15px;
+    box-sizing: border-box;
+}
+
+.devvn_caculated_box {
+    max-width: 1200px;
+    margin: auto;
+    background: #fff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+}
+
+.devvn_caculated_header {
+    padding: 25px;
+    border-bottom: 1px solid #eee;
+    background: #fff;
+}
+
+.devvn_caculated_header h3 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.devvn_caculated_body {
+    padding: 30px;
+}
+
+.devvn_caculated_body_left {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.devvn_caculated_body_col {
+    flex: 1;
+    min-width: 220px;
+    background: #f8f9fa;
+    border-radius: 16px;
+    padding: 25px;
+    text-align: center;
+    border: 1px solid #eee;
+}
+
+.devvn_caculated_body_col span {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 12px;
+}
+
+.devvn_caculated_body_col p {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #e03c31;
+}
+
+/* =========================
+   TABLE
+   ========================= */
+
+.devvn_content_table {
+    overflow-x: auto;
+}
+
+.devvn_content_table table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+}
+
+.devvn_content_table thead {
+    background: #e03c31;
+    color: #fff;
+}
+
+.devvn_content_table thead td {
+    padding: 15px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.devvn_content_table tbody td {
+    padding: 14px;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+    font-size: 14px;
+}
+
+.devvn_content_table tbody tr:hover {
+    background: #f9f9f9;
+}
+
+/* =========================
+   FOOTER BUTTON
+   ========================= */
+
+.devvn_caculated_footer {
+    padding: 25px;
+    text-align: center;
+    border-top: 1px solid #eee;
+}
+
+.devvn_caculated_close {
+    background: #e03c31;
+    color: #fff;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.devvn_caculated_close:hover {
+    background: #c12a22;
+}
+
+/* =========================
+   MOBILE
+   ========================= */
+
+@media (max-width: 768px) {
+
+    .form-tinh-lai {
+        padding: 25px;
+    }
+
+    .form-tinh-lai .row {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .devvn_caculated_body_left {
+        flex-direction: column;
+    }
+
+    .devvn_caculated_header h3 {
+        font-size: 22px;
+    }
+
+    .devvn_caculated_body_col p {
+        font-size: 20px;
+    }
+}
+</style>
 <?php if ( wp_is_mobile() ){ ?>
 <div class="clear" style="margin-top: 20px;"></div>
 <?php } ?>
-<h2 class="title-block">Tính lãi suất Ngân hàng</h2>
 <div class="form-tinh-lai clear">
+  <h2 class="title-block">Tính lãi suất Ngân hàng</h2>
 	<div class="row">
 		<input type="text" id="devvn_money" value="" placeholder="Số tiền vay">
 	</div>

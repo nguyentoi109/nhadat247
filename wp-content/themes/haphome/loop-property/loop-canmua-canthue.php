@@ -21,7 +21,9 @@
 ?>
 
 	<!-- article -->
-	<article id="post-<?php the_ID(); ?>" class="list-news wow fadeInUp"  >
+	<!-- <article id="post-<?php //the_ID(); ?>" class="list-news wow fadeInUp"  > -->
+		<article id="post-<?php the_ID(); ?>" class="list-news"  >
+
 
 		<!-- post thumbnail -->
 		<?php if ( has_post_thumbnail()) : // Check if thumbnail exists ?>

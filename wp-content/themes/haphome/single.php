@@ -46,7 +46,7 @@
 				<!-- <a class="link-download" title="<?= $file['name']; ?>" target="_blank"  href="<?= $file['url']; ?>">Tải file</a> -->
 			<?php endforeach ?>
 
-			<p class="cat-detail"><?php _e( 'Danh mục: ', 'html5blank' ); the_category(', ');?></p>	
+			<?php get_template_part('news/related-news'); ?>	
 
 			<!-- <p class="control-post"><?php //edit_post_link(); ?></p> -->
 

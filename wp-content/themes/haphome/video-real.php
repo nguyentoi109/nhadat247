@@ -9,7 +9,9 @@
 	if ($query->have_posts()): while ($query->have_posts()) : $query->the_post();
 
 ?>
-	<article id="post-<?php the_ID(); ?>" class="list-news swiper-slide wow fadeInUp"  >
+	<!-- <article id="post-<?php //the_ID(); ?>" class="list-news swiper-slide wow fadeInUp"  > -->
+		<article id="post-<?php the_ID(); ?>" class="list-news swiper-slide"  >
+
     <?php
       $price = rwmb_meta( 'prefix-price' );
       $area = rwmb_meta( 'prefix-area' );

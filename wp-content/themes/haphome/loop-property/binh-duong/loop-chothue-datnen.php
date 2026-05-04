@@ -1,48 +1,63 @@
 <?php
-	$query = new WP_Query(array(
-		'post_type'=>'property',
-		'tax_query' => array(
-			array(
-				'taxonomy' => 'property_status',
-				'field'    => 'term_id',
-				'terms'    => 7,
-			),
-			array(
-				'taxonomy' => 'property_type',
-				'field'    => 'term_id',
-				'terms'    => 10,
-			),
-			array(
-				'taxonomy' => 'property_location',
-				'field'    => 'term_id',
-				'terms'    => 12,
-			),
-		),
-		'post_status'=>'publish',
-		'orderby' => 'ID',
-		'order' => 'DESC',
-		'paged' => get_query_var( 'paged' ),
-		'posts_per_page'=> 20));
+$query = new WP_Query(array(
+    'post_type' => 'property',
+    'tax_query' => array(
+        array(
+            'taxonomy' => 'property_status',
+            'field' => 'term_id',
+            'terms' => 7,
+        ),
+        array(
+            'taxonomy' => 'property_type',
+            'field' => 'term_id',
+            'terms' => 10,
+        ),
+        array(
+            'taxonomy' => 'property_location',
+            'field' => 'term_id',
+            'terms' => 12,
+            'include_children' => true,
+        ),
+    ),
+    'post_status' => 'publish',
+    'orderby' => 'ID',
+    'order' => 'DESC',
+    'paged' => get_query_var('paged'),
+    'posts_per_page' => 20
+));
 
-	if ($query->have_posts()): while ($query->have_posts()) : $query->the_post();
-	
-	/* $price = rwmb_meta( 'prefix-price' );
-	$unit = rwmb_meta( 'prefix-unit' );
-	$area = rwmb_meta( 'prefix-area' ); */
+if ($query->have_posts()) :
+
+    $temp_query = $wp_query;
+    $wp_query = $query;
 ?>
 
-	<!-- article -->
-	<?php get_template_part('loop-property/item-property'); ?>
-	<!-- /article -->
+    <div class="list-style">
 
-<?php endwhile; wp_reset_postdata();;?>
-<?php if (function_exists('wp_pagenavi')) { wp_pagenavi( array( 'query' => $query ) ); } ?>
-<?php else: ?>
+        <?php while ($query->have_posts()) : $query->the_post(); ?>
 
-	<!-- article -->
-	<article>
-		<h2><?php _e( 'Không có nội dung.', 'html5blank' ); ?></h2>
-	</article>
-	<!-- /article -->
+            <?php get_template_part('loop-property/item-property'); ?>
 
-<?php endif; ?>
+        <?php endwhile; ?>
+
+    </div>
+
+    <div class="pagination">
+        <?php get_template_part('pagination'); ?>
+    </div>
+
+<?php
+    $wp_query = $temp_query;
+
+else :
+?>
+
+    <article>
+        <h2><?php _e('Không có nội dung.', 'html5blank'); ?></h2>
+    </article>
+
+<?php
+endif;
+
+wp_reset_postdata();
+?>

@@ -8,7 +8,7 @@
 	<div class="form-group">
 		<label for="" class="select-style">
 			<select name="property_status" class="form-control" id="">
-			<option value="0">--- Loại tin ---</option>
+			<option value="0">--- Loại BĐS ---</option>
 			<?php
 			$property_status = get_terms('property_status');
 			foreach ($property_status AS $term_status) :
@@ -86,24 +86,39 @@
 	</script>
 	
 <script>
-	(function ($, root, undefined) {
-	
-	$(function () {
-		
-		$('button[type="submit"]').click(function(e){
+(function ($, root, undefined) {
+
+$(function () {
+
+    $('.form-control').each(function () {
+        if ($(this).val() === "" || $(this).val() === "0") {
+            $(this).css('color', '#999');
+        } else {
+            $(this).css('color', '#000');
+        }
+    });
+
+    $('.form-control').change(function () {
+        if ($(this).val() === "" || $(this).val() === "0") {
+            $(this).css('color', '#999');
+        } else {
+            $(this).css('color', '#000');
+        }
+    });
+
+    $('button[type="submit"]').click(function(e){
         e.preventDefault();
         var property_location = $('#parent_location').val();
         var child_location = $('#child_location').val();
         if(child_location != ''){
-          property_location = child_location;
+            property_location = child_location;
         }
 
         $('#property_location').val(property_location);
         $('#form-search').submit();
-      });
-		
-	});
-	
-})(jQuery, this);
+    });
 
+});
+
+})(jQuery, this);
 </script>

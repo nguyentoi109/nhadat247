@@ -195,7 +195,8 @@ if (function_exists('register_sidebar'))
         'name' => __('widget-bottom 1', 'html5blank'),
         'description' => __('Description for this widget-area...', 'html5blank'),
         'id' => 'widget-bottom-1',
-        'before_widget' => '<div id="%1$s" class="%2$s col-bottom wow fadeInUp" data-wow-delay="0.3">',
+        // 'before_widget' => '<div id="%1$s" class="%2$s col-bottom wow fadeInUp" data-wow-delay="0.3">',
+        'before_widget' => '<div id="%1$s" class="%2$s col-bottom" data-wow-delay="0.3">',
         'after_widget' => '</div>',
         'before_title' => '<h3 class="title-widget"><span>',
         'after_title' => '</span></h3>'
@@ -205,7 +206,8 @@ if (function_exists('register_sidebar'))
         'name' => __('widget-bottom 2', 'html5blank'),
         'description' => __('Description for this widget-area...', 'html5blank'),
         'id' => 'widget-bottom-2',
-        'before_widget' => '<div id="%1$s" class="%2$s col-bottom wow fadeInUp" data-wow-delay="0.6">',
+        // 'before_widget' => '<div id="%1$s" class="%2$s col-bottom wow fadeInUp" data-wow-delay="0.6">',
+        'before_widget' => '<div id="%1$s" class="%2$s col-bottom" data-wow-delay="0.6">',
         'after_widget' => '</div>',
         'before_title' => '<h3 class="title-widget"><span>',
         'after_title' => '</span></h3>'
@@ -215,7 +217,8 @@ if (function_exists('register_sidebar'))
         'name' => __('widget bottom 3', 'html5blank'),
         'description' => __('Description for this widget-area...', 'html5blank'),
         'id' => 'widget-bottom-3',
-        'before_widget' => '<div id="%1$s" class="%2$s col-bottom wow fadeInUp" data-wow-delay="0.9">',
+        // 'before_widget' => '<div id="%1$s" class="%2$s col-bottom wow fadeInUp" data-wow-delay="0.9">',
+        'before_widget' => '<div id="%1$s" class="%2$s col-bottom" data-wow-delay="0.9">',
         'after_widget' => '</div>',
         'before_title' => '<h3 class="title-widget"><span>',
         'after_title' => '</span></h3>'

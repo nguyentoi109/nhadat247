@@ -1,4 +1,5 @@
-<article id="post-<?php the_ID(); ?>" class="list-news swiper-slide wow fadeInUp">
+<!-- <article id="post-<?php //the_ID(); ?>" class="list-news swiper-slide wow fadeInUp"> -->
+<article id="post-<?php the_ID(); ?>" class="list-news swiper-slide">
 
 <?php
 $post_id = get_the_ID();
@@ -59,28 +60,38 @@ $price = (float)$price;
       		<?php html5wp_excerpt('html5wp_index');?>
 			<div class="meta">
 				<span class="area">
-					<strong><span class="ti-ruler"></span>:</strong> <?php echo $area; ?> m<sup>2<sup>
+					<?php echo $area; ?> m<sup>2<sup>
 				</span> |
 				<span class="location">
-					<strong><span class="ti-location-pin"></span>:</strong>
+					<!-- <strong><span class="ti-location-pin"></span>:</strong> -->
 					<?php
-						$direction_terms = get_the_terms( $post->ID,"property_location" );
-						if(!empty( $direction_terms )){
-							$direction_count = 0;
-							foreach( $direction_terms as $term ){
-								if( $direction_count > 0 ){
-									echo ', ';
-								}
-								echo $term->name;
+					$direction_terms = get_the_terms($post->ID, "property_location");
+
+					if (!empty($direction_terms)) {
+						$direction_count = 0;
+
+						foreach ($direction_terms as $term) {
+
+							if ($direction_count > 0) {
+								echo ', ';
 							}
-						}else{
-							echo '&nbsp;';
+
+							echo $term->name;
+
+							$direction_count++; 
 						}
-					?>					 
+
+					} else {
+						echo '&nbsp;';
+					}
+					?>
 				</span> | 
 				<span class="direction">
-					<strong><span class="ti-direction-alt"></span>:</strong>					
-					<?php
+					<img src="<?php echo get_template_directory_uri(); ?>/img/icons/direction.png" 
+							alt="Direction Icon" 
+							style="width: 15px; height: 15px; vertical-align: middle; margin-right: 5px;">
+						<strong>:</strong>					
+						<?php
 						$direction_terms = get_the_terms( $post->ID,"property_direction" );
 						if(!empty( $direction_terms )){
 							$direction_count = 0;
@@ -106,7 +117,28 @@ $price = (float)$price;
 				?>
 
 			  </div>
-			  <div class="date"><span class="ti-calendar"></span> <?php //the_time('d/m/Y'); ?>Hôm nay</div>
+				<div class="date">
+					<span class="ti-calendar"></span> 
+					<?php 
+						$post_timestamp = get_the_time('U');
+						$current_timestamp = current_time('timestamp');
+
+						$post_date = date('Y-m-d', $post_timestamp);
+						$today = date('Y-m-d', $current_timestamp);
+						$yesterday = date('Y-m-d', strtotime('-1 day', $current_timestamp));
+						$two_days_ago = date('Y-m-d', strtotime('-2 days', $current_timestamp));
+
+						if ( $post_date == $today ) {
+							echo 'Hôm nay';
+						} elseif ( $post_date == $yesterday ) {
+							echo '1 ngày trước';
+						} elseif ( $post_date == $two_days_ago ) {
+							echo '2 ngày trước';
+						} else {
+							the_time('d/m/Y');
+						}
+					?>
+				</div>
 			</div>
 		</div>
 		<div class="side-content">
