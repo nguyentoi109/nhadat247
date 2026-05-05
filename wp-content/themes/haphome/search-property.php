@@ -1,7 +1,8 @@
 <?php get_header(); ?>
 
 <section class="container wrap-content">
-    <main role="main" class="full-page">
+	<main role="main" class="full-page" style=" margin-left: 90px">
+
 
         <p class="notify">
             <?php echo sprintf(__('Hiện có %s bất động sản', 'html5blank'), $wp_query->found_posts); ?>

@@ -1,6 +1,6 @@
 <?php
 /*
-Template Name: Trang Vũng Tàu
+Template Name: Trang Bình Dương
 */
 get_header();
 ?>
@@ -24,7 +24,7 @@ get_header();
                     array(
                         'taxonomy' => 'property_location',
                         'field'    => 'term_id',
-                        'terms'    => 14 
+                        'terms'    => 12 
                     )
                 )
 			));

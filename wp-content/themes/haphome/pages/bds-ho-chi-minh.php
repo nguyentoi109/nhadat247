@@ -1,6 +1,6 @@
 <?php
 /*
-Template Name: Trang Vũng Tàu
+Template Name: Trang thành phố Hồ Chí Minh
 */
 get_header();
 ?>
@@ -24,7 +24,7 @@ get_header();
                     array(
                         'taxonomy' => 'property_location',
                         'field'    => 'term_id',
-                        'terms'    => 14 
+                        'terms'    => 54 
                     )
                 )
 			));
@@ -51,20 +51,20 @@ get_header();
 						<!-- PRICE -->
 						<div class="header-list-news">
 							<span class="price">
-								<strong>
-									<span class="ti-tag"></span> Giá:
-									<span class="num">
-										<?php 
-										if (!empty($price)) {
-											echo number_format($price, 0, ",", ".");
-										} else {
-											echo 'Liên hệ';
-										}
-										?>
-									</span>
-									<span class="unit"><?php echo $unit; ?></span>
-								</strong>
-							</span>
+                                <strong><span class="ti-tag"></span>Giá: </strong>
+
+                                <span class="num">
+                                    <?php echo $price > 0 ? number_format($price, 0, ",", ".") : 'Liên hệ'; ?>
+                                </span>
+
+                                <?php
+                                if ($price > 0) {
+                                    if ($unit == 'trieu') echo ' triệu';
+                                    elseif ($unit == 'ty') echo ' tỷ';
+                                    else echo ' đ';
+                                }
+                                ?>
+                            </span>
 						</div>
 
 						<!-- IMAGE -->
@@ -130,7 +130,7 @@ get_header();
 						<!-- RIGHT -->
 						<div class="side-content">
 
-							<span class="price">
+                            <span class="price">
                                 <strong><span class="ti-tag"></span>Giá: </strong>
 
                                 <span class="num">

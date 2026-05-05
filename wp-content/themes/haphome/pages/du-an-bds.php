@@ -1,7 +1,8 @@
 <?php
 /*
-Template Name: Dự Án
+Template Name: Dự án BDS
 */
+
 get_header();
 ?>
 <section class="container wrap-content">
@@ -24,7 +25,7 @@ get_header();
                     array(
                         'taxonomy' => 'property_type',
                         'field'    => 'term_id',
-                        'terms'    => 54
+                        'terms'    => array(71,72,73) 
                     )
                 )
 			));
@@ -51,20 +52,20 @@ get_header();
 						<!-- PRICE -->
 						<div class="header-list-news">
 							<span class="price">
-								<strong>
-									<span class="ti-tag"></span> Giá:
-									<span class="num">
-										<?php 
-										if (!empty($price)) {
-											echo number_format($price, 0, ",", ".");
-										} else {
-											echo 'Liên hệ';
-										}
-										?>
-									</span>
-									<span class="unit"><?php echo $unit; ?></span>
-								</strong>
-							</span>
+                                <strong><span class="ti-tag"></span>Giá: </strong>
+
+                                <span class="num">
+                                    <?php echo $price > 0 ? number_format($price, 0, ",", ".") : 'Liên hệ'; ?>
+                                </span>
+
+                                <?php
+                                if ($price > 0) {
+                                    if ($unit == 'trieu') echo ' triệu';
+                                    elseif ($unit == 'ty') echo ' tỷ';
+                                    else echo ' đ';
+                                }
+                                ?>
+                            </span>
 						</div>
 
 						<!-- IMAGE -->
@@ -130,20 +131,21 @@ get_header();
 						<!-- RIGHT -->
 						<div class="side-content">
 
-							<span class="price">
-								<strong>
-									<span class="ti-tag"></span> Giá:
-									<span class="num">
-										<?php 
-										if (!empty($price)) {
-											echo number_format($price, 0, ",", ".");
-										} else {
-											echo 'Liên hệ';
-										}
-										?>
-									</span>
-								</strong>
-							</span>
+                            <span class="price">
+                                <strong><span class="ti-tag"></span>Giá: </strong>
+
+                                <span class="num">
+                                    <?php echo $price > 0 ? number_format($price, 0, ",", ".") : 'Liên hệ'; ?>
+                                </span>
+
+                                <?php
+                                if ($price > 0) {
+                                    if ($unit == 'trieu') echo ' triệu';
+                                    elseif ($unit == 'ty') echo ' tỷ';
+                                    else echo ' đ';
+                                }
+                                ?>
+                            </span>
 
 							<a href="<?php the_permalink(); ?>" class="btn">Xem chi tiết</a>
 						</div>

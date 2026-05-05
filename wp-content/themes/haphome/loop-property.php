@@ -90,12 +90,20 @@
     </div>
 
     <div class="side-content">
-        <span class="price">
-            <strong>
-                <span class="ti-tag"></span>Giá: 
-                <span class="num"><?php echo $price ? number_format($price, 0, ",", ".") : 'Liên hệ'; ?></span>
-                <span class="unit"><?php echo esc_html($unit); ?></span>
-            </strong>
+       <span class="price">
+            <strong><span class="ti-tag"></span>Giá: </strong>
+
+            <span class="num">
+                <?php echo $price > 0 ? number_format($price, 0, ",", ".") : 'Liên hệ'; ?>
+            </span>
+
+            <?php
+            if ($price > 0) {
+                if ($unit == 'trieu') echo ' triệu';
+                elseif ($unit == 'ty') echo ' tỷ';
+                else echo ' đ';
+            }
+            ?>
         </span>
 
         <?php if (!empty($post_link) && is_array($post_link)) : ?>

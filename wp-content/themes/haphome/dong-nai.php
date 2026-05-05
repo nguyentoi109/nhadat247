@@ -5,7 +5,7 @@ Template Name: Trang Đồng Nai
 get_header();
 ?>
 <section class="container wrap-content">
-	<main role="main" class="full-page">
+	<main role="main" class="full-page page-template">
 
 		<div class="list-style list-all">
 
@@ -24,7 +24,7 @@ get_header();
                     array(
                         'taxonomy' => 'property_location',
                         'field'    => 'term_id',
-                        'terms'    => 77 
+                        'terms'    => 74 
                     )
                 )
 			));
@@ -131,19 +131,20 @@ get_header();
 						<div class="side-content">
 
 							<span class="price">
-								<strong>
-									<span class="ti-tag"></span> Giá:
-									<span class="num">
-										<?php 
-										if (!empty($price)) {
-											echo number_format($price, 0, ",", ".");
-										} else {
-											echo 'Liên hệ';
-										}
-										?>
-									</span>
-								</strong>
-							</span>
+                                <strong><span class="ti-tag"></span>Giá: </strong>
+
+                                <span class="num">
+                                    <?php echo $price > 0 ? number_format($price, 0, ",", ".") : 'Liên hệ'; ?>
+                                </span>
+
+                                <?php
+                                if ($price > 0) {
+                                    if ($unit == 'trieu') echo ' triệu';
+                                    elseif ($unit == 'ty') echo ' tỷ';
+                                    else echo ' đ';
+                                }
+                                ?>
+                            </span>
 
 							<a href="<?php the_permalink(); ?>" class="btn">Xem chi tiết</a>
 						</div>

@@ -28,13 +28,13 @@
 		<?php endif; ?>
 		<div class="item item-banner" style="position: relative; width: 100%; height: 0; padding-top: 141.4286%; padding-bottom: 48px; overflow: hidden; border-radius: 8px;">
     
-			<a href="https://batdongsan.com.vn/" 
+			<a href="https://muadatgiacao.net/" 
 			target="_blank" 
 			rel="noopener noreferrer" 
 			referrerpolicy="no-referrer"
 			style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; z-index: 999; display: block;">
 				
-				<img src="<?php echo get_template_directory_uri(); ?>/img/image.png" 
+				<img src="<?php echo get_template_directory_uri(); ?>/img/ad_banner_top.png" 
 					alt="Banner" 
 					style="width: 100%; height: 100%; object-fit: cover; image-rendering: -webkit-optimize-contrast;">
 					

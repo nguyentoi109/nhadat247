@@ -8023,7 +8023,7 @@ border-radius .read-more a:hover {
 }
 .footer-link .container .list-link li a {
   display: block;
-  font-size: 14px;
+  font-size: 12px;
   line-height: 20px;
   font-weight: normal;
 }
@@ -9221,6 +9221,7 @@ select.form-control option {
     overflow: hidden;
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     transition: transform 0.3s ease;
+    margin-bottom: 3px;
 }
 
 .item-property-horizontal:hover {

@@ -203,35 +203,32 @@
             <h2 class="title-box-detail">Thông tin Bất động sản</h2>
             <ul class="list-detail-real">
                 <li>
-                    <span class="label"><span class="ti-location-pin"></span> Khu vực:</span>
+                    <span class="label">
+                        <span class="ti-location-pin"></span> Khu vực:
+                    </span>
                     <?php
-						$status_terms = get_the_terms( $post->ID,"property_location" );
-						if(!empty( $status_terms )){
-							$status_count = 0;
-							foreach( $status_terms as $term ){
-								if( $status_count > 0 ){
-									echo ', ';
-								}
-								echo $term->name;
-							}
-						}
-					?>
+                    $terms = get_the_terms(get_the_ID(), "property_location");
+                    echo (!empty($terms) && !is_wp_error($terms))
+                        ? implode(', ', wp_list_pluck($terms, 'name'))
+                        : '---';
+                    ?>
                 </li>
-                <li><span class="label"><span class="ti-map-alt"></span> Địa chỉ:</span><?php echo $address; ?></li>
+                 <li>
+                    <span class="label">
+                        <span class="ti-map-alt"></span> Địa chỉ:
+                    </span>
+                    <?php echo !empty($address) ? esc_html($address) : '---'; ?>
+                </li>
                 <li>
-                    <span class="label"><span class="ti-direction-alt"></span> Hướng:</span>
+                    <span class="label">
+                        <span class="ti-direction-alt"></span> Hướng:
+                    </span>
                     <?php
-						$status_terms = get_the_terms( $post->ID,"property_direction" );
-						if(!empty( $status_terms )){
-							$status_count = 0;
-							foreach( $status_terms as $term ){
-								if( $status_count > 0 ){
-									echo ', ';
-								}
-								echo $term->name;
-							}
-						}
-					?>
+                    $terms = get_the_terms(get_the_ID(), "property_direction");
+                    echo (!empty($terms) && !is_wp_error($terms))
+                        ? implode(', ', wp_list_pluck($terms, 'name'))
+                        : '---';
+                    ?>
                 </li>
                 <li>
                     <span class="label"><span class="ti-menu-alt"></span> Loại tin:</span>
@@ -248,20 +245,16 @@
 						}
 					?>
                 </li>
-                <li>
-                    <span class="label"><span class="ti-menu-alt"></span> Loại BĐS:</span>
+                 <li>
+                    <span class="label">
+                        <span class="ti-menu-alt"></span> Loại BĐS:
+                    </span>
                     <?php
-						$status_terms = get_the_terms( $post->ID,"property_type" );
-						if(!empty( $status_terms )){
-							$status_count = 0;
-							foreach( $status_terms as $term ){
-								if( $status_count > 0 ){
-									echo ', ';
-								}
-								echo $term->name;
-							}
-						}
-					?>
+                    $terms = get_the_terms(get_the_ID(), "property_type");
+                    echo (!empty($terms) && !is_wp_error($terms))
+                        ? implode(', ', wp_list_pluck($terms, 'name'))
+                        : '---';
+                    ?>
                 </li>
                 <li><span class="label"><span class="ti-ruler"></span> Diện tích:</span><?php echo $area; ?> m
                     <sup>2</sup>
