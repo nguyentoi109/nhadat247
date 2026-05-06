@@ -23,9 +23,9 @@ get_header();
 
                 'tax_query' => array(
                     array(
-                        'taxonomy' => 'property_type',
+                        'taxonomy' => 'property_developer',
                         'field'    => 'term_id',
-                        'terms'    => array(71,72) 
+                        'terms'    => 112
                     )
                 )
 			));

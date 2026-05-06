@@ -3,9 +3,9 @@ $query = new WP_Query(array(
     'post_type' => 'property',
     'tax_query' => array(
         array(
-            'taxonomy' => 'property_type',
+            'taxonomy' => 'property_developer',
             'field' => 'term_id',
-            'terms' => 72,
+            'terms' => 115,
         ),
     ),
     'post_status' => 'publish',
