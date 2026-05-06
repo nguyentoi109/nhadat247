@@ -62,7 +62,7 @@ get_header();
 </section>
 
 
-<?php if(wp_is_mobile()){ ?>
+<!-- <?php //if(wp_is_mobile()){ ?>
     <div style="position: relative; width: 100%; height: 0; padding-top: 50.0000%;
  padding-bottom: 48px; box-shadow: 0 2px 8px 0 rgba(63,69,81,0.16); margin-bottom: 0.9em; overflow: hidden;  will-change: transform;">
  <a title="BÁN NHANH 5 NỀN NGAY KCN NAM ĐỒNG PHÚ SỔ SẴN GIÁ CHỈ RẺ NHẤT THỊ TRƯỜNG
@@ -71,7 +71,7 @@ get_header();
     src="https:&#x2F;&#x2F;www.canva.com&#x2F;design&#x2F;DAFKKPxFiGY&#x2F;view?embed" allowfullscreen="allowfullscreen" allow="fullscreen">
   </iframe>
 </div>
-<?php } ?>
+<?php?> -->
 
 <h2 class="title-section"><span>Bất động sản mới nhất</span></h2>
 <section class="list-style list-all container">

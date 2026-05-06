@@ -1,7 +1,7 @@
 <?php get_header(); ?>
 
 <section class="container wrap-content">
-	<main role="main" class="full-page" style=" margin-left: 90px">
+	<main role="main" class="full-page">
 
 
         <p class="notify">

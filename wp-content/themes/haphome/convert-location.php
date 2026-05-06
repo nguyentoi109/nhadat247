@@ -280,6 +280,10 @@ get_header(); ?>
         .cv-col-4 { 
             width: 100% !important; 
         }
+        .res-grid {
+        flex-direction: column !important;
+        gap: 15px;
+        }
     }
     
 </style>
@@ -331,18 +335,23 @@ get_header(); ?>
             <h3 class="res-title">Kết quả chuyển đổi</h3>
             <div class="res-grid">
                 <div class="res-card card-old">
-                    <!-- <span class="tag-date">Trước 01/07/2025</span> -->
                     <h4 style="color: #6c757d;">Địa chỉ cũ</h4>
-                    <p><b>Tỉnh/Thành phố:</b> <span id="old_p"></span></p>
-                    <p><b>Quận/Huyện:</b> <span id="old_d"></span></p>
-                    <p><b>Phường/Xã:</b> <span id="old_w"></span></p>
+                    <p>
+                        <b>Địa chỉ:</b> 
+                        <span id="old_w"></span>, 
+                        <span id="old_d"></span>, 
+                        <span id="old_p"></span>
+                    </p>
                 </div>
 
                 <div class="res-card card-new">
                     <!-- <span class="tag-date">Sau 01/07/2025</span> -->
-                    <h4 style="color: #198754;">Địa chỉ mới</h4>
-                    <p><b>Tỉnh/Thành phố:</b> <span id="new_p" style="font-weight: 700;"></span></p>
-                    <p><b>Phường/Xã:</b> <span id="new_w" style="font-weight: 800;"></span></p>
+                    <h4 style="color: #198754;">Địa chỉ mới</h4> 
+                    <p>
+                        <b>Địa chỉ:</b> 
+                        <span id="new_w" style="font-weight: 800;"></span>, 
+                        <span id="new_p" style="font-weight: 700;"></span>
+                    </p>
                     
                     <div id="mapping_details">
                         <span class="mapping-label">Nguồn gốc gộp tỉnh</span>

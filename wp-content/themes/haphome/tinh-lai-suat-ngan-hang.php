@@ -214,9 +214,13 @@
         padding: 25px;
     }
 
+    .form-tinh-lai .row .left,
+    .form-tinh-lai .row .right {
+        flex: 1;
+    }
+
     .form-tinh-lai .row {
-        flex-direction: column;
-        gap: 15px;
+        flex-direction: row !important;
     }
 
     .devvn_caculated_body_left {
