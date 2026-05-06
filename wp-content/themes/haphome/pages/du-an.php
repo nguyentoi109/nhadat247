@@ -1,6 +1,6 @@
 <?php
 /*
-Template Name: Dự án BDS
+Template Name: Dự án
 */
 
 get_header();
