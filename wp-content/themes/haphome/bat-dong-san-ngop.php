@@ -5,7 +5,7 @@ $query = new WP_Query(array(
         array(
             'taxonomy' => 'property_type',
             'field'    => 'term_id',
-            'terms'    => 70,
+            'terms'    => 135,
         ),
     ),
     'orderby' => 'date',

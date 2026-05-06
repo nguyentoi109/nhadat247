@@ -10,7 +10,7 @@ $query = new WP_Query(array(
         array(
             'taxonomy' => 'property_location',
             'field' => 'term_id',
-            'terms' => 74,
+            'terms' => 136,
             'include_children' => true,
         ),
     ),

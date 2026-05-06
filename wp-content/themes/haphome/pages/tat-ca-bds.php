@@ -1,11 +1,11 @@
 <?php
 /*
-Template Name: Trang Đồng Nai
+Template Name: Tất cả BDS
 */
 get_header();
 ?>
 <section class="container wrap-content">
-	<main role="main" class="full-page page-template">
+	<main role="main" class="full-page">
 
 		<div class="list-style list-all">
 
@@ -19,15 +19,8 @@ get_header();
                 'order'          => 'DESC',
                 'paged'          => $paged,
                 'posts_per_page' => 20,
-
-                'tax_query' => array(
-                    array(
-                        'taxonomy' => 'property_location',
-                        'field'    => 'term_id',
-                        'terms'    => 136 
-                    )
                 )
-			));
+			);
 			?>
 
 			<?php if ($query->have_posts()) : ?>

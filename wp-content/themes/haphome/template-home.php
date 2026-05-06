@@ -79,7 +79,7 @@ get_header();
 </section>
 
 <p class="read-more">
-	<a href="<?php echo home_url('dat-binh-duong'); ?>"> Xem tất cả </a>
+	<a href="<?php echo home_url('tat-ca'); ?>"> Xem tất cả </a>
 </p>
 
 

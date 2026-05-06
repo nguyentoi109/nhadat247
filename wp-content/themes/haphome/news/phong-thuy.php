@@ -34,7 +34,7 @@
 			referrerpolicy="no-referrer"
 			style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; z-index: 999; display: block;">
 				
-				<img src="<?php echo get_template_directory_uri(); ?>/img/ad_banner_top.png" 
+				<img src="<?php echo get_template_directory_uri(); ?>/img/ad_banner_top.webp" 
 					alt="Banner" 
 					style="width: 100%; height: 100%; object-fit: cover; image-rendering: -webkit-optimize-contrast;">
 					
