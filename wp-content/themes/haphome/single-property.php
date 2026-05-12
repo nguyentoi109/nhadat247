@@ -1,3 +1,162 @@
+<style>
+.description.block-detail img{
+    text-align:center;
+}
+
+/* Chỉ style cho ảnh */
+.description.block-detail p img,
+.description.block-detail figure img{
+    display:block;
+    margin:auto;
+
+    background:#d9d9d9;
+    padding:2px;
+
+    max-height:350px;
+    width:100%;
+    max-width:100%;
+
+    object-fit:contain;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.description.block-detail p img:hover,
+.description.block-detail figure img:hover{
+    opacity:0.85;
+}
+
+/* Popup */
+.image-popup{
+    display:none;
+    position:fixed;
+    z-index:99999;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.9);
+
+    justify-content:center;
+    align-items:center;
+
+    padding:30px;
+    box-sizing:border-box;
+}
+
+.popup-image-wrapper{
+    width:100%;
+    height:100%;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+.image-popup img{
+    max-width:60%;
+    max-height:60%;
+
+    width:auto;
+    height:auto;
+
+    object-fit:contain;
+    display:block;
+}
+
+.close-popup{
+    position:absolute;
+    top:15px;
+    right:30px;
+    color:#fff;
+    font-size:42px;
+    cursor:pointer;
+    z-index:2;
+}
+#gallerys .swiper,
+#gallerys .swiper-wrapper,
+#gallerys .swiper-slide{
+    height:auto !important;
+}
+
+#gallerys .swiper-slide{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+#gallerys .swiper-slide img{
+    width:100% !important;
+    height:auto !important;
+    max-height:none !important;
+    object-fit:cover !important;
+    display:block;
+}
+
+/* MOBILE */
+@media screen and (max-width:768px){
+
+    .info-contact-fixed{
+        position:fixed !important;
+        left:0 !important;
+        bottom:0 !important;
+
+        width:100% !important;
+
+        display:flex !important;
+        align-items:center !important;
+
+        padding:12px !important;
+
+        background:#fff !important;
+
+        box-shadow:0 -2px 12px rgba(0,0,0,0.15) !important;
+
+        z-index:999999999 !important;
+
+        gap:12px !important;
+
+        border-top-left-radius:14px;
+        border-top-right-radius:14px;
+
+        visibility:visible !important;
+        opacity:1 !important;
+    }
+
+    .info-contact-fixed .avata-user{
+        flex-shrink:0;
+    }
+
+    .info-contact-fixed .avata-user img{
+        width:55px !important;
+        height:55px !important;
+
+        border-radius:50%;
+        object-fit:cover;
+    }
+
+    .info-contact-fixed .info-user{
+        flex:1;
+        overflow:hidden;
+    }
+
+    .info-contact-fixed .info-user p{
+        margin:2px 0;
+        font-size:12px;
+        line-height:1.4;
+
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+    }
+
+    body{
+        padding-bottom:120px !important;
+    }
+}
+</style>
 <?php get_header(); ?>
 <!--breadcrumbs-->
 
@@ -199,6 +358,13 @@
             <div class="description block-detail">
                 <?php the_content(); ?>
             </div>
+            <div id="imagePopup" class="image-popup">
+                <span class="close-popup">&times;</span>
+
+                <div class="popup-image-wrapper">
+                    <img id="popupImage" src="" alt="">
+                </div>
+            </div>
 
             <h2 class="title-box-detail">Thông tin Bất động sản</h2>
             <ul class="list-detail-real">
@@ -361,3 +527,79 @@
 	//get_template_part('footer-contact-mobile-detail');	
 	//get_footer('single-property'); 
 ?>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const images = document.querySelectorAll(
+        ".description.block-detail > p img, .description.block-detail > figure img"
+    );
+
+    const popup = document.getElementById("imagePopup");
+    const popupImg = document.getElementById("popupImage");
+    const closeBtn = document.querySelector(".close-popup");
+
+    images.forEach(img => {
+
+        // wrapper ngoài ảnh
+        let wrapper = document.createElement("div");
+        wrapper.style.position = "relative";
+        wrapper.style.display = "inline-block";
+        wrapper.style.width = "100%";
+
+        // bọc ảnh
+        img.parentNode.insertBefore(wrapper, img);
+        wrapper.appendChild(img);
+
+        // icon zoom
+        let zoomIcon = document.createElement("div");
+        zoomIcon.innerHTML = "⛶";
+
+        zoomIcon.style.position = "absolute";
+        zoomIcon.style.top = "10px";
+        zoomIcon.style.right = "10px";
+
+        zoomIcon.style.width = "36px";
+        zoomIcon.style.height = "36px";
+
+        zoomIcon.style.background = "rgba(0,0,0,0.6)";
+        zoomIcon.style.color = "#fff";
+
+        zoomIcon.style.display = "flex";
+        zoomIcon.style.alignItems = "center";
+        zoomIcon.style.justifyContent = "center";
+
+        zoomIcon.style.borderRadius = "50%";
+        zoomIcon.style.cursor = "pointer";
+        zoomIcon.style.fontSize = "18px";
+        zoomIcon.style.zIndex = "5";
+
+        wrapper.appendChild(zoomIcon);
+
+        // hàm mở popup
+        function openPopup() {
+            popup.style.display = "flex";
+            popupImg.src = img.src;
+        }
+
+        // click icon
+        zoomIcon.addEventListener("click", openPopup);
+
+        // click ảnh
+        img.addEventListener("click", openPopup);
+
+    });
+
+    // đóng popup
+    closeBtn.addEventListener("click", function () {
+        popup.style.display = "none";
+    });
+
+    // click nền đen để đóng
+    popup.addEventListener("click", function (e) {
+        if (e.target === popup) {
+            popup.style.display = "none";
+        }
+    });
+
+});
+</script>

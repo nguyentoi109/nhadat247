@@ -142,30 +142,39 @@
     font-weight: 700;
     color: #e03c31;
 }
-
 /* =========================
-   TABLE
+   TABLE SCROLL ONLY CONTENT
    ========================= */
 
 .devvn_content_table {
-    overflow-x: auto;
+    width: 100%;
 }
 
 .devvn_content_table table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 900px;
+    table-layout: fixed;
 }
 
 .devvn_content_table thead {
-    background: #e03c31;
+    background: #8b0000;
     color: #fff;
+    display: table;
+    width: 100%;
+    table-layout: fixed;
 }
 
 .devvn_content_table thead td {
     padding: 15px;
     font-weight: 700;
     text-align: center;
+}
+
+.devvn_content_table tbody {
+    display: block;
+    max-height: 400px; /* chiều cao scroll */
+    overflow-y: auto;
+    width: 100%;
 }
 
 .devvn_content_table tbody td {
@@ -175,8 +184,23 @@
     font-size: 14px;
 }
 
+.devvn_content_table tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
 .devvn_content_table tbody tr:hover {
     background: #f9f9f9;
+}
+
+.devvn_content_table thead td,
+.devvn_content_table tbody td {
+    padding: 14px;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+    font-size: 14px;
+    word-break: break-word;
 }
 
 /* =========================

@@ -1,3 +1,28 @@
+<style>
+	.item-banner{
+    position: relative;
+    z-index: 1;
+}
+
+/* tránh đè lên header khi scroll */
+.item-banner a{
+    z-index: 1 !important;
+}
+
+/* nếu img hoặc parent bị fixed */
+.item-banner img{
+    position: relative;
+    z-index: 1;
+}
+	@media(max-width:768px){
+
+    .item-banner{
+        display:none !important;
+    }
+}
+</style>
+
+
 <section class="featured-post clear">
 	<h2 class="title-section"><a href="<?php echo home_url('phong-thuy'); ?>"> Phong thủy </a></h2>
 	<div class="list-post">
@@ -26,19 +51,6 @@
 		
 		<?php endwhile; wp_reset_query();?>
 		<?php endif; ?>
-		<div class="item item-banner" style="position: relative; width: 100%; height: 0; padding-top: 141.4286%; padding-bottom: 48px; overflow: hidden; border-radius: 8px;">
-    
-			<a href="https://muadatgiacao.net/" 
-			target="_blank" 
-			rel="noopener noreferrer" 
-			referrerpolicy="no-referrer"
-			style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; z-index: 999; display: block;">
-				
-				<img src="<?php echo get_template_directory_uri(); ?>/img/ad_banner_top.webp" 
-					alt="Banner" 
-					style="width: 100%; height: 100%; object-fit: cover; image-rendering: -webkit-optimize-contrast;">
-					
-			</a>
-		</div>
+		<?php include(locate_template('banner-sidebar.php')); ?>
 	</div>
 </section>
