@@ -1,5 +1,96 @@
 <!doctype html>
 <html <?php language_attributes(); ?> class="no-js">
+<style>
+@media (max-width: 1024px) {
+        .mobile-nav .menu-item {
+            position: relative;
+            border-bottom: 1px solid #eee;
+        }
+
+        .mobile-nav .menu-item > a {
+            display: block;
+            padding: 14px 45px 14px 16px;
+            color: #111;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        #menu-item-1872 > a{
+            color: #debe20;
+            text-align: center;
+            font-family: 'Lexend', Roboto, Arial !important;
+            font-size: 18px;
+            line-height: 20px;
+            font-weight: normal;
+        }
+
+        .mobile-nav .submenu-toggle {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 44px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 700;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .mobile-nav .sub-menu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: #f8f8f8;
+        }
+
+        .mobile-nav .sub-menu li a {
+            padding-left: 28px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .mobile-nav .sub-menu .sub-menu li a {
+            padding-left: 42px;
+            font-size: 14px;
+            color: #f8f8f8;
+        }
+
+        .mobile-nav .menu-item.active > a {
+            color: #0aa;
+        }
+    }
+
+    @media (min-width: 1025px) {
+        .mobile-menu, .mobile-menu-close, .submenu-toggle {
+            display: none !important;
+        }
+        .sub-menu {
+            max-height: none !important;
+            overflow: visible !important;
+        }
+        .submenu-toggle{
+            position:absolute;
+            top:0;
+            right:0;
+            width:44px;
+            height:8px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            cursor:pointer;
+            font-size:14px;
+            color:#555;
+            transition:0.3s;
+        }
+
+        .menu-item.active > .submenu-toggle{
+            transform:rotate(180deg);
+        }
+    }
+</style>
 
 <head>
     <meta name="theme-color" content="#D70018" />
@@ -119,9 +210,75 @@
         <section class="wrap-nav">
             <span class="mobile-menu-close">&times;</span>
             <!-- nav -->
-            <nav class="nav container" role="navigation">
-                <?php html5blank_nav(); ?>
+            <nav class="nav container mobile-nav" role="navigation">
+                    <?php html5blank_nav(); ?>
             </nav>
             <!-- /nav -->
         </section>
         <!--End Main menu-->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    document.querySelectorAll('.mobile-nav .menu-item-has-children').forEach(function(item){
+
+        if (!item.querySelector('.submenu-toggle')) {
+            let toggle = document.createElement('span');
+            toggle.className = 'submenu-toggle';
+            toggle.innerHTML = '<span class="ti-angle-down"></span>';
+            item.appendChild(toggle);
+        }
+    });
+
+    function updateParentHeight(element, isOpening){
+
+        let parentSubmenu = element.parentElement.closest('.sub-menu');
+
+        if(parentSubmenu){
+
+            if(isOpening){
+
+                parentSubmenu.style.maxHeight = "2000px";
+
+            }else{
+
+                parentSubmenu.style.maxHeight =
+                    parentSubmenu.scrollHeight + "px";
+            }
+
+            updateParentHeight(parentSubmenu, isOpening);
+        }
+    }
+
+    document.querySelectorAll('.mobile-nav .submenu-toggle').forEach(function(toggle){
+
+        toggle.addEventListener('click', function(e){
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            let parentLi = this.parentElement;
+
+            let submenu = parentLi.querySelector(':scope > .sub-menu');
+
+            if(parentLi.classList.contains('active')){
+                parentLi.classList.remove('active');
+                submenu.style.maxHeight = null;
+                this.innerHTML = '<span class="ti-angle-down"></span>';
+
+                updateParentHeight(submenu, false);
+
+            }else{
+
+                parentLi.classList.add('active');
+
+                submenu.style.maxHeight =
+                    submenu.scrollHeight + "px";
+
+                this.innerHTML = '<span class="ti-angle-up"></span>';
+
+                updateParentHeight(submenu, true);
+            }
+        });
+     });
+});
+</script>

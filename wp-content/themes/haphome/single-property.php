@@ -111,11 +111,9 @@
         display:flex;
         align-items:center;
         gap:12px;
+        z-index: 9;
 
         padding:10px 12px;
-
-        /* z-index:99; */
-
         box-shadow:0 -2px 10px rgba(0,0,0,0.15);
     }
 
@@ -623,7 +621,7 @@
 
             <img src="<?php echo get_template_directory_uri(); ?>/img/zalo.jpg" alt="Zalo">
 
-            <span>Chat Zalo</span>
+            <span>Zalo</span>
         </a>
 
         <a href="tel:<?php echo $phone_clean; ?>" class="call-btn">
