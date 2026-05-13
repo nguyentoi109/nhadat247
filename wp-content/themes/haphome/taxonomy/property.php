@@ -260,24 +260,23 @@ function property_meta_box( $meta_boxes ) {
 		'autosave' => 'false',
 		'fields' => array(
 			array(
-				'id' => $prefix . 'price',
-				'type' => 'number',
-				'name' => esc_html__( 'Giá', 'html5blank' ),
-				'desc' => esc_html__( 'Giá Bất Động Sản', 'html5blank' ),
-				'placeholder' => esc_html__( 'Giá', 'html5blank' ),
-                'columns' => 6,
-			),
-			array(
-				'id' => $prefix . 'unit',
-				'type' => 'select',
-				'name' => esc_html__( 'Đơn vị tiền', 'html5blank' ),
-				'desc' => esc_html__( 'Chọn đơn vị tiền (Triệu/Tỷ)', 'html5blank' ),
-				'options' => [
-              '' => esc_html__( 'Chọn đơn vị tiền', 'html5blank' ),
-              'trieu' => esc_html__( 'Triệu', 'html5blank' ),
-              'ty' => esc_html__( 'Tỷ', 'html5blankr' ),
-          ],
-			),
+                'id' => $prefix . 'price',
+                'type' => 'text',
+                'name' => esc_html__( 'Giá', 'html5blank' ),
+                'desc' => esc_html__( 'Giá Bất Động Sản', 'html5blank' ),
+                'placeholder' => 'Ví dụ: 1.500.000.000',
+            ),
+		// 	array(
+		// 		'id' => $prefix . 'unit',
+		// 		'type' => 'select',
+		// 		'name' => esc_html__( 'Đơn vị tiền', 'html5blank' ),
+		// 		'desc' => esc_html__( 'Chọn đơn vị tiền (Triệu/Tỷ)', 'html5blank' ),
+		// 		'options' => [
+        //       '' => esc_html__( 'Chọn đơn vị tiền', 'html5blank' ),
+        //       'trieu' => esc_html__( 'Triệu', 'html5blank' ),
+        //       'ty' => esc_html__( 'Tỷ', 'html5blankr' ),
+        //   ],
+		// 	),
 			array(
 				'id' => $prefix . 'area',
 				'type' => 'number',
@@ -385,6 +384,30 @@ function property_meta_box( $meta_boxes ) {
 	return $meta_boxes;
 }
 add_filter( 'rwmb_meta_boxes', 'property_meta_box' );
+add_filter('rwmb_prefix-price_value', function($new, $old, $post_id, $field){
+
+    return str_replace('.', '', $new);
+
+}, 10, 4);
+
+add_action('admin_footer', function () {
+?>
+<script>
+jQuery(document).ready(function($){
+
+    $('#prefix-price').on('input', function(){
+
+        let value = $(this).val().replace(/\D/g,'');
+
+        value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+        $(this).val(value);
+    });
+
+});
+</script>
+<?php
+});
 
 // Register du an
 function property_developer() {

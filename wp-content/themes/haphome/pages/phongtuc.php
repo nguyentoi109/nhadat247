@@ -2,6 +2,13 @@
 /* Template Name: Phong tục */ 
 get_header();
 ?>
-<!-- section -->
+<section class="container mt-4 wrap-content">
+    <h2 class="title-wiki"><span>Tư vấn phong tục</span></h2>
+    <?php 
+    include(locate_template('loop-property/wiki/phong-tuc.php')); 
+    
+    include(locate_template('sidebar-popular.php')); 
+    ?>
+</section>
 
 <?php get_footer(); ?>

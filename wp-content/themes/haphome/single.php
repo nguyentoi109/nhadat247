@@ -12,6 +12,12 @@
 <?php get_sidebar('1'); ?>
 	<main role="main">		
 	<?php if (have_posts()): while (have_posts()) : the_post(); ?>
+			<?php 
+				if (function_exists('set_post_views')) {
+					set_post_views(get_the_ID()); 
+				}
+			?>
+	
 		<!-- article -->
 		<article <?php post_class(); ?> class="detail-content">
 
