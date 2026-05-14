@@ -22,58 +22,43 @@ $price = (float)$price;
 				<span class="num">
 						<?php
 						if ($price) {
-
 							if ($price >= 1000000000) {
-
 								$value = $price / 1000000000;
-
 								echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
-
 							} elseif ($price >= 1000000) {
-
 								$value = $price / 1000000;
-
 								echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
-
 							} else {
-
-								echo number_format($price, 0, ',', '.');
-
+								if ($unit == 'trieu' && $price > 1000) {
+									$value = $price / 1000;
+									echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
+								} else {
+									echo number_format($price, 0, ',', '.');
+								}
 							}
-
 						}
 						?>
 						</span>
 
 						<?php
 						if ($price) {
-
 							if ($price >= 1000000000) {
-
 								echo ' tỷ';
-
 							} elseif ($price >= 1000000) {
-
 								echo ' triệu';
-
 							} else {
-
 								if ($unit == 'trieu') {
-
-									echo ' triệu';
-
+									if ($price > 1000) {
+										echo 'tỷ';
+									} else {
+										echo ' triệu';
+									}
 								} elseif ($unit == 'ty') {
-
 									echo ' tỷ';
-
 								} else {
-
 									echo ' đ';
-
 								}
-
 							}
-
 						}
 						?>
 				</span>
@@ -191,66 +176,53 @@ $price = (float)$price;
 		</div>
 		<div class="side-content">
 			<span class="price">
-				<strong><span class="ti-tag"></span>Giá: </strong>
+			<strong>
+			<strong><span class="ti-tag"></span> Giá:</strong>
 				<span class="num">
 						<?php
 						if ($price) {
-
 							if ($price >= 1000000000) {
-
 								$value = $price / 1000000000;
-
 								echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
-
 							} elseif ($price >= 1000000) {
-
 								$value = $price / 1000000;
-
 								echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
-
 							} else {
-
-								echo number_format($price, 0, ',', '.');
-
+								if ($unit == 'trieu' && $price > 1000) {
+									$value = $price / 1000;
+									echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
+								} else {
+									echo number_format($price, 0, ',', '.');
+								}
 							}
-
 						}
 						?>
 						</span>
 
 						<?php
 						if ($price) {
-
 							if ($price >= 1000000000) {
-
 								echo ' tỷ';
-
 							} elseif ($price >= 1000000) {
-
 								echo ' triệu';
-
 							} else {
-
 								if ($unit == 'trieu') {
-
-									echo ' triệu';
-
+									if ($price > 1000) {
+										echo 'tỷ';
+									} else {
+										echo ' triệu';
+									}
 								} elseif ($unit == 'ty') {
-
 									echo ' tỷ';
-
 								} else {
-
 									echo ' đ';
-
 								}
-
 							}
-
 						}
 						?>
-					</span>
-
+				</span>
+		</strong>
+	</span>
 		<?php if($post_link): ?>
 		<div class="wrap-news">
 			<div class="title">Tin tức liên quan</div>
