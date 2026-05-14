@@ -57,19 +57,65 @@ if ($query->have_posts()) :
           <span class="price">
             <strong><span class="ti-tag"></span> Giá:</strong>
 
-            <span class="num">
-              <?php echo $price_value > 0 ? number_format($price_value, 0, ",", ".") : 'Liên hệ'; ?>
-            </span>
+              <span class="num">
+                <?php
+                if ($price) {
 
-            <?php
-            if ($price_value > 0) {
-                if ($unit == 'trieu') echo ' triệu';
-                elseif ($unit == 'ty') echo ' tỷ';
-                else echo ' đ';
-            }
-            ?>
-          </span>
-        </div>
+                  if ($price >= 1000000000) {
+
+                    $value = $price / 1000000000;
+
+                    echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
+
+                  } elseif ($price >= 1000000) {
+
+                    $value = $price / 1000000;
+
+                    echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
+
+                  } else {
+
+                    echo number_format($price, 0, ',', '.');
+
+                  }
+
+                }
+                ?>
+                </span>
+
+                <?php
+                if ($price) {
+
+                  if ($price >= 1000000000) {
+
+                    echo ' tỷ';
+
+                  } elseif ($price >= 1000000) {
+
+                    echo ' triệu';
+
+                  } else {
+
+                    if ($unit == 'trieu') {
+
+                      echo ' triệu';
+
+                    } elseif ($unit == 'ty') {
+
+                      echo ' tỷ';
+
+                    } else {
+
+                      echo ' đ';
+
+                    }
+
+                  }
+
+                }
+                ?>
+            </span>
+          </div>
 
         <!-- IMAGE -->
         <?php if (has_post_thumbnail()) : ?>
@@ -138,18 +184,64 @@ if ($query->have_posts()) :
           <span class="price">
             <strong><span class="ti-tag"></span> Giá:</strong>
 
-            <span class="num">
-              <?php echo $price_value > 0 ? number_format($price_value, 0, ",", ".") : 'Liên hệ'; ?>
-            </span>
+              <span class="num">
+              <?php
+              if ($price) {
 
-            <?php
-            if ($price_value > 0) {
-                if ($unit == 'trieu') echo ' triệu';
-                elseif ($unit == 'ty') echo ' tỷ';
-                else echo ' đ';
-            }
-            ?>
-          </span>
+                if ($price >= 1000000000) {
+
+                  $value = $price / 1000000000;
+
+                  echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
+
+                } elseif ($price >= 1000000) {
+
+                  $value = $price / 1000000;
+
+                  echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
+
+                } else {
+
+                  echo number_format($price, 0, ',', '.');
+
+                }
+
+              }
+              ?>
+              </span>
+
+              <?php
+              if ($price) {
+
+                if ($price >= 1000000000) {
+
+                  echo ' tỷ';
+
+                } elseif ($price >= 1000000) {
+
+                  echo ' triệu';
+
+                } else {
+
+                  if ($unit == 'trieu') {
+
+                    echo ' triệu';
+
+                  } elseif ($unit == 'ty') {
+
+                    echo ' tỷ';
+
+                  } else {
+
+                    echo ' đ';
+
+                  }
+
+                }
+
+              }
+              ?>
+            </span>
 
           <a href="<?php the_permalink(); ?>" class="btn">Xem chi tiết</a>
 

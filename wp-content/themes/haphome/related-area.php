@@ -56,17 +56,63 @@ if (!empty($status_terms) && !is_wp_error($status_terms) &&
             <strong><span class="ti-tag"></span> Giá:</strong>
 
             <span class="num">
-              <?php echo $price_value > 0 ? number_format($price_value, 0, ",", ".") : 'Liên hệ'; ?>
-            </span>
+              <?php
+              if ($price) {
 
-            <?php
-            if ($price_value > 0) {
-                if ($unit == 'trieu') echo ' triệu';
-                elseif ($unit == 'ty') echo ' tỷ';
-                else echo ' đ';
-            }
-            ?>
-          </span>
+                if ($price >= 1000000000) {
+
+                  $value = $price / 1000000000;
+
+                  echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
+
+                } elseif ($price >= 1000000) {
+
+                  $value = $price / 1000000;
+
+                  echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
+
+                } else {
+
+                  echo number_format($price, 0, ',', '.');
+
+                }
+
+              }
+              ?>
+              </span>
+
+              <?php
+              if ($price) {
+
+                if ($price >= 1000000000) {
+
+                  echo ' tỷ';
+
+                } elseif ($price >= 1000000) {
+
+                  echo ' triệu';
+
+                } else {
+
+                  if ($unit == 'trieu') {
+
+                    echo ' triệu';
+
+                  } elseif ($unit == 'ty') {
+
+                    echo ' tỷ';
+
+                  } else {
+
+                    echo ' đ';
+
+                  }
+
+                }
+
+              }
+              ?>
+					</span>
         </div>
 
         <?php if (has_post_thumbnail()) : ?>
@@ -95,7 +141,6 @@ if (!empty($status_terms) && !is_wp_error($status_terms) &&
             <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
           </h3>
 
-          <!-- ✅ MÔ TẢ -->
           <div class="des">
             <?php html5wp_excerpt('html5wp_index'); ?>
           </div>
@@ -136,18 +181,64 @@ if (!empty($status_terms) && !is_wp_error($status_terms) &&
           <span class="price">
             <strong><span class="ti-tag"></span> Giá:</strong>
 
-            <span class="num">
-              <?php echo $price_value > 0 ? number_format($price_value, 0, ",", ".") : 'Liên hệ'; ?>
-            </span>
+              <span class="num">
+              <?php
+              if ($price) {
 
-            <?php
-            if ($price_value > 0) {
-                if ($unit == 'trieu') echo ' triệu';
-                elseif ($unit == 'ty') echo ' tỷ';
-                else echo ' đ';
-            }
-            ?>
-          </span>
+                if ($price >= 1000000000) {
+
+                  $value = $price / 1000000000;
+
+                  echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
+
+                } elseif ($price >= 1000000) {
+
+                  $value = $price / 1000000;
+
+                  echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
+
+                } else {
+
+                  echo number_format($price, 0, ',', '.');
+
+                }
+
+              }
+              ?>
+              </span>
+
+              <?php
+              if ($price) {
+
+                if ($price >= 1000000000) {
+
+                  echo ' tỷ';
+
+                } elseif ($price >= 1000000) {
+
+                  echo ' triệu';
+
+                } else {
+
+                  if ($unit == 'trieu') {
+
+                    echo ' triệu';
+
+                  } elseif ($unit == 'ty') {
+
+                    echo ' tỷ';
+
+                  } else {
+
+                    echo ' đ';
+
+                  }
+
+                }
+
+              }
+              ?>
+            </span>
 
           <a href="<?php the_permalink(); ?>" class="btn">Xem chi tiết</a>
 

@@ -14,6 +14,7 @@
             text-decoration: none;
             font-size: 16px;
             font-weight: 600;
+            text-align: left;
         }
         #menu-item-1872 > a{
             color: #debe20;
@@ -50,12 +51,14 @@
             padding-left: 28px;
             font-size: 15px;
             font-weight: 500;
+            text-align: left;
         }
 
         .mobile-nav .sub-menu .sub-menu li a {
             padding-left: 42px;
             font-size: 14px;
             color: #f8f8f8;
+            text-align: left;
         }
 
         .mobile-nav .menu-item.active > a {
