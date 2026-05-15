@@ -85,7 +85,7 @@ button#devvn_pc_interest {
 
 .devvn_caculated_body_left {
     overflow: hidden;
-    background: #670000;
+    background: var(--bg-color);
     color: #fff;
     padding: 10px;
     margin: 0 0 10px;
@@ -120,7 +120,7 @@ button#devvn_pc_interest {
 }
 
 .devvn_content_table table thead tr td {
-    background-color: #670000;
+    background-color: var(--bg-color);
     color: #fff;
 }
 
@@ -137,7 +137,7 @@ button#devvn_pc_interest {
 
 @media (max-width: 860px) {
     div#devvn_caculated {
-        width: 90%;
+        width: 100%;
     }
     .devvn_caculated_box {
         width: 100%;

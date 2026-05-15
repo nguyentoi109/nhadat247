@@ -18,7 +18,7 @@
     font-size: 24px;
     font-weight: normal;
     font-family: 'Lexend', Roboto, Arial !important;
-    color: #e03c31;
+    color: var(--title-post);
     margin-bottom: 30px;
 }
 
@@ -57,8 +57,8 @@
 #devvn_pc_interest {
     width: 100%;
     height: 52px;
-    background: #e03c31;
-    color: #fff;
+    background: var(--btn);
+    color: var(--btn-text);
     border: none;
     border-radius: 12px;
     font-size: 16px;
@@ -214,8 +214,8 @@
 }
 
 .devvn_caculated_close {
-    background: #e03c31;
-    color: #fff;
+    background: var(--btn);
+    color: var(--btn-text);
     border: none;
     padding: 12px 28px;
     border-radius: 10px;

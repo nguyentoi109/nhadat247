@@ -1,0 +1,38 @@
+:root{
+
+    /* menu */
+    --menu:#16A085;
+
+    /* menu hover */
+    
+
+    /* button background: ; */
+    --btn:#009BA1;
+
+    /* button text  */
+    --btn-text:#FFFFFF;
+
+    /* title-secsion */
+    --title-section:#16A085;
+    
+    /* title-post */
+     --title-post:#16A085;
+
+     /* price */
+     --price:#16A085;
+
+     /* phone */
+     --phone:#16A085;
+
+     /* address */
+    --address:#16A085;
+
+    /* date  */
+    --date:#16A085;
+
+    /* text */
+    --text:#2C2C2C;
+
+    /* background */
+    --bg-color:#16A085;
+}

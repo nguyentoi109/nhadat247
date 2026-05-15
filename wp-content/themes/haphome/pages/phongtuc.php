@@ -3,7 +3,7 @@
 get_header();
 ?>
 <section class="container mt-4 wrap-content">
-    <h2 class="title-wiki"><span>Tư vấn phong tục</span></h2>
+    <h2 class="title-wiki"><span>Phong tục</span></h2>
     <?php 
     include(locate_template('loop-property/wiki/phong-tuc.php')); 
     

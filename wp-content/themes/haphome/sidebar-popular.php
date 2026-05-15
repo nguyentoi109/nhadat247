@@ -1,31 +1,30 @@
 <style>
 .row-flex {
-    display: flex;
-    flex-wrap: wrap;
-    margin: 0 -15px;
+    display:flex;
+    width:100%;
+    gap:10px;
+    align-items:flex-start;
 }
 
 .col-main {
-    width: 66.66%;
-    padding: 15px;
-    box-sizing: border-box;
+    width:66%;
+    box-sizing:border-box;
 }
 
 .col-sidebar {
-    width: 33.33%;
-    padding: 15px;
-    box-sizing: border-box;
+    width:33%;
+    box-sizing:border-box;
 }
 
 .list-news {
-    display: flex;
-    background: #fff;
-    border: 1px solid #eee;
-    border-radius: 10px;
-    margin-bottom: 15px;
-    padding: 10px;
-    min-height: 200px;
-    transition: all .3s ease;
+    display:flex;
+    background:#fff;
+    border:1px solid #eee;
+    border-radius:3px;
+    margin-bottom:5px;
+    padding:5px;
+    min-height:200px;
+    transition:all .3s ease;
 }
 
 .list-news:hover {
@@ -38,7 +37,7 @@
     flex: 0 0 260px;
     margin-right: 20px;
     overflow: hidden;
-    border-radius: 8px;
+    border-radius: 3px;
 }
 
 .thumb-list a {
@@ -69,7 +68,7 @@
 .list-news .title-post a {
     font-size: 17px;
     font-weight: bold;
-    color: #e03c31;
+    color: var(--title-post);
     text-decoration: none;
     line-height: 1.5;
 }
@@ -98,19 +97,24 @@
 }
 
 .sidebar-popular {
-    background: #fff;
-    border: 1px solid #f0f0f0;
-    border-radius: 12px;
-    padding: 20px;
+    background:#fff;
+    border:1px solid #f0f0f0;
+    border-radius:3px;
+
+    padding: 0 10px 10px;
+    
+    position:sticky;
+    top:20px;
 }
 
 .title-sidebar {
-    font-size: 18px;
-    font-weight: 700;
-    margin-bottom: 15px;
-    border-bottom: 2px solid #e03c31;
-    padding-bottom: 5px;
-    display: inline-block;
+    font-size:18px;
+    font-weight:700;
+    margin:0 0 15px;
+    padding:5px;
+    border-bottom:2px solid #e03c31;
+    display:inline-block;
+    color: var(--title-section);
 }
 
 .popular-item {
@@ -143,7 +147,7 @@
 
 .popular-item a {
     font-size: 14px;
-    color: #333;
+    color: var(--title-post);
     text-decoration: none;
     font-weight: 500;
     line-height: 1.6;
@@ -209,19 +213,19 @@
 
     .thumb-list img{
         width:100%;
-        height:auto;
+        height:260px;
 
         display:block;
 
         margin:0 !important;
-        padding:0;
+        padding:5px;
         border:0;
         border-radius:0 !important;
     }
 
     .content{
         width:100%;
-        padding:14px;
+        padding:5px;
         box-sizing:border-box;
 
         overflow:hidden;
@@ -274,7 +278,19 @@ $popular_query = new WP_Query($popular_args);
                     <?php endif; ?>
                     <div class="content">
                         <h3 class="title-post"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
-                        <div class="des"><?php echo get_the_excerpt(); ?></div>
+                        <div class="des">
+                             <?php
+                                $amp_content = get_post_meta(get_the_ID(), 'ampforwp_custom_content_editor',true
+                                );
+                                if (!empty($amp_content)) {
+                                    $content = html_entity_decode($amp_content);
+                                } else {
+                                    $content = get_the_content();
+                                }
+                                $content = wp_strip_all_tags($content);
+                                echo $content;
+                                ?>
+                        </div>
                         <div class="meta" style="margin-top:auto; font-size:12px; color:#777;">
                             <span class="ti-calendar"></span> <?php the_time('d/m/Y'); ?>
                         </div>
@@ -287,7 +303,7 @@ $popular_query = new WP_Query($popular_args);
     </div>
 
     <div class="col-sidebar">
-        <aside class="sidebar-popular">
+        <div class="sidebar-popular">
             <h2 class="title-sidebar">Xem nhiều nhất</h2>
             <?php if ($popular_query && $popular_query->have_posts()) : $rank = 1; ?>
                 <?php while ($popular_query->have_posts()) : $popular_query->the_post(); ?>
@@ -297,6 +313,6 @@ $popular_query = new WP_Query($popular_args);
                     </div>
                 <?php endwhile; wp_reset_postdata(); ?>
             <?php endif; ?>
-        </aside>
+        </div>
     </div>
 </div>

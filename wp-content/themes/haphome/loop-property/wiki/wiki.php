@@ -6,7 +6,7 @@ $paged = max(1, get_query_var('paged'));
 
 $main_args = array(
     'post_type'      => 'post',
-    'category_name'  => 'wiki',
+    'category_name'  => 'wiki-bds',
     'posts_per_page' => 10,
     'paged'          => $paged
 );

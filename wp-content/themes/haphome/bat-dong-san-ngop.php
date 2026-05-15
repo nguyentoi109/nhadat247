@@ -22,6 +22,6 @@ if ($query->have_posts()):
 
     wp_reset_postdata();
 else:
-    echo "Không có bài nào";
+    echo "Không có bất động sản nào";
 endif;
 ?>
