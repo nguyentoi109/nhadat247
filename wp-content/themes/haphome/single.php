@@ -37,10 +37,19 @@
 
 			<!-- post details -->
 			<span class="date"><?php the_time('d/m/Y'); ?> | <?php the_time('G:i'); ?></span>
-			<!--<span class="author"><?php// _e( 'Bởi', 'html5blank' ); ?> <?php the_author_posts_link(); ?></span>-->
+			<!--<span class="author"><?php// _e( 'Bởi', 'html5blank' ); ?> <?php //the_author_posts_link(); ?></span>-->
 
 			<div class="content-detail">
-				<?php the_content(); // Dynamic Content ?>
+				<?php
+				$amp_content = get_post_meta(get_the_ID(),'ampforwp_custom_content_editor', true);
+				if (!empty($amp_content)) {
+					echo html_entity_decode(
+						do_shortcode($amp_content)
+					);
+				} else {
+					the_content();
+				}
+				?>
 			</div>
 			<?php $files = rwmb_meta( 'file_upload' ); ?>
 

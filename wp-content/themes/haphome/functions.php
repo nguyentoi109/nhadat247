@@ -280,11 +280,17 @@ function html5wp_excerpt($length_callback = '', $more_callback = '')
     if (function_exists($more_callback)) {
         add_filter('excerpt_more', $more_callback);
     }
-    $output = get_the_excerpt();
-    $output = apply_filters('wptexturize', $output);
-    $output = apply_filters('convert_chars', $output);
-    $output = '<p class="des">' . $output . '</p>';
-    echo $output;
+        $amp_content = get_post_meta( get_the_ID(),'ampforwp_custom_content_editor', true);
+    if (!empty($amp_content)) {
+        $output = wp_trim_words(
+        wp_strip_all_tags(html_entity_decode($amp_content)),50,'...');
+    } else {
+        $output = get_the_excerpt();
+        $output = apply_filters('wptexturize', $output);
+        $output = apply_filters('convert_chars', $output);
+    }
+        $output = '<p class="des">' . $output . '</p>';
+        echo $output;
 }
 
 // Custom View Article link to Post
@@ -742,6 +748,16 @@ function clean_post_content_before_save($content) {
 
     return wp_kses($content, $allowed_tags);
 }
+
+function theme_styles() {
+
+    wp_enqueue_style(
+        'theme-color',
+        get_template_directory_uri() . '/css/theme.css'
+    );
+
+}
+add_action('wp_enqueue_scripts', 'theme_styles');
 
 ///////////////////
 function html5blank_conditional_scripts() {}

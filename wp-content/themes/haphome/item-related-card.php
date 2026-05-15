@@ -29,7 +29,16 @@
         </div>
 
         <div class="card-excerpt">
-            <?php echo wp_trim_words(get_the_excerpt(), 25, '...'); ?>
+            <?php
+            $amp_content = get_post_meta(get_the_ID(),'ampforwp_custom_content_editor',true);
+            if (!empty($amp_content)) {
+                $content = html_entity_decode($amp_content);
+            } else {
+                $content = get_the_content();
+            }
+            $content = wp_strip_all_tags($content);
+            echo wp_trim_words($content, 25, '...');
+            ?>
         </div>
     </div>
 </article>

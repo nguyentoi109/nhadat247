@@ -27,7 +27,16 @@
 			<!-- /post details -->
 
 			<div class="des">
-				<?php html5wp_excerpt('html5wp_index');?>
+				<?php
+					$amp_content = get_post_meta(get_the_ID(),'ampforwp_custom_content_editor',true);
+					if (!empty($amp_content)) {
+						$content = html_entity_decode($amp_content);
+					} else {
+						$content = get_the_content();
+					}
+					$content = wp_strip_all_tags($content);
+					echo wp_trim_words($content, 40, '...');
+					?>
 			</div>
 
 			<!-- <p class="control-post"><?php //edit_post_link(); ?></p> -->
