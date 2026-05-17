@@ -5038,7 +5038,7 @@ select {
   transition-property: transform, -webkit-transform;
   -webkit-box-sizing: content-box;
   box-sizing: content-box;
-  justify-content: center;
+  /* justify-content: center; */
 }
 .swiper-container-android .swiper-slide,
 .swiper-wrapper {
@@ -6007,16 +6007,17 @@ nav a {
     color: #d70018;
   }
   .mobile-menu-close {
-    display:block;
-    position:fixed;
-    top:0;
-    right:0;
-    width:20%;
-    height:100%;
-    background:rgba(0,0,0,0.55);
-    font-size:0;
-    color:transparent;
-    overflow:hidden;
+    display: block;
+    position: fixed;
+    right: 5px;
+    top: 5px;
+    font-size: 50px;
+    width: 40px;
+    height: 40px;
+    z-index: 11;
+    text-align: center;
+    line-height: 40px;
+    font-family: -webkit-body;
   }
   .wrap-nav {
     width: 80%;
