@@ -160,8 +160,19 @@
 
 
 </head>
+<script>
+window.addEventListener("load", function(){
+
+    document.getElementById("loading-page").style.opacity = "0";
+    document.getElementById("loading-page").style.visibility = "hidden";
+
+});
+</script>
 
 <body id="container" <?php body_class(); ?>>
+    <div id="loading-page">
+        <div class="loader"></div>
+    </div>
     <!-- wrapper -->
     <section class="wrapper">
 
