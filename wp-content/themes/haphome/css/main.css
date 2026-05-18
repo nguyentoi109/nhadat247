@@ -4899,7 +4899,7 @@ input[type="submit"] {
 }
 button:hover,
 input[type="submit"]:hover {
-  background: #670000;
+  background: var(--btn-hover);
 }
 button:disabled {
   background: #e4e4e4;
@@ -5038,7 +5038,6 @@ select {
   transition-property: transform, -webkit-transform;
   -webkit-box-sizing: content-box;
   box-sizing: content-box;
-  /* justify-content: center; */
 }
 .swiper-container-android .swiper-slide,
 .swiper-wrapper {
@@ -5844,7 +5843,7 @@ nav {
   width: 100%;
   font-size: 1.5rem;
   font-weight: 400;
-  color: var(--menu);
+  color: var(--menu-text);
   position: relative;
   z-index: 9;
   justify-content: center;
@@ -5943,24 +5942,37 @@ nav a {
   transform: rotateX(0deg);
 }
 .main-menu > li:hover > a {
-  color: var(--menu);
+  color: var(--menu-text-selected);
 }
 .main-menu > li .mdi {
   font-size: 2rem;
   line-height: 1;
 }
 .main-menu .current-menu-item > a {
-  color: var(--text);
+  color: var(--menu-text-selected);
   text-decoration: underline;
   font-family: 'Lexend', Roboto, Arial !important;
-  font-size: 18px;
+  font-size: 14px;
   line-height: 20px;
   font-weight: normal;
   text-align: left;
 }
-.main-menu .current-menu-parent > a {
-  color: var(--text);
+.main-menu .current-menu-ancestor > a{
+  color: var(--menu-text-selected);
   text-decoration: underline;
+}
+
+.main-menu .sub-menu .current-menu-item  > a{
+  color: var(--sub-menu-text-selected);
+}
+
+.main-menu .sub-menu .current-menu-parent > a{
+  color: var(--sub-menu-text-selected);
+}
+
+.main-menu .current-menu-parent > a {
+  color: var(--menu-text-selected);
+  text-decoration: underline; 
 }
 @media only screen and (min-width: 1001px) {
   .wrap-nav {
@@ -6009,11 +6021,13 @@ nav a {
   .mobile-menu-close {
     display: block;
     position: fixed;
-    right: 5px;
-    top: 5px;
-    font-size: 50px;
-    width: 40px;
-    height: 40px;
+    right: 0;
+    top: 0;
+    font-size: 0;
+    overflow: hidden;
+    background:rgba(0,0,0,0.55);
+    width: 20%;
+    height: 100%;
     z-index: 11;
     text-align: center;
     line-height: 40px;
@@ -6350,6 +6364,7 @@ nav a {
 }
 .grid .des {
   margin-bottom: 20px;
+  color: var(--desc);
 }
 .grid p {
   text-overflow: ellipsis;
@@ -6480,6 +6495,10 @@ nav a {
   overflow: hidden;
   font-size: 16px;
   line-height: 24px;
+  color: var(--desc);
+}
+.des{
+  color: var(--desc) !important;
 }
 @media only screen and (max-width: 1279px) {
   .list-style .content .des {
@@ -6980,7 +6999,7 @@ nav a {
   padding: 15px 25px;
   font-weight: normal !important;
   text-align: center;
-  color: #000;
+  color: var(--title-section);
   border: 1px solid transparent;
   cursor: pointer;
   border-radius: 3px 3px 0 0;
@@ -7001,10 +7020,12 @@ nav a {
 #tab3:checked ~ .header-wrap-featured-post #tab-label-3,
 #tab4:checked ~ .header-wrap-featured-post #tab-label-4 {
   color: var(--title-post);
+  font-weight: bold !;
   border: 1px solid #fdcd57;
   border-top: 2px solid #fdcd57;
   border-bottom: 1px solid #fff;
   background: #fffeec;
+  font-size: 23px;
 }
 #tab1:checked ~ #content1,
 #tab2:checked ~ #content2,
@@ -7393,7 +7414,7 @@ body.home:before {
   transition: all 0.4s ease;
 }
 border-radius .read-more a:hover {
-  background: #670000;
+  background: var(--btn-hover);
 }
 .btn {
   display: inline-block;
@@ -7406,7 +7427,7 @@ border-radius .read-more a:hover {
 }
 .btn:hover {
   color: #fff;
-  background: #670000;
+  background: var(--btn-hover);
 }
 #ac-wrapper {
   width: 320px;
@@ -7443,7 +7464,7 @@ border-radius .read-more a:hover {
   padding: 25px;
   border: 1px solid #f1f1f1;
   margin: 20px auto;
-  border-radius: 8px;
+  border-radius: var(--button-border-radius);
   width: 100%;
 }
 .section-home-search .search-advance .form-group {
@@ -8449,7 +8470,7 @@ border-radius .read-more a:hover {
   margin-bottom: 30px;
   padding: 0 0 0 20px;
   border-radius: 3px;
-  background: #d70018;
+  background: var(--bg-color);
   color: #fff;
   flex-wrap: wrap;
 }
@@ -8479,7 +8500,7 @@ border-radius .read-more a:hover {
 }
 .info-contact,
 .info-contact-fixed {
-  background: #9f0000;
+  background: var(--bg-color);
   padding: 20px;
   border: 1px solid #f1f1f1;
   border-radius: 3px;

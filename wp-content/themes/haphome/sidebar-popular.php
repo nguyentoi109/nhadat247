@@ -292,7 +292,26 @@ $popular_query = new WP_Query($popular_args);
                                 ?>
                         </div>
                         <div class="meta" style="margin-top:auto; font-size:12px; color:#777;">
-                            <span class="ti-calendar"></span> <?php the_time('d/m/Y'); ?>
+                            <span class="ti-calendar"></span> 
+                           <?php 
+                                $post_timestamp = get_the_time('U');
+                                $current_timestamp = current_time('timestamp');
+
+                                $post_date = date('Y-m-d', $post_timestamp);
+                                $today = date('Y-m-d', $current_timestamp);
+                                $yesterday = date('Y-m-d', strtotime('-1 day', $current_timestamp));
+                                $two_days_ago = date('Y-m-d', strtotime('-2 days', $current_timestamp));
+
+                                if ( $post_date == $today ) {
+                                    echo 'Hôm nay';
+                                } elseif ( $post_date == $yesterday ) {
+                                    echo '1 ngày trước';
+                                } elseif ( $post_date == $two_days_ago ) {
+                                    echo '2 ngày trước';
+                                } else {
+                                    the_time('d/m/Y');
+                                }
+                            ?>
                         </div>
                     </div>
                 </article>

@@ -1,22 +1,28 @@
 :root{
 
     /* menu */
-    --menu:#16A085;
+    --menu-text:#16A085;
+    --menu-text-selected:#ffa600;
+    --sub-menu-text-selected:#ffe8a0;
 
     /* menu hover */
     
 
     /* button background: ; */
-    --btn:#009BA1;
+    --btn:#00A86B;
+
+    --btn-hover:#006f47;
 
     /* button text  */
     --btn-text:#FFFFFF;
+
+
 
     /* title-secsion */
     --title-section:#16A085;
     
     /* title-post */
-     --title-post:#16A085;
+     --title-post:#009BA1;
 
      /* price */
      --price:#16A085;
@@ -27,12 +33,17 @@
      /* address */
     --address:#16A085;
 
+    /* desc */
+    --desc:#2C2C2C;
+
     /* date  */
     --date:#16A085;
 
     /* text */
-    --text:#2C2C2C;
+    --text:#FFFFFF;
 
     /* background */
     --bg-color:#16A085;
+
+    --button-border-radius:4px;
 }

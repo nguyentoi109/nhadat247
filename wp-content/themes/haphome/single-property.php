@@ -182,6 +182,9 @@
     white-space:nowrap;
     flex:1.4;
 }
+.infor-bds{
+    display: none;
+}
 
 .mobile-floating-bar .phone-icon{
     font-size:22px;
@@ -429,7 +432,7 @@
             <div class="description block-detail">
                 <?php the_content(); ?>
             </div>
-            
+            <div class="infor-bds">
             <h2 class="title-box-detail">Thông tin Bất động sản</h2>
             <ul class="list-detail-real">
                 <li>
@@ -500,6 +503,7 @@
                         allowfullscreen></iframe>
                 </div>
             </div>
+        </div>
             <?php endif; ?>
 
             <?php
@@ -526,7 +530,7 @@
                 </div>
             </div>
             
-             <div class="info-contact-fixed width-common flexbox">
+             <!-- <div class="info-contact-fixed width-common flexbox">
                 <div class="avata-user">
                     <a href="" class="thumb thumb-1x1"><?php echo get_avatar($gavatar, 300); ?></a>
                 </div>
@@ -565,7 +569,7 @@
                 <span class="ti-calendar"></span> <?php the_time('d/m/Y'); ?> | <?php the_time('G:i'); ?>
                 <span class="count-view"><span class="ti-eye"></span>
                     <?php echo count_post_views(get_the_ID()); ?></span>
-            </p>
+            </p> -->
             <!--<span class="author"><?php// _e( 'Bởi', 'html5blank' ); ?> <?php// the_author_posts_link(); ?></span>-->
             <!--<button class="view-pic">Xem hình</button>-->
             <?php 
