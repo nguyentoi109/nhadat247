@@ -12,15 +12,15 @@
     </div>
 
     <section class="content-tab-news" id="content1">
-        <?php get_template_part('news/tin-tuc-bat-dong-san'); ?>
+        <?php get_template_part('news/tin-tuc-bat-dong-san', null, ['hide_title' => true]);?>
     </section>
         
     <section class="content-tab-news" id="content2">
-        <?php get_template_part('news/kien-thuc-bat-dong-san'); ?>
+        <?php get_template_part('news/kien-thuc-bat-dong-san', null, ['hide_title' => true]); ?>
     </section>
         
     <section class="content-tab-news" id="content3">
-        <?php get_template_part('news/phong-thuy'); ?>
+        <?php get_template_part('news/phong-thuy', null, ['hide_title' => true]); ?>
     </section> 
 </section>
 <!-- <div class="container clear">

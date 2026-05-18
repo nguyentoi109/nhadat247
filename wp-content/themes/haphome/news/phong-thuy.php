@@ -24,7 +24,9 @@
 
 
 <section class="featured-post clear">
+<?php if(empty($args['hide_title'])) : ?>
 	<h2 class="title-section"><a href="<?php echo home_url('phong-thuy'); ?>"> Phong thủy </a></h2>
+<?php endif; ?>
 	<div class="list-post">
 		<?php
 			$query = new WP_Query(array(

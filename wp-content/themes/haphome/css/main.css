@@ -4703,7 +4703,7 @@ aside .content-inf p {
   height: 1px;
   background: #debe20;
   position: absolute;
-  bottom: 0;
+  bottom: -6px;
   left: 50%;
   transform: translateX(-50%);
 }
@@ -4711,9 +4711,10 @@ aside .content-inf p {
   content: "";
   width: 80px;
   height: 3px;
-  background: #d70018;
+  margin-top: 3px;
+  background: #debe20;
   position: absolute;
-  bottom: -1px;
+  bottom: -6px;
   left: 50%;
   transform: translateX(-50%);
   border-radius: 3px;
