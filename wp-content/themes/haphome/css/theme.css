@@ -5,8 +5,11 @@
     --menu-text-selected:#ffa600;
     --sub-menu-text-selected:#ffe8a0;
 
-    /* menu hover */
-    
+    /* menu mobile */
+    --main-menu-background:#167335;
+    --sub-menu-lv1-background:#24bf58;
+    --sub-menu-lv2-background:#66d28a ;
+
 
     /* button background: ; */
     --btn:#00A86B;

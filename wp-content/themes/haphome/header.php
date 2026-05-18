@@ -10,12 +10,17 @@
         .mobile-nav .menu-item > a {
             display: block;
             padding: 14px 45px 14px 16px;
-            color: #111;
+            color: var(--text);
             text-decoration: none;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
             text-align: left;
         }
+
+          .main-menu > li:hover > a{
+            color: var(--text);
+         }
+
         #menu-item-1872 > a{
             color: #debe20;
             text-align: center;
@@ -49,20 +54,22 @@
 
         .mobile-nav .sub-menu li a {
             padding-left: 28px;
-            font-size: 15px;
+            font-size: 13px;
             font-weight: 500;
             text-align: left;
+            background: var(--sub-menu-lv1-background);
         }
 
         .mobile-nav .sub-menu .sub-menu li a {
             padding-left: 42px;
             font-size: 14px;
-            color: #f8f8f8;
+            /* color: var(--desc); */
             text-align: left;
+            background: var(--sub-menu-lv2-background);
         }
 
-        .mobile-nav .menu-item.active > a {
-            color: #0aa;
+        .mobile-nav .menu-item.active   > a {
+            color: var(--menu-text-selected);
         }
     }
 

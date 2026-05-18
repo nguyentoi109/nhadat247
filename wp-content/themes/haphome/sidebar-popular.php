@@ -291,7 +291,7 @@ $popular_query = new WP_Query($popular_args);
                                 echo $content;
                                 ?>
                         </div>
-                        <div class="meta" style="margin-top:auto; font-size:12px; color:#777;">
+                        <div class="meta" style="margin-top:auto; font-size:12px; color:var(--phone);">
                             <span class="ti-calendar"></span> 
                            <?php 
                                 $post_timestamp = get_the_time('U');

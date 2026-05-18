@@ -6080,6 +6080,7 @@ nav a {
   .wrap-nav .main-menu {
     width: 100%;
     text-align: left;
+    background: var(--main-menu-background);
   }
   .wrap-nav .main-menu > li {
     width: 100%;
@@ -6560,6 +6561,7 @@ nav a {
 .footer-content .author {
   font-size: 1.5rem;
   align-items: center;
+  color: var(--phone);
 }
 .footer-content .author img {
   border-radius: 50%;
@@ -9207,7 +9209,7 @@ select.form-control option {
 }
 
 .filter-select {
-    border-radius: 8px;
+    border-radius: 4px;
     padding: 8px 12px;
 }
 
