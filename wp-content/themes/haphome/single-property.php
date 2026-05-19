@@ -185,6 +185,9 @@
 .infor-bds{
     display: none;
 }
+.infor-con{
+    display: none;
+}
 
 .mobile-floating-bar .phone-icon{
     font-size:22px;
@@ -509,6 +512,7 @@
             <?php
         $gavatar = get_the_author_meta('user_email');
     ?>
+            <div class="infor-con">
             <h2 class="title-box-detail">Thông tin liên hệ</h2>
             <div class="info-contact width-common flexbox">
                 <div class="avata-user">
@@ -528,6 +532,7 @@
                     <p><strong><span class="ti-direction"></span>:&nbsp;</strong>
                         <?php echo get_the_author_meta('address'); ?> </p>
                 </div>
+            </div>
             </div>
             
              <!-- <div class="info-contact-fixed width-common flexbox">
@@ -636,3 +641,4 @@
 
         </a>
 </div>
+<?php get_footer(); ?>

@@ -51,6 +51,7 @@ button#devvn_pc_interest {
     min-height: 200px;
     min-width: 300px;
     width: 850px;
+    height: auto;
     top: 50%;
     left: 50%;
     box-shadow: 0px 2px 6px rgba(0, 0, 0, 1);

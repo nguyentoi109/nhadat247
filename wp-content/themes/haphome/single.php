@@ -42,12 +42,17 @@
 			<div class="content-detail">
 				<?php
 				$amp_content = get_post_meta(get_the_ID(),'ampforwp_custom_content_editor', true);
+
 				if (!empty($amp_content)) {
-					echo html_entity_decode(
-						do_shortcode($amp_content)
+
+					echo wp_kses_post(
+						html_entity_decode($amp_content)
 					);
+
 				} else {
-					the_content();
+
+					echo apply_filters('the_content', get_the_content());
+
 				}
 				?>
 			</div>

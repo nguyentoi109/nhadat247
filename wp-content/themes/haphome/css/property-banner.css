@@ -1,0 +1,92 @@
+.property-banner{
+    background: linear-gradient(135deg, #0f5132, #198754); 
+    color: #fff; 
+    padding: 35px 25px; 
+    border-radius: var(--button-border-radius); 
+    margin-bottom: 25px;
+}
+
+.property-banner .property-banner-title{
+    font-size: 30px; 
+    line-height: 1.25; 
+    margin: 0 0 15px; 
+    color: #fff;
+}
+
+.property-banner-desc{
+   font-size: 18px; 
+   margin: 0 0 20px;
+}
+
+.property-banner-price{
+    background: #fff3cd; 
+    color: #5c3b00; 
+    padding: 18px; 
+    border-radius: var(--button-border-radius); 
+    font-size: 22px; 
+    font-weight: bold; 
+    display: inline-block;
+}
+
+.property-banner-actions{
+   margin-top: 25px; 
+   display: flex; 
+   flex-wrap: wrap; 
+   gap: 12px;
+   line-height: 0.7;
+}
+
+.property-banner-btn-call{
+    display: inline-block; 
+    border-radius: var(--button-border-radius); 
+    text-decoration: none; 
+    font-weight: bold; 
+    color: #fff; 
+    background: #dc3545;
+    padding: 13px;
+    padding-bottom: 22px;
+}
+
+.property-banner-btn-zalo{
+    display: flex; 
+    border-radius: var(--button-border-radius); 
+    text-decoration: none; 
+    font-weight: bold; 
+    color: #FFF; 
+    background: #0068FF;
+    padding-top: 17px;
+    padding-left: 14px;
+    padding-right: 14px;
+    gap: 5px;
+}
+.property-banner-img-zalo{
+    width:25px;
+    height:25px;
+}
+
+.property-banner-btn-zalo .property-banner-zalo{
+    padding-top: 7px;
+}
+
+.property-banner-btn-map{
+    display: inline-block; 
+    border-radius: var(--button-border-radius); 
+    text-decoration: none; 
+    font-weight: bold; 
+    color: #fff; 
+    background: #FFC300;
+    padding: 13px;
+    padding-bottom: 22px;
+}
+
+@media(max-width:768px){
+    .property-banner-img-zalo{
+       margin: 1px;
+    }
+    .property-banner-btn-zalo{
+       padding-left: 30px;
+    }
+    .property-banner-zalo{
+      margin-left: 14px;
+    }
+}

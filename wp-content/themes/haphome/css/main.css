@@ -4736,7 +4736,7 @@ aside .content-inf p {
   transition: all 0.3s;
 }
 .btn-more:hover {
-  background: #670000;
+  background: var(--btn-hover);
   color: #fff;
 }
 .list .list-news {

@@ -68,7 +68,7 @@
 }
 
 #devvn_pc_interest:hover {
-    background: #c12a22;
+    background: var(--btn-hover);
 }
 
 /* =========================
@@ -83,7 +83,7 @@
     height: 100%;
     background: rgba(0,0,0,0.6);
     overflow-y: auto;
-    padding: 40px 15px;
+    /* padding: 40px 15px; */
     box-sizing: border-box;
 }
 
@@ -225,7 +225,7 @@
 }
 
 .devvn_caculated_close:hover {
-    background: #c12a22;
+    background: var(--btn-hover);
 }
 
 /* =========================
