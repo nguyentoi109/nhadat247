@@ -12,26 +12,88 @@ if (!empty($status_terms) && !is_wp_error($status_terms) &&
     $status_ids = wp_list_pluck($status_terms, 'term_id');
     $location_ids = wp_list_pluck($location_terms, 'term_id');
 
-    $query = new WP_Query(array(
-        'post_type' => 'property',
-        'post__not_in' => array($post->ID),
-        'posts_per_page' => 4,
-        'tax_query' => array(
-            'relation' => 'AND',
-            array(
-                'taxonomy' => 'property_status',
-                'field'    => 'term_id',
-                'terms'    => $status_ids,
-            ),
-            array(
-                'taxonomy' => 'property_location',
-                'field'    => 'term_id',
-                'terms'    => $location_ids,
-            ),
-        ),
-    ));
+    $district_id = 0;
+    $city_id = 0;
+    foreach ($location_terms as $loc_term) {
+        if ($loc_term->parent != 0) {
+            $district_id = $loc_term->term_id;
+            $city_id = $loc_term->parent;
+            break;
+        }
+    }
 
-    if ($query->have_posts()) :
+    $district_posts = array();
+
+    if ($district_id) {
+        $district_query = new WP_Query(array(
+            'post_type'     => 'property',
+            'post__not_in'  => array($post->ID),
+            'posts_per_page'=> 4,
+
+            'tax_query' => array(
+            'relation' => 'AND',
+                array(
+                    'taxonomy' => 'property_status',
+                    'field'    => 'term_id',
+                    'terms'    => $status_ids,
+                ),
+
+                array(
+                    'taxonomy' => 'property_location',
+                    'field'    => 'term_id',
+                    'terms'    => array($district_id),
+                    ),
+                ),
+            ));
+
+        if ($district_query->have_posts()) {
+            while ($district_query->have_posts()) {
+                $district_query->the_post();
+                $district_posts[] = get_post();
+            }
+        }
+
+        wp_reset_postdata();
+    }
+    $need_more = 4 - count($district_posts);
+    $exclude_ids = array($post->ID);
+
+    foreach ($district_posts as $p) {
+        $exclude_ids[] = $p->ID;
+    }
+
+    $city_posts = array();
+    if ($need_more > 0 && $city_id) {
+        $city_query = new WP_Query(array(
+            'post_type'      => 'property',
+            'post__not_in'   => $exclude_ids,
+            'posts_per_page' => $need_more,
+            'tax_query' => array(
+                'relation' => 'AND',
+                  array(
+                      'taxonomy' => 'property_status',
+                      'field'    => 'term_id',
+                      'terms'    => $status_ids,
+                  ),
+                  array(
+                      'taxonomy' => 'property_location',
+                      'field'    => 'term_id',
+                      'terms'    => array($city_id),
+                  ),
+              ),
+          ));
+
+        if ($city_query->have_posts()) {
+            while ($city_query->have_posts()) {
+                $city_query->the_post();
+                $city_posts[] = get_post();
+            }
+        }
+        wp_reset_postdata();
+    }
+    $related_posts = array_merge($district_posts, $city_posts);
+
+   if (!empty($related_posts)) :
 ?>
 
 <section class="related related-area">
@@ -39,7 +101,7 @@ if (!empty($status_terms) && !is_wp_error($status_terms) &&
 
   <div class="container list-style">
 
-    <?php while ($query->have_posts()) : $query->the_post(); ?>
+    <?php foreach ($related_posts as $post) : setup_postdata($post); ?>
 
       <?php
         $price = rwmb_meta('prefix-price');
@@ -219,7 +281,7 @@ if (!empty($status_terms) && !is_wp_error($status_terms) &&
 
       </article>
 
-    <?php endwhile; ?>
+    <?php endforeach; wp_reset_postdata(); ?>
 
   </div>
 </section>

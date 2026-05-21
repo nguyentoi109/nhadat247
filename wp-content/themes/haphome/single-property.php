@@ -613,6 +613,7 @@
 
 <?php get_template_part('related-area'); ?>
 <?php get_template_part('related-type'); ?>
+<?php get_footer(); ?>
 <?php
         $phone = get_the_author_meta('phone');
         $phone_clean = preg_replace('/[^0-9]/', '', $phone);
@@ -641,4 +642,3 @@
 
         </a>
 </div>
-<?php get_footer(); ?>
