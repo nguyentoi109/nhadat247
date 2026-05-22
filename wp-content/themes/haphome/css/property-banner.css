@@ -47,6 +47,10 @@
     padding-bottom: 22px;
 }
 
+.phone-icon{
+    filter:brightness(0) invert(1);
+}
+
 .property-banner-btn-zalo{
     display: flex; 
     border-radius: var(--button-border-radius); 

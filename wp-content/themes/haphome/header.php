@@ -1,6 +1,31 @@
 <!doctype html>
 <html <?php language_attributes(); ?> class="no-js">
 <style>
+
+.header .container{
+    max-width: 100%;
+    width: 100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+
+.header-left{
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+
+.logo{
+    flex:0 0 auto;
+}
+
+.header-nav{
+    flex:1;
+    display:flex;
+    justify-content:center;
+}
+
 @media (max-width: 1024px) {
         .mobile-nav .menu-item {
             position: relative;
@@ -177,9 +202,9 @@ window.addEventListener("load", function(){
 </script>
 
 <body id="container" <?php body_class(); ?>>
-    <div id="loading-page">
+    <!-- <div id="loading-page">
         <div class="loader"></div>
-    </div>
+    </div> -->
     <!-- wrapper -->
     <section class="wrapper">
 
@@ -198,20 +223,27 @@ window.addEventListener("load", function(){
                 <div class="hotline flexbox">
                     <span class="num">0909.81.89.11</span>
                 </div>
-                <!-- logo -->
-                <?php if( is_front_page() ){ ?>
-                <h1 class="logo">
-                    <!--<a href="<?php// echo home_url(); ?>">HAP-HOME</a>-->
-                    <a href="<?php echo home_url(); ?>"><img
-                            src="<?php echo get_template_directory_uri() ?>/img/logo.jpg" alt="HAP-HOME"></a>
-                </h1>
-                <?php }else{ ?>
-                <div class="logo">
-                    <a href="<?php echo home_url(); ?>"><img
-                            src="<?php echo get_template_directory_uri() ?>/img/logo.jpg" alt="HAP-HOME"></a>
+             
+                <div class="header-left">
+                    <!-- logo -->
+                    <?php if( is_front_page() ){ ?>
+                    <h1 class="logo">
+                        <!--<a href="<?php// echo home_url(); ?>">HAP-HOME</a>-->
+                        <a href="<?php echo home_url(); ?>"><img
+                                src="<?php echo get_template_directory_uri() ?>/img/logo.jpg" alt="HAP-HOME"></a>
+                    </h1>
+                    <?php }else{ ?>
+                    <div class="logo">
+                        <a href="<?php echo home_url(); ?>"><img
+                                src="<?php echo get_template_directory_uri() ?>/img/logo.jpg" alt="HAP-HOME"></a>
+                    </div>
+                    <?php } ?>
+                    <!-- /logo -->
+                        
+                    <nav class="nav  mobile-nav" role="navigation">
+                        <?php html5blank_nav(); ?>
+                    </nav>
                 </div>
-                <?php } ?>
-                <!-- /logo -->
                 
                <div class="header-right">
                     <a href="<?php echo home_url('tinh-lai-suat-vay'); ?>" class="link link-featured">
@@ -228,14 +260,14 @@ window.addEventListener("load", function(){
         <!-- /header -->
 
         <!--Main menu-->
-        <section class="wrap-nav">
-            <span class="mobile-menu-close">&times;</span>
+        <!-- <section class="wrap-nav">
+            <span class="mobile-menu-close">&times;</span> -->
             <!-- nav -->
-            <nav class="nav container mobile-nav" role="navigation">
-                    <?php html5blank_nav(); ?>
-            </nav>
+            <!-- <nav class="nav container mobile-nav" role="navigation">
+                    <?php //html5blank_nav(); ?>
+            </nav> -->
             <!-- /nav -->
-        </section>
+        <!-- </section> -->
         <!--End Main menu-->
 <script>
 document.addEventListener("DOMContentLoaded", function () {

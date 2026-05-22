@@ -15,7 +15,7 @@
 <div class="form-group">
 		<label for="parent_location" class="select-style">
       <select name="parent_location" id="parent_location" class="form-control filter-select" onchange="myFunction()">
-        <option value="">Tỉnh/TP</option>
+        <option value="">-- Tỉnh/Thành phố --</option>
         <?php foreach( get_terms( 'property_location', array( 'hide_empty' => false, 'parent' => 0 ) ) as $parent_term ) { ?>
             <?php
               echo "<option value='".$parent_term->slug."' ".($_GET['parent_location'] == $parent_term->slug ? ' selected' : '').">".$parent_term->name."</option>";
@@ -28,7 +28,7 @@
 <div class="form-group">
 		<label for="child_location" class="select-style">
       <select name="child_location" id="child_location" class="form-control filter-select <?php echo $_GET['parent_location']; ?>">
-        <option value="">Quận/Huyện</option>
+        <option value="">--- Quận/Huyện ---</option>
         <?php 
         foreach( get_terms( 'property_location', array( 'hide_empty' => false, 'parent' => 0 ) ) as $parent_term ) { 
           foreach( get_terms( 'property_location', array( 'hide_empty' => false, 'parent' => $parent_term->term_id ) ) as $child_term ) { ?>

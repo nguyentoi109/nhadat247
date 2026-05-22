@@ -772,6 +772,122 @@ function custom_property_banner_style() {
 
 add_action('wp_enqueue_scripts', 'custom_property_banner_style');
 
+function custom_property_search_filter($query) {
+    if (
+        !is_admin()
+        && $query->is_main_query()
+        && isset($_GET['post_type'])
+        && $_GET['post_type'] == 'property'
+    ) {
+        $meta_query = array();
+        $tax_query = array();
+
+         if (isset($_GET['area_min']) && $_GET['area_min'] !== '' && isset($_GET['area_max']) && $_GET['area_max'] !== '' ) {
+            $area_min = (float) $_GET['area_min'];
+            $area_max = (float) $_GET['area_max'];
+
+            if ($area_min > 0 || $area_max < 500) {
+                $meta_query[] = array(
+                    'key'     => 'prefix-area',
+                    'value'   => array($area_min, $area_max),
+                    'compare' => 'BETWEEN',
+                    'type'    => 'NUMERIC'
+                );
+            }
+
+        } elseif (!empty($_GET['area_range']) && $_GET['area_range'] != '0') {
+            $area = explode('-', $_GET['area_range']);
+            if ($area[1] == 'max') {
+                $meta_query[] = array(
+                    'key'     => 'prefix-area',
+                    'value'   => $area[0],
+                    'compare' => '>=',
+                    'type'    => 'NUMERIC'
+                );
+            } else {
+                $meta_query[] = array(
+                    'key'     => 'prefix-area',
+                    'value'   => array($area[0], $area[1]),
+                    'compare' => 'BETWEEN',
+                    'type'    => 'NUMERIC'
+                );
+            }
+        }
+        
+        if (isset($_GET['price_min']) && $_GET['price_min'] !== '' && isset($_GET['price_max']) && $_GET['price_max'] !== '') {
+            $price_min = (float) $_GET['price_min'] * 1000000;
+            $price_max = (float) $_GET['price_max'] * 1000000;
+
+            if ($price_min > 0 || $price_max < 60000000000) {
+                $meta_query[] = array(
+                    'key'     => 'prefix-price',
+                    'value'   => array($price_min, $price_max),
+                    'compare' => 'BETWEEN',
+                    'type'    => 'NUMERIC'
+                );
+            }
+        } elseif (!empty($_GET['price_range']) && $_GET['price_range'] != '0') {
+            $price = explode('-', $_GET['price_range']);
+            $min = (float)$price[0] * 1000000;
+            if ($price[1] == 'max') {
+                $meta_query[] = array(
+                    'key'     => 'prefix-price',
+                    'value'   => $min,
+                    'compare' => '>=',
+                    'type'    => 'NUMERIC'
+                );
+            } else {
+                $max = (float)$price[1] * 1000000;
+                $meta_query[] = array(
+                    'key'     => 'prefix-price',
+                    'value'   => array($min, $max),
+                    'compare' => 'BETWEEN',
+                    'type'    => 'NUMERIC'
+                );
+            }
+        }
+
+        if (!empty($_GET['bedroom'])) {
+            $bedrooms = array_map('sanitize_text_field', (array) $_GET['bedroom']);
+            $meta_query[] = array(
+                'key'     => 'prefix-bedroom',
+                'value'   => $bedrooms,
+                'compare' => 'IN'
+            );
+        }
+
+        if (!empty($_GET['bathroom'])) {
+            $bathrooms = array_map('sanitize_text_field', (array) $_GET['bathroom']);
+            $meta_query[] = array(
+                'key'     => 'prefix-bathroom',
+                'value'   => $bathrooms,
+                'compare' => 'IN'
+            );
+        }
+       if (!empty($_GET['direction_filter'])) {
+            $directions = array_map(
+                'intval',
+                (array) $_GET['direction_filter']
+            );
+            $tax_query[] = array(
+                'taxonomy' => 'property_direction',
+                'field'    => 'term_id',
+                'terms'    => $directions,
+                'operator' => 'IN'
+            );
+        }
+        
+        if (!empty($tax_query)) {
+            $query->set('tax_query', $tax_query);
+        }
+
+        if (!empty($meta_query)) {
+            $query->set('meta_query', $meta_query);
+        }
+    }
+}
+add_action('pre_get_posts', 'custom_property_search_filter');
+
 ///////////////////
 function html5blank_conditional_scripts() {}
 function html5_blank_view_article() {}
