@@ -2,129 +2,252 @@
 <html <?php language_attributes(); ?> class="no-js">
 <style>
 
-.header .container{
-    max-width: 100%;
-    width: 100%;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
+@media (max-width: 1024px){
+
+    .header .container{
+        display:block !important;
+    }
+
+    .header-left{
+        display:block !important;
+    }
+
+    .nav.mobile-nav{
+        display:block !important;
+    }
 }
 
-.header-left{
-    display:flex;
-    align-items:center;
-    gap:15px;
-}
 
-.logo{
-    flex:0 0 auto;
-}
+/* DESKTOP */
+@media (min-width: 1025px) {
 
-.header-nav{
-    flex:1;
-    display:flex;
-    justify-content:center;
+    .wrap-nav{
+        display:none;
+    }
+
+    .header .container{
+        max-width:100%;
+        width:100%;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+    }
+
+    .header-left{
+        display:flex;
+        align-items:center;
+        gap:30px;
+        flex:1;
+    }
+
+    .logo{
+        flex:0 0 auto;
+    }
+
+    .nav.mobile-nav{
+        display:block;
+        flex:1;
+    }
+
+    .header-right{
+        display:flex;
+        align-items:center;
+        gap:15px;
+    }
+
+    .mobile-menu,
+    .mobile-menu-close,
+    .submenu-toggle{
+        display:none !important;
+    }
+
+    .sub-menu{
+        max-height:none !important;
+        overflow:visible !important;
+    }
 }
 
 @media (max-width: 1024px) {
-        .mobile-nav .menu-item {
-            position: relative;
-            border-bottom: 1px solid #eee;
-        }
-
-        .mobile-nav .menu-item > a {
-            display: block;
-            padding: 14px 45px 14px 16px;
-            color: var(--text);
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 600;
-            text-align: left;
-        }
-
-          .main-menu > li:hover > a{
-            color: var(--text);
-         }
-
-        #menu-item-1872 > a{
-            color: #debe20;
-            text-align: center;
-            font-family: 'Lexend', Roboto, Arial !important;
-            font-size: 18px;
-            line-height: 20px;
-            font-weight: normal;
-        }
-
-        .mobile-nav .submenu-toggle {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 44px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            font-weight: 700;
-            cursor: pointer;
-            color: #333;
-        }
-
-        .mobile-nav .sub-menu {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-            background: #f8f8f8;
-        }
-
-        .mobile-nav .sub-menu li a {
-            padding-left: 28px;
-            font-size: 13px;
-            font-weight: 500;
-            text-align: left;
-            background: var(--sub-menu-lv1-background);
-        }
-
-        .mobile-nav .sub-menu .sub-menu li a {
-            padding-left: 42px;
-            font-size: 14px;
-            /* color: var(--desc); */
-            text-align: left;
-            background: var(--sub-menu-lv2-background);
-        }
-
-        .mobile-nav .menu-item.active   > a {
-            color: var(--menu-text-selected);
-        }
+    .mobile-nav .menu-item {
+        position: relative;
+        border-bottom: 1px solid #eee;
     }
 
-    @media (min-width: 1025px) {
-        .mobile-menu, .mobile-menu-close, .submenu-toggle {
-            display: none !important;
-        }
-        .sub-menu {
-            max-height: none !important;
-            overflow: visible !important;
-        }
-        .submenu-toggle{
-            position:absolute;
-            top:0;
-            right:0;
-            width:44px;
-            height:8px;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            cursor:pointer;
-            font-size:14px;
-            color:#555;
-            transition:0.3s;
+    .mobile-nav .menu-item > a {
+        display: block;
+        padding: 14px 45px 14px 16px;
+        color: var(--text);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+        text-align: left;
+    }
+
+        .main-menu > li:hover > a{
+        color: var(--text);
         }
 
-        .menu-item.active > .submenu-toggle{
-            transform:rotate(180deg);
-        }
+    #menu-item-1872 > a{
+        color: #debe20;
+        text-align: center;
+        font-family: 'Lexend', Roboto, Arial !important;
+        font-size: 18px;
+        line-height: 20px;
+        font-weight: normal;
     }
+
+    .mobile-nav .submenu-toggle {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 44px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        font-weight: 700;
+        cursor: pointer;
+        color: #333;
+    }
+
+    .mobile-nav .sub-menu {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+        background: #f8f8f8;
+    }
+
+    .mobile-nav .sub-menu li a {
+        padding-left: 28px;
+        font-size: 13px;
+        font-weight: 500;
+        text-align: left;
+        background: var(--sub-menu-lv1-background);
+    }
+
+    .mobile-nav .sub-menu .sub-menu li a {
+        padding-left: 42px;
+        font-size: 14px;
+        text-align: left;
+        background: var(--sub-menu-lv2-background);
+    }
+
+    .mobile-nav .menu-item.active   > a {
+        color: var(--menu-text-selected);
+    }
+}
+
+/* MOBILE */
+@media (min-width: 1025px) {
+    .mobile-menu, .mobile-menu-close, .submenu-toggle {
+        display: none !important;
+    }
+    .sub-menu {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+    .submenu-toggle{
+        position:absolute;
+        top:0;
+        right:0;
+        width:44px;
+        height:8px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        cursor:pointer;
+        font-size:14px;
+        color:#555;
+        transition:0.3s;
+    }
+
+    .menu-item.active > .submenu-toggle{
+        transform:rotate(180deg);
+    }
+}
+
+@media (max-width:1024px){  
+
+    .header .container{
+        display:flex !important;
+        justify-content:center;
+    }
+
+    .header-right{
+        display:none !important;
+    }
+
+    .desktop-nav{
+        display:none !important;
+    }
+
+    .mobile-menu{
+        position:absolute;
+        top:20px;
+        right:20px;
+        z-index:10001;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        width:42px;
+        height:42px;
+        font-size:24px;
+        cursor:pointer;
+        color:#fff;
+    }
+
+    .wrap-nav{
+        position:fixed;
+        top:0;
+        left:-100%;
+        width:320px;
+        height:100vh;
+        background:#fff;
+        z-index:10000;
+        overflow-y:auto;
+        transition:.35s ease;
+        box-shadow:0 0 20px rgba(0,0,0,.2);
+    }
+
+    .wrap-nav.active{
+        left:0;
+    }
+
+    .mobile-menu-close{
+        position:absolute;
+        top:10px;
+        right:15px;
+        font-size:34px;
+        cursor:pointer;
+        z-index:2;
+        color:#111;
+    }
+
+    .mobile-nav .sub-menu{
+        overflow: hidden;
+        transition: max-height .3s ease;
+    }
+
+    .mobile-nav{
+        padding-top:60px;
+    }
+
+    .mobile-extra-link{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        padding:14px 16px;
+        margin-bottom:1px;
+        background:#f5f5f5;
+        font-size:14px;
+        color: #ffa600;
+    }
+
+    .mobile-extra-link span{
+        font-size:18px;
+    }
+}
 </style>
 
 <head>
@@ -230,17 +353,17 @@ window.addEventListener("load", function(){
                     <h1 class="logo">
                         <!--<a href="<?php// echo home_url(); ?>">HAP-HOME</a>-->
                         <a href="<?php echo home_url(); ?>"><img
-                                src="<?php echo get_template_directory_uri() ?>/img/logo.jpg" alt="HAP-HOME"></a>
+                                src="<?php echo get_template_directory_uri() ?>/img/logo_23.png" alt="HAP-HOME"></a>
                     </h1>
                     <?php }else{ ?>
                     <div class="logo">
                         <a href="<?php echo home_url(); ?>"><img
-                                src="<?php echo get_template_directory_uri() ?>/img/logo.jpg" alt="HAP-HOME"></a>
+                                src="<?php echo get_template_directory_uri() ?>/img/logo_23.png" alt="HAP-HOME"></a>
                     </div>
                     <?php } ?>
                     <!-- /logo -->
                         
-                    <nav class="nav  mobile-nav" role="navigation">
+                    <nav class="nav  desktop-nav" role="navigation">
                         <?php html5blank_nav(); ?>
                     </nav>
                 </div>
@@ -260,17 +383,44 @@ window.addEventListener("load", function(){
         <!-- /header -->
 
         <!--Main menu-->
-        <!-- <section class="wrap-nav">
-            <span class="mobile-menu-close">&times;</span> -->
+        <section class="wrap-nav">
+            <span class="mobile-menu-close">&times;</span>
             <!-- nav -->
-            <!-- <nav class="nav container mobile-nav" role="navigation">
-                    <?php //html5blank_nav(); ?>
-            </nav> -->
+            <nav class="nav container mobile-nav" role="navigation">
+                    <?php html5blank_nav(); ?>
+
+                    <div class="mobile-extra">
+                    <a href="<?php echo home_url('tinh-lai-suat-vay'); ?>" class="mobile-extra-link">
+                        <span class="ti-bar-chart-alt"></span>
+                        Tính lãi suất
+                    </a>
+                    <a href="<?php echo home_url('chuyen-doi-dia-chi'); ?>" class="mobile-extra-link">
+                        <span class="ti-location-pin"></span>
+                        Chuyển đổi địa chỉ
+                    </a>
+                </div>
+            </nav>
             <!-- /nav -->
-        <!-- </section> -->
+         </section> 
         <!--End Main menu-->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+
+    const mobileMenuBtn = document.querySelector('.mobile-menu');
+    const mobileMenu = document.querySelector('.wrap-nav');
+    const mobileClose = document.querySelector('.mobile-menu-close');
+
+    mobileMenuBtn.addEventListener('click', function(){
+        mobileMenu.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    });
+
+    function closeMenu(){
+        mobileMenu.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    mobileClose.addEventListener('click', closeMenu);
 
     document.querySelectorAll('.mobile-nav .menu-item-has-children').forEach(function(item){
 
@@ -283,55 +433,43 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     function updateParentHeight(element, isOpening){
-
         let parentSubmenu = element.parentElement.closest('.sub-menu');
 
         if(parentSubmenu){
-
             if(isOpening){
-
                 parentSubmenu.style.maxHeight = "2000px";
 
             }else{
-
                 parentSubmenu.style.maxHeight =
                     parentSubmenu.scrollHeight + "px";
             }
-
             updateParentHeight(parentSubmenu, isOpening);
         }
     }
 
     document.querySelectorAll('.mobile-nav .submenu-toggle').forEach(function(toggle){
-
         toggle.addEventListener('click', function(e){
-
             e.preventDefault();
             e.stopPropagation();
 
             let parentLi = this.parentElement;
-
             let submenu = parentLi.querySelector(':scope > .sub-menu');
 
             if(parentLi.classList.contains('active')){
                 parentLi.classList.remove('active');
                 submenu.style.maxHeight = null;
                 this.innerHTML = '<span class="ti-angle-down"></span>';
-
                 updateParentHeight(submenu, false);
 
             }else{
-
                 parentLi.classList.add('active');
-
                 submenu.style.maxHeight =
                     submenu.scrollHeight + "px";
-
-                this.innerHTML = '<span class="ti-angle-up"></span>';
-
+                this.innerHTML =
+                    '<span class="ti-angle-up"></span>';
                 updateParentHeight(submenu, true);
             }
         });
-     });
+    });
 });
 </script>

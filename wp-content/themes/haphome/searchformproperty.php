@@ -81,7 +81,7 @@
 .filter-popup .filter-popup-inner .form-group{
 	border-radius:4px;
 	border:1px solid #ddd;
-	padding:0 14px;
+	/* padding:0 14px; */
 	background:#fff;
 }
 
@@ -181,8 +181,8 @@
 	border:1px solid #ddd;
 	border-radius:4px;
 	text-align:center;
-	font-size:16px;
-	font-weight:600;
+	font-size:14px;
+	font-weight:normal;
 	background:#fff;
 }
 
@@ -301,9 +301,6 @@
 	margin-bottom:0;
 	padding-bottom:0;
 }
-.re__slider-bar{
-	touch-action:none;
-}
 
 .re__slider-bar .ui-slider-handle{
 	will-change:left;
@@ -314,6 +311,34 @@ body.dragging{
 	cursor:grabbing;
 	user-select:none;
 }
+
+.re__slider-bar{
+	touch-action:none;
+}
+
+.ui-slider-handle{
+	touch-action:none;
+}
+
+@media (max-width: 768px){
+    .filter-popup{
+        position: fixed;
+		inset: 0;
+		display: flex ;
+		align-items: center;
+		justify-content: center;
+		height: 100%;
+    }
+
+    .filter-popup-inner{
+        width: 100%;
+        max-width: 100%;
+        max-height: 70vh;
+        margin: 0 auto;
+        border-radius: 12px;
+        overflow-y: auto;
+    }
+}
 </style>
 <!-- Property search -->
 <form action="<?php bloginfo('url');?>" method="get" class="search-advance" id="form-search">
@@ -323,8 +348,7 @@ body.dragging{
 		</label>
 	</div>
 
-	<div class="form-group filter-wrap">
-
+	<div class="filter-wrap">
 		<!-- POPUP -->
 		<div class="filter-popup" id="filterPopup">
 			<div class="filter-popup-inner">
@@ -719,14 +743,11 @@ document.addEventListener('DOMContentLoaded', function () {
 	}
 
 	function dragAreaHandle(index){
-	let isDragging = true;
+		let isDragging = false;
 
-	function onMouseMove(e){
-		if(!isDragging) return;
-
-		requestAnimationFrame(() => {
+		function move(clientX){
 			const rect = areaSlider.getBoundingClientRect();
-			let percent = (e.clientX - rect.left) / rect.width;
+			let percent = (clientX - rect.left) / rect.width;
 			percent = Math.max(0, Math.min(1, percent));
 			let value = Math.round(percent * AREA_MAX);
 			value = Math.round(value / 10) * 10;
@@ -737,28 +758,46 @@ document.addEventListener('DOMContentLoaded', function () {
 			}
 			areaChanged = true;
 			updateAreaSlider();
-		});
-	}
+		}
+
+		function onMouseMove(e){
+			if(!isDragging) return;
+			move(e.clientX);
+		}
+
+		function onTouchMove(e){
+			if(!isDragging) return;
+			move(e.touches[0].clientX);
+			e.preventDefault();
+		}
+
 		function stopDrag(){
 			isDragging = false;
 			document.removeEventListener('mousemove', onMouseMove);
 			document.removeEventListener('mouseup', stopDrag);
-
+			document.removeEventListener('touchmove', onTouchMove);
+			document.removeEventListener('touchend', stopDrag);
 			document.body.style.userSelect = '';
 			document.body.style.cursor = '';
 		}
-		document.body.style.userSelect = 'none';
-		document.body.style.cursor = 'grabbing';
-		document.addEventListener('mousemove', onMouseMove);
-		document.addEventListener('mouseup', stopDrag);
-	}
-	areaHandles[0].addEventListener('mousedown', function(){
-		dragAreaHandle(0);
-	});
 
-	areaHandles[1].addEventListener('mousedown', function(){
-		dragAreaHandle(1);
-	});
+		function startDrag(){
+			isDragging = true;
+			document.body.style.userSelect = 'none';
+			document.addEventListener('mousemove', onMouseMove);
+			document.addEventListener('mouseup', stopDrag);
+
+			document.addEventListener('touchmove', onTouchMove, { passive:false });
+			document.addEventListener('touchend', stopDrag);
+		}
+		areaHandles[index].addEventListener('mousedown', startDrag);
+		areaHandles[index].addEventListener('touchstart', function(e){
+			startDrag();
+			e.preventDefault();
+		}, { passive:false });
+	}
+	dragAreaHandle(0);
+	dragAreaHandle(1);
 
 	areaSelect.addEventListener('change', function(){
 		const value = this.value;
@@ -786,6 +825,57 @@ document.addEventListener('DOMContentLoaded', function () {
 		updateFilterCount();
 	});
 	updateAreaSlider(true);
+
+	areaMinInput.addEventListener('input', function(){
+		let value = this.value.replace(/\D/g, '');
+
+		if(value === ''){
+			currentAreaMin = 0;
+			updateAreaSlider();
+			updateFilterCount();
+			return;
+		}
+		value = parseInt(value);
+
+		if(value < 0){
+			value = 0;
+		}
+		if(value > 500){
+			value = 500;
+		}
+		if(value >= currentAreaMax){
+			value = currentAreaMax - 5;
+		}
+		currentAreaMin = value;
+		areaChanged = true;
+		updateAreaSlider();
+		updateFilterCount();
+	});
+
+	areaMaxInput.addEventListener('input', function(){
+		let value = this.value.replace(/\D/g, '');
+
+		if(value === ''){
+			currentAreaMax = AREA_MAX;
+			updateAreaSlider();
+			updateFilterCount();
+			return;
+		}
+		value = parseInt(value);
+		if(value < 0){
+			value = 0;
+		}
+		if(value > 500){
+			value = 500;
+		}
+		if(value <= currentAreaMin){
+			value = currentAreaMin + 5;	
+		}
+		currentAreaMax = value;
+		areaChanged = true;
+		updateAreaSlider();
+		updateFilterCount();
+	});
 
 	const priceSlider = document.getElementById('price-slider');
 	const priceHandles = priceSlider.querySelectorAll('.ui-slider-handle');
@@ -885,49 +975,64 @@ document.addEventListener('DOMContentLoaded', function () {
 		updateFilterCount();
 	}
 
-		function dragPriceHandle(index){
-			let isDragging = true;
+	function dragPriceHandle(index){
+		let isDragging = false;
+
+			function move(clientX){
+				const rect = priceSlider.getBoundingClientRect();
+				let percent = (clientX - rect.left) / rect.width;
+				percent = Math.max(0, Math.min(1, percent));
+				let value = Math.round(percent * PRICE_MAX);
+				value = Math.round(value / 50) * 50;
+				if(index === 0){
+					currentPriceMin = Math.min(value, currentPriceMax - 50);
+				}else{
+					currentPriceMax = Math.max(value, currentPriceMin + 50);
+				}
+				priceTouched = true;
+				updatePriceSlider();
+			}
 
 			function onMouseMove(e){
 				if(!isDragging) return;
-				requestAnimationFrame(() => {
-					const rect = priceSlider.getBoundingClientRect();
-					let percent = (e.clientX - rect.left) / rect.width;
-					percent = Math.max(0, Math.min(1, percent));
-					let value = Math.round(percent * PRICE_MAX);
-					value = Math.round(value / 50) * 50;
-					if(index === 0){
-						currentPriceMin = Math.min(value, currentPriceMax - 50);
-					}else{
-						currentPriceMax = Math.max(value, currentPriceMin + 50);
-					}
-					priceTouched = true;
-					updatePriceSlider();
-				});
+				move(e.clientX);
+			}
+
+			function onTouchMove(e){
+				if(!isDragging) return;
+
+				move(e.touches[0].clientX);
+
+				e.preventDefault();
 			}
 
 			function stopDrag(){
 				isDragging = false;
 				document.removeEventListener('mousemove', onMouseMove);
 				document.removeEventListener('mouseup', stopDrag);
-
+				document.removeEventListener('touchmove', onTouchMove);
+				document.removeEventListener('touchend', stopDrag);
 				document.body.style.userSelect = '';
 				document.body.style.cursor = '';
 			}
 
-			document.body.style.userSelect = 'none';
-			document.body.style.cursor = 'grabbing';
-			document.addEventListener('mousemove', onMouseMove);
-			document.addEventListener('mouseup', stopDrag);
+			function startDrag(){
+				isDragging = true;
+				document.body.style.userSelect = 'none';
+				document.addEventListener('mousemove', onMouseMove);
+				document.addEventListener('mouseup', stopDrag);
+				document.addEventListener('touchmove', onTouchMove, { passive:false });
+				document.addEventListener('touchend', stopDrag);
+			}
+			priceHandles[index].addEventListener('mousedown', startDrag);
+			priceHandles[index].addEventListener('touchstart', function(e){
+				startDrag();
+				e.preventDefault();
+			}, { passive:false });
 		}
 
-		priceHandles[0].addEventListener('mousedown', function(){
-			dragPriceHandle(0);
-		});
-
-		priceHandles[1].addEventListener('mousedown', function(){
-			dragPriceHandle(1);
-		});
+		dragPriceHandle(0);
+		dragPriceHandle(1);
 
 	priceSelect.addEventListener('change', function(){
 

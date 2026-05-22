@@ -10,12 +10,19 @@
         display:block;
       }
   <?php } ?>
+
+
+@media(max-width) {
+    .filter-select{
+      width: 100%;
+    }
+}
 </style>
 
 <div class="form-group">
 		<label for="parent_location" class="select-style">
       <select name="parent_location" id="parent_location" class="form-control filter-select" onchange="myFunction()">
-        <option value="">-- Tỉnh/Thành phố --</option>
+        <option value="">-- Tỉnh/TP --</option>
         <?php foreach( get_terms( 'property_location', array( 'hide_empty' => false, 'parent' => 0 ) ) as $parent_term ) { ?>
             <?php
               echo "<option value='".$parent_term->slug."' ".($_GET['parent_location'] == $parent_term->slug ? ' selected' : '').">".$parent_term->name."</option>";

@@ -5962,6 +5962,9 @@ nav a {
     line-height: 40px;
     font-size: 2.2rem;
     color: #9f0000;
+    margin-top: 12px;
+    padding-right: 10px;
+
   }
   .mobile-menu-close {
     display: block;

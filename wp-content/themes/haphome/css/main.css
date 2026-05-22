@@ -4621,7 +4621,7 @@ table {
 .container {
   width: 100%;
   max-width: 1260px;
-  /* padding: 0 15px; */
+  padding: 0 10px;
   margin: 0 auto;
   position: relative;
   clear: both;
@@ -4865,7 +4865,7 @@ select {
   outline: none;
   box-sizing: border-box !important;
   font-family: 'Lexend',Roboto, Arial !important;
-  background: rgba(159, 0, 0, 0.03);
+  /* background: rgba(159, 0, 0, 0.03); */
   border-radius: 4px;
   font-size: 14px;
   line-height: 20px;
@@ -6013,11 +6013,11 @@ nav a {
     height: 40px;
     position: absolute;
     left: 10px;
-    top: 10px;
+    top: 12px;
     text-align: center;
     line-height: 40px;
     font-size: 2.2rem;
-    color: #d70018;
+    color: var(--bg-color);
   }
   .mobile-menu-close {
     display: block;
@@ -9215,7 +9215,6 @@ select.form-control option {
 }
 
 .filter-select {
-    width: 180px;
     border-radius: 4px;
     padding: 8px 12px;
 }
