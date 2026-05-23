@@ -85,28 +85,42 @@
         });
 
         $(".mask-popup").click(function() {
+           if($('#filterPopup').hasClass('active')){
+                $('#filterPopup').removeClass('active');
+                e.stopPropagation();
+                return;
+            }
+
             $('.popup-search-property').removeClass("show");
             $('.mask-popup').removeClass("show");
+            $('body').removeClass('popup-open');
         });
 
         $(".search-property, .btn-search-mobile").click(function() {
             $('.popup-search-property').addClass("show");
             $('.mask-popup').addClass("show");
-        });
+            $('body').addClass('popup-open');
+            });
 
         $(".mask-popup").click(function() {
+            if(window.innerWidth <= 768){
+                return;
+            }
             $('.popup-search-property').removeClass("show");
             $('.mask-popup').removeClass("show");
+            $('body').removeClass('popup-open');
         });
 
         $(".wrap-master .search").click(function() {
             $('.popup-search-property').addClass("show");
             $('.mask-popup').addClass("show");
+            $('body').addClass('popup-open');
         });
 
-        $(".mask-popup").click(function() {
+        $(".close-popup").click(function(){
             $('.popup-search-property').removeClass("show");
             $('.mask-popup').removeClass("show");
+            $('body').removeClass('popup-open');
         });
         /*End OPEN & CLOSE POPUP*/
 

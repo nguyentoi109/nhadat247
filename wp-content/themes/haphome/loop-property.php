@@ -4,6 +4,8 @@
   $unit = rwmb_meta('prefix-unit');
   $area = rwmb_meta('prefix-area');
   $address = rwmb_meta('prefix-address');
+  $bathroom = rwmb_meta('prefix-bathroom');
+  $bedroom = rwmb_meta('prefix-bedroom');
   $post_link = rwmb_meta('prefix-post');
   $status_terms = get_the_terms(get_the_ID(), "property_status");
 ?>
@@ -94,6 +96,41 @@
                 <strong><span class="ti-ruler"></span>:</strong> 
                 <?php echo $area ? $area : '---'; ?> m<sup>2</sup>
             </span> |
+
+			<span class="bedroom">
+				<img src="<?php echo get_template_directory_uri(); ?>/img/bedroom.png"
+					alt="Bedroom Icon"
+					style="width:15px;height:15px;vertical-align:middle;">
+				<?php
+					$bedroom = get_post_meta($post->ID, 'prefix-bedroom', true);
+					if(!empty($bedroom)){
+						if($bedroom == 6){
+							echo 'Studio';
+						}elseif($bedroom == 7){
+							echo '1 phòng ngủ +';
+						}elseif($bedroom == 8){
+							echo '2 phòng ngủ +';
+						}else{
+							echo $bedroom . ' phòng ngủ';
+						}
+					}else{
+						echo '&nbsp;';
+					}
+				?>
+			</span> |
+			<span class="bathroom">
+				<img src="<?php echo get_template_directory_uri(); ?>/img/bathroom.png"
+					alt="Bathroom Icon"
+					style="width:15px;height:15px;vertical-align:middle;">
+				<?php
+					$bathroom = get_post_meta($post->ID, 'prefix-bathroom', true);
+					if(!empty($bathroom)){
+						echo $bathroom  ." phòng";
+					}else{
+						echo '&nbsp;';
+					}
+				?>
+			</span> |
 
             <span class="location">
                 <strong><span class="ti-location-pin"></span>:</strong>
