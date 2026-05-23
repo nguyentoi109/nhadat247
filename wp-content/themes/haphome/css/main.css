@@ -5712,7 +5712,7 @@ header .link {
   font-weight: 700;
   margin-left: auto;
   font-family: 'Lexend',Roboto, Arial !important;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 20px;
   font-weight: normal;
 }
@@ -6825,7 +6825,7 @@ nav a {
     display: none;
   }
   .featured-post .item:first-child .title-post {
-    font-size: 2rem;
+    font-size: 1.6rem;
     margin-bottom: 5px;
   }
 }
@@ -7014,7 +7014,7 @@ nav a {
 }
 @media only screen and (max-width: 767px) {
   .label-tab-news {
-    font-size: 1.3rem;
+    font-size: 1.8rem !important;
     padding: 10px;
   }
 }

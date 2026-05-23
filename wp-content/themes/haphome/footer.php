@@ -58,7 +58,7 @@
 		<div class="container">
 			<div class="left">
 				<a href="<?php echo home_url(); ?>" class="logo-footer">
-					<!--<img src="<?php //echo get_template_directory_uri(); ?>/img/logo.svg" alt="Logo" class="logo-img">-->
+					<!-- <img src="<?php //echo get_template_directory_uri(); ?>/img/logo.svg" alt="Logo" class="logo-img"> -->
 				</a>
         
 			</div>
@@ -69,7 +69,7 @@
 	</footer>
 
 </section>
-<!-- /wrapper -->
+
 
 <?php wp_footer(); ?>
 
@@ -85,12 +85,6 @@
 <?php } ?>
 <div class="mask-overlay"></div>
 <div class="clearfix"></div>
-
-<?php
- /*  if ( !wp_is_mobile() ){
-    get_template_part('banner/banner-left-right');
-  } */
-?>
 <script>
 
 /*Master Control*/
@@ -162,8 +156,5 @@ var dragItem = document.querySelector("#master_control");
 <a href="#" id="totop">
 	<i class="ti-angle-double-up"></i>
 </a>
-
-<div class="clearfix"></div>
-
 	</body>
 </html>
