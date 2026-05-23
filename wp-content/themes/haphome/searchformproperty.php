@@ -17,6 +17,7 @@
 	background: var(--btn);
 	color: var(--text);
 	cursor:pointer;
+	width: 60px;
 }
 
 .filter-icon{
@@ -49,7 +50,7 @@
 	align-items:center;
 	justify-content:center;
 	background: rgba(0,0,0,.45);
-	z-index:9999;
+	z-index:100;
 	opacity:0;
 	visibility:hidden;
 	transition:.25s;
@@ -68,7 +69,6 @@
 	background:#fff;
 	border-radius:4px;
 	box-shadow:0 20px 60px rgba(0,0,0,.2);
-	padding:24px;
 	overflow-y:auto;
 	position:relative;
 }
@@ -98,6 +98,7 @@
 	cursor:pointer;
 	font-size:20px;
 	font-weight:700;
+	z-index: 100;
 }
 
 .filter-popup-inner .lable-filter{
@@ -110,7 +111,7 @@
 .filter-popup-inner .filter-title{
 	font-size: 18px;
 	color: #2c2c2c;
-    padding: 10px;
+    padding: 5px;
 	font-weight: normal !important;
 }
 
@@ -129,6 +130,7 @@
 	flex-wrap: wrap;
 	gap: 8px;
     padding: 4px;
+	margin-top: 10px;
 }
 .tag-group .tag-btn{
 	background: #f2f2f2;
@@ -289,7 +291,7 @@
 .filter-section{
 	border-bottom:1px solid #e5e7eb;
 	padding-bottom:10px;
-	margin-bottom:10px;
+	padding:24px;
 }
 
 .filter-line{
@@ -298,8 +300,8 @@
 
 .filter-section:last-child{
 	border-bottom:none;
-	margin-bottom:0;
-	padding-bottom:0;
+	margin-bottom:10px;
+	/* padding-bottom:0; */
 }
 
 .re__slider-bar .ui-slider-handle{
@@ -313,14 +315,81 @@ body.dragging{
 }
 
 .re__slider-bar{
-	touch-action:none;
+	touch-action:pan-y;
 }
 
 .ui-slider-handle{
 	touch-action:none;
 }
 
+.filter-popup-header{
+    position: sticky;
+    top: 0;
+    z-index: 20;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    background:#fff;
+    padding:16px 20px;
+    border-bottom:1px solid #e5e7eb;
+}
+
+.filter-popup-header .lable-filter{
+    margin:0;
+    padding:0;
+    border:none;
+    font-size:24px;
+    font-weight:600;
+}
+
+.filter-popup-header .filter-popup-close{
+    position:absolute;
+    right:16px;
+    top:50%;
+    transform:translateY(-50%);
+}
+
+body.popup-open{
+	overflow:hidden !important;
+	height:100vh;
+	touch-action:none;
+	overscroll-behavior:none;
+}
+
+.search-action-group{
+	display:flex;
+	align-items:center;
+	gap:10px;
+}
+
+.search-submit-btn{
+	margin-top:0 !important;
+	width:auto !important;
+	flex:1;
+	height:48px;
+}
+
 @media (max-width: 768px){
+	.search-action-group{
+		width:100%;
+	}
+
+	.search-filter-btn{
+		width:70px;
+		flex-shrink:0;
+		justify-content:center;
+	}
+
+	.search-submit-btn{
+		width:100% !important;
+	}
+
+	.btn{
+		width: 100%;
+	}
+
     .filter-popup{
         position: fixed;
 		inset: 0;
@@ -335,9 +404,16 @@ body.dragging{
         max-width: 100%;
         max-height: 70vh;
         margin: 0 auto;
-        border-radius: 12px;
+        border-radius: 4px;
         overflow-y: auto;
     }
+
+	.re__slider-bar{
+		width:100%;
+		max-width:320px;
+		margin-left:auto;
+		margin-right:auto;
+	}
 }
 </style>
 <!-- Property search -->
@@ -349,12 +425,15 @@ body.dragging{
 	</div>
 
 	<div class="filter-wrap">
-		<!-- POPUP -->
+		<!-- POPUP DESKTOP-->
 		<div class="filter-popup" id="filterPopup">
 			<div class="filter-popup-inner">
+			
+			<div class="filter-popup-header">
+				<label class="lable-filter" > Bộ lọc </label>
+				<button type="button" class="filter-popup-close" id="closeFilterPopup"> × </button>
+			</div>
 
-			<label class="lable-filter" > Bộ lọc </label>
-			<button type="button" class="filter-popup-close" id="closeFilterPopup"> × </button>
 
 				<div class="filter-section filter-line">
 					<div class="filter-tag-lable"> 
@@ -532,13 +611,14 @@ body.dragging{
 			<input type="hidden" name="post_type" value="property">
 			<input type="hidden" name="property_location" id="property_location">
 
-		<button type="button" class="search-filter-btn" id="openFilter">
-			<img src="<?php echo get_template_directory_uri(); ?>/img/filter.png" alt="filter" class="filter-icon">
-			<!-- <span>Lọc</span> -->
-			<span class="filter-count" id="filterCount">0</span>
-		</button>
+		<div class="search-action-group">
+			<button type="button" class="search-filter-btn" id="openFilter">
+				<img src="<?php echo get_template_directory_uri(); ?>/img/filter.png" alt="filter" class="filter-icon">
+				<span class="filter-count" id="filterCount">0</span>
+			</button>
 
-	<button type="submit" class="btn"><span class="ti-search"></span> Tìm kiếm</button>
+			<button type="submit" class="btn"><span class="ti-search"></span> Tìm kiếm</button>
+		</div>
 </form>
 <!-- end Property search -->
  <script>
@@ -548,29 +628,35 @@ document.addEventListener('DOMContentLoaded', function(){
 	const countEl = document.getElementById('filterCount');
 	const popupInner = document.querySelector('.filter-popup-inner');
 	const closeBtn = document.getElementById('closeFilterPopup');
+
+	function openPopup(){
+		popup.classList.add('active');
+		document.body.classList.add('popup-open');
+		document.documentElement.classList.add('popup-open');
+	}
+
+	function closePopup(){
+		popup.classList.remove('active');
+
+		document.body.classList.remove('popup-open');
+		document.documentElement.classList.remove('popup-open');
+	}
 	
 	openBtn.addEventListener('click', function(e){
 		e.stopPropagation();
-		popup.classList.toggle('active');
-		if(popup.classList.contains('active')){
-			document.body.style.overflow = 'hidden';
-		}else{
-			document.body.style.overflow = '';
-		}
+		openPopup();
 	});
 
-	closeBtn.addEventListener('click', function(){
-		popup.classList.remove('active');
-		document.body.style.overflow = '';
-	});
+	closeBtn.addEventListener('click', closePopup);
 
-	popup.addEventListener('click', function(e){
-		if(!popupInner.contains(e.target)){
-			popup.classList.remove('active');
-			document.body.style.overflow = '';
-		}
+	['click', 'touchstart'].forEach(function(eventType){
+		popup.addEventListener(eventType, function(e){
+			if(e.target === popup){
+				closePopup();
+				e.stopPropagation();
+			}
+		});
 	});
-
 	function updateFilterCount(){
 		let count = 0;
 		const areaMin = parseInt(document.getElementById('area_min').value || 0);
@@ -592,9 +678,22 @@ document.addEventListener('DOMContentLoaded', function(){
 			if(propertyStatus.value !== '0'){
 				count++;
 			}
+		
 		const propertyType = document.querySelector('select[name="property_type"]');
 
+		
 			if(propertyType.value !== '0'){
+				count++;
+			}
+		
+
+		const parentLocation = document.querySelector('#parent_location');
+			if(parentLocation && parentLocation.value !== ''){
+				count++;
+			}
+
+		const childLocation = document.querySelector('#child_location');
+			if(childLocation && childLocation.value !== ''){
 				count++;
 			}
 			if(document.querySelector('.bedroom-btn.active')){
@@ -608,13 +707,31 @@ document.addEventListener('DOMContentLoaded', function(){
 			}
 			countEl.innerText = count;
 		}
+
+			
 		window.updateFilterCount = updateFilterCount;
-		updateFilterCount();});
 		document.querySelectorAll('#filterPopup select').forEach(function(select){
+
+		const parentLocation = document.getElementById('parent_location');
+		const childLocation = document.getElementById('child_location');
+
+		if(parentLocation){
+			parentLocation.addEventListener('change', updateFilterCount);
+		}
+
+		if(childLocation){
+			childLocation.addEventListener('change', updateFilterCount);
+		}
+
+		document.querySelectorAll('select[name="property_status"], select[name="property_type"]').forEach(function(select){
+			select.addEventListener('change', updateFilterCount);
+		});
+
 		select.addEventListener('change', function(){
 		updateFilterCount();
 	});
 });
+updateFilterCount();});
 </script>
 
 <script>
@@ -1114,59 +1231,8 @@ document.addEventListener('DOMContentLoaded', function () {
 		updatePriceSlider();
 		updateFilterCount();
 	});
-
-	value = parseInt(value);
-	currentPriceMin = value;
-
-	if(currentPriceMax !== PRICE_MAX && currentPriceMin > currentPriceMax){
-
-		priceMaxInput.value = '';
-		priceHiddenMax.value = '';
-
-	}else{
-
-		if(currentPriceMax !== PRICE_MAX){
-
-			priceMaxInput.value =
-				'Đến ' + formatInputPrice(currentPriceMax);
-		}
-	}
-
-	this.value = 'Từ ' + formatInputPrice(value);
-	updatePriceSlider();
-	updateFilterCount();
 });
 </script>
-
-	<script>
-    /*$(document).ready(function(){
-      $('button[type="submit"]').click(function(e){
-        e.preventDefault();
-        var property_location = $('#parent_location').val();
-        var child_location = $('#child_location').val();
-        if(child_location != ''){
-          property_location = child_location;
-        }
-
-        $('#property_location').val(property_location);
-        $('#form-search').submit();
-      });
-    });*/
-    
-    /*$(document).ready(function(){
-		$('button[type="submit"]').click(function(e){
-			e.preventDefault();
-			var category = $('#quan-huyen').val();
-			var phuong_xa = $('#xa-phuong').val();
-			if(phuong_xa != ''){
-				category = phuong_xa;
-			}
-			
-			$('#category').val(category);
-			$('#form-search').submit();
-		});
-	});*/
-	</script>
 	
 <script>
 (function ($, root, undefined) {
