@@ -16,6 +16,7 @@ $query = new WP_Query(array(
 if ($query->have_posts()):
     while ($query->have_posts()) : $query->the_post();
 
+        set_query_var('is_ngop', true);
         get_template_part('loop-property/item-property');
 
     endwhile;

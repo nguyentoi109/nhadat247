@@ -7,7 +7,10 @@ get_header();
 ?>
 <section class="container wrap-content">
 	<main role="main" class="full-page">
-
+        <?php
+            set_query_var('breadcrumb_developer', 112);
+            get_template_part('custom-breadcrumb-developer');
+            ?>
 		<div class="list-style list-all">
 
 			<?php
@@ -34,7 +37,7 @@ get_header();
 			<?php if ($query->have_posts()) : ?>
                 
                 <?php while ($query->have_posts()) : $query->the_post(); ?>
-
+                    <?php set_query_var('is_ngop', true);?>
                     <?php get_template_part('loop-property/item-property'); ?>
 
                 <?php endwhile; ?>

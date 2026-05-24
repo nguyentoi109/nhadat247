@@ -1,4 +1,30 @@
 <!-- <article id="post-<?php //the_ID(); ?>" class="list-news swiper-slide wow fadeInUp"> -->
+<style> 
+	.area{
+		color: #ffa600;
+	}
+	.meta-price{
+		color: #ffa600;
+	}
+	strong{
+		color: #ffa600;
+	}
+
+	.alt-icon{
+		width: 20px; 
+		height: 17px; 
+		vertical-align: middle;
+	}
+	.bedroom .alt-icon{
+		height: 20px;
+	}
+	.user-name{
+		color: var(--name);
+	}
+	.title-post{
+		color: #2c2c2c;
+	}
+</style>
 <article id="post-<?php the_ID(); ?>" class="list-news swiper-slide">
 
 <?php
@@ -12,11 +38,14 @@ $bathroom = rwmb_meta('prefix-bathroom');
 $bedroom = rwmb_meta('prefix-bedroom');
 $post_link = rwmb_meta('prefix-post');
 $phone_custom = rwmb_meta('prefix-phone-custom');
+$name_custom = rwmb_meta('prefix-name-custom');
 
 $status_terms = get_the_terms($post_id, "property_status");
 $price = (float)$price;
 ?>
 
+<?php $is_ngop = get_query_var('is_ngop', false);?>
+<?php if(!$is_ngop): ?>
 <div class="header-list-news">
     <span class="price">
 		<strong>
@@ -67,6 +96,7 @@ $price = (float)$price;
 		</strong>
 	</span>
 </div>
+<?php endif; ?>
 		<?php if (has_post_thumbnail()) : ?>
 <div class="thumb-list">
     <a class="thumb-4x3" href="<?php the_permalink(); ?>">
@@ -92,15 +122,63 @@ $price = (float)$price;
 			<h3 class="title-post">
 				<a href="<?php the_permalink(); ?>" title="<?php the_title(); ?>"><?php the_title(); ?></a>
 			</h3>
-      		<?php html5wp_excerpt('html5wp_index');?>
+      		<?php if(!$is_ngop): ?>
+				<?php html5wp_excerpt('html5wp_index');?>
+			<?php endif; ?>
 			<div class="meta">
+				<?php if($is_ngop): ?>
+					<span class="meta-price">
+						<strong>
+							<?php
+								if ($price) {
+									if ($price >= 1000000000) {
+										$value = $price / 1000000000;
+										echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
+									} elseif ($price >= 1000000) {
+										$value = $price / 1000000;
+										echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
+									} else {
+										if ($unit == 'trieu' && $price > 1000) {
+											$value = $price / 1000;
+											echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
+										} else {
+											echo number_format($price, 0, ',', '.');
+										}
+									}
+								}
+								?>
+								</span>
+								<?php
+								if ($price) {
+									if ($price >= 1000000000) {
+										echo ' tỷ';
+									} elseif ($price >= 1000000) {
+										echo ' triệu';
+									} else {
+										if ($unit == 'trieu') {
+											if ($price > 1000) {
+												echo 'tỷ';
+											} else {
+												echo ' triệu';
+											}
+										} elseif ($unit == 'ty') {
+											echo ' tỷ';
+										} else {
+											echo ' đ';
+										}
+									}
+								}
+							?>
+						</strong>
+					</span> |
+					<?php endif; ?>
 				<span class="area">
 					<?php echo $area; ?> m<sup>2<sup>
 				</span> |
 				<span class="bedroom">
 					<img src="<?php echo get_template_directory_uri(); ?>/img/bedroom.png"
 						alt="Bedroom Icon"
-						style="width:15px;height:15px;vertical-align:middle;">
+						class="alt-icon">
 					<?php
 						$bedroom = get_post_meta($post->ID, 'prefix-bedroom', true);
 						if(!empty($bedroom)){
@@ -121,7 +199,7 @@ $price = (float)$price;
 				<span class="bathroom">
 					<img src="<?php echo get_template_directory_uri(); ?>/img/bathroom.png"
 						alt="Bathroom Icon"
-						style="width:15px;height:15px;vertical-align:middle;">
+						class="alt-icon">
 					<?php
 						$bathroom = get_post_meta($post->ID, 'prefix-bathroom', true);
 						if(!empty($bathroom)){
@@ -175,37 +253,45 @@ $price = (float)$price;
 
 			</div>
 			<div class="footer-content">
-			  <div class="author">
+			  <div class="user-name">
+					<?php
+						if(!empty($name_custom)){
+							echo esc_html($name_custom);
+						}else{
+							echo '';
+						}
+					?>
+				</div>
+				<div class="author">
             	<?php 
 				//get_template_part("meta-user")
 						if($phone_custom){
 							echo '<a class="phone" href="tel:'.$phone_custom.'"><span class="ti-mobile"></span> '.$phone_custom .'</a>';
 						}
 				?>
-
 			  </div>
-				<div class="date">
+				<!-- <div class="date">
 					<span class="ti-calendar"></span> 
 					<?php 
-						$post_timestamp = get_the_time('U');
-						$current_timestamp = current_time('timestamp');
+						// $post_timestamp = get_the_time('U');
+						// $current_timestamp = current_time('timestamp');
 
-						$post_date = date('Y-m-d', $post_timestamp);
-						$today = date('Y-m-d', $current_timestamp);
-						$yesterday = date('Y-m-d', strtotime('-1 day', $current_timestamp));
-						$two_days_ago = date('Y-m-d', strtotime('-2 days', $current_timestamp));
+						// $post_date = date('Y-m-d', $post_timestamp);
+						// $today = date('Y-m-d', $current_timestamp);
+						// $yesterday = date('Y-m-d', strtotime('-1 day', $current_timestamp));
+						// $two_days_ago = date('Y-m-d', strtotime('-2 days', $current_timestamp));
 
-						if ( $post_date == $today ) {
-							echo 'Hôm nay';
-						} elseif ( $post_date == $yesterday ) {
-							echo '1 ngày trước';
-						} elseif ( $post_date == $two_days_ago ) {
-							echo '2 ngày trước';
-						} else {
-							the_time('d/m/Y');
-						}
+						// if ( $post_date == $today ) {
+						// 	echo 'Hôm nay';
+						// } elseif ( $post_date == $yesterday ) {
+						// 	echo '1 ngày trước';
+						// } elseif ( $post_date == $two_days_ago ) {
+						// 	echo '2 ngày trước';
+						// } else {
+						// 	the_time('d/m/Y');
+						// }
 					?>
-				</div>
+				</div> -->
 			</div>
 		</div>
 		<div class="side-content">

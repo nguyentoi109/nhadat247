@@ -24,10 +24,15 @@ if ($query->have_posts()) :
     $temp_query = $wp_query;
     $wp_query = $query;
 ?>
+<?php
+    set_query_var('breadcrumb_location', 12);
+    set_query_var('breadcrumb_status', 6);
 
+    get_template_part('custom-breadcrumb');
+?>
     <div class="list-style">
         <?php while ($query->have_posts()) : $query->the_post(); ?>
-
+            <?php set_query_var('is_ngop', true);?>
             <?php get_template_part('loop-property/item-property'); ?>
 
         <?php endwhile; ?>

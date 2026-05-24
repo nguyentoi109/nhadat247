@@ -25,13 +25,19 @@
     --title-section:#16A085;
     
     /* title-post */
-     --title-post:#009BA1;
+     --title-post:#16A085;
 
      /* price */
      --price:#16A085;
 
      /* phone */
-     --phone:#16A085;
+     --phone:#999;
+
+     /* name */
+     --name:#999;
+
+     /* meta */
+     --meta:#444444;
 
      /* address */
     --address:#16A085;

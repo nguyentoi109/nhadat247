@@ -94,107 +94,121 @@
         display: block;
     }
 
-.mobile-floating-bar{
-    display:none;
-}
-
-@media(max-width:768px){
-
- .mobile-floating-bar{
-        position:fixed;
-        left:0;
-        right:0;
-        bottom:0;
-        width:100%;
-        background:#fff;
-
-        display:flex;
-        align-items:center;
-        gap:12px;
-        z-index: 9;
-
-        padding:10px 12px;
-        box-shadow:0 -2px 10px rgba(0,0,0,0.15);
+    .mobile-floating-bar{
+        display:none;
     }
 
+    .white-icon{
+        width:18px;
+        height:18px;
+        object-fit:contain;
+        vertical-align:middle;
+        filter: invert(1);
+    }
+    /* .ti-bathroom .white-icon{
+        height: 16px;
+    } */
+    .texx-label{
+        font-size: 17px;
+        vertical-align: middle;
+    }
 
-.mobile-floating-bar a{
-    text-decoration:none;
-    box-sizing:border-box;
-}
+@media(max-width:768px){
+    .mobile-floating-bar{
+            position:fixed;
+            left:0;
+            right:0;
+            bottom:0;
+            width:100%;
+            background:#fff;
 
-.mobile-floating-bar .avatar-btn{
-    width:64px;
-    height:64px;
-    min-width:64px;
-    border-radius:50%;
-    overflow:hidden;
-    border:2px solid #0e9aa7;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:#fff;
-}
+            display:flex;
+            align-items:center;
+            gap:12px;
+            z-index: 9;
 
-.mobile-floating-bar .avatar-btn img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    border-radius:50%;
-}
+            padding:10px 12px;
+            box-shadow:0 -2px 10px rgba(0,0,0,0.15);
+        }
 
-.mobile-floating-bar .zalo-btn{
-    height:64px;
-    width: 25%;
-    background:#fff;
-    border:1px solid #d9d9d9;
-    border-radius:14px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:10px;
-    padding:0 18px;
-    color:#111;
-    font-size:16px;
-    font-weight:700;
-    white-space:nowrap;
-}
 
-.mobile-floating-bar .zalo-btn img{
-    width:28px;
-    height:28px;
-    object-fit:contain;
-    flex-shrink:0;
-}
+    .mobile-floating-bar a{
+        text-decoration:none;
+        box-sizing:border-box;
+    }
 
-.mobile-floating-bar .call-btn{
-    height:64px;
-    background:linear-gradient(180deg,#11b4bd,#069aa3);
-    border-radius:14px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:10px;
-    padding:0 18px;
-    color:#fff !important;
-    font-size:16px;
-    font-weight:700;
-    white-space:nowrap;
-    flex:1.4;
-}
-.infor-bds{
-    display: none;
-}
-.infor-con{
-    display: none;
-}
+    .mobile-floating-bar .avatar-btn{
+        width:64px;
+        height:64px;
+        min-width:64px;
+        border-radius:50%;
+        overflow:hidden;
+        border:2px solid #0e9aa7;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:#fff;
+    }
 
-.mobile-floating-bar .phone-icon{
-    font-size:22px;
-    line-height:1;
-    filter:brightness(0) invert(1);
-    flex-shrink:0;
-}
+    .mobile-floating-bar .avatar-btn img{
+        width:100%;
+        height:100%;
+        object-fit:cover;
+        border-radius:50%;
+    }
+
+    .mobile-floating-bar .zalo-btn{
+        height:64px;
+        width: 25%;
+        background:#fff;
+        border:1px solid #d9d9d9;
+        border-radius:14px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:10px;
+        padding:0 18px;
+        color:#111;
+        font-size:16px;
+        font-weight:700;
+        white-space:nowrap;
+    }
+
+    .mobile-floating-bar .zalo-btn img{
+        width:28px;
+        height:28px;
+        object-fit:contain;
+        flex-shrink:0;
+    }
+
+    .mobile-floating-bar .call-btn{
+        height:64px;
+        background:linear-gradient(180deg,#11b4bd,#069aa3);
+        border-radius:14px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:10px;
+        padding:0 18px;
+        color:#fff !important;
+        font-size:16px;
+        font-weight:700;
+        white-space:nowrap;
+        flex:1.4;
+    }
+    .infor-bds{
+        display: none;
+    }
+    .infor-con{
+        display: none;
+    }
+
+    .mobile-floating-bar .phone-icon{
+        font-size:22px;
+        line-height:1;
+        filter:brightness(0) invert(1);
+        flex-shrink:0;
+    }
 }
 </style>
 <?php get_header(); ?>
@@ -207,6 +221,8 @@
         $unit = rwmb_meta( 'prefix-unit' );
         $area = rwmb_meta( 'prefix-area' );
         $address = rwmb_meta( 'prefix-address' );
+        $bathroom = rwmb_meta('prefix-bathroom');
+        $bedroom = rwmb_meta('prefix-bedroom');
         $video = rwmb_meta( 'prefix-video' );
         $id_video = explode('?v=', $video);
         $name_custom = rwmb_meta('prefix-name-custom');
@@ -492,8 +508,48 @@
                         : '---';
                     ?>
                 </li>
-                <li><span class="label"><span class="ti-ruler"></span> Diện tích:</span><?php echo $area; ?> m
+                <li><span class="label"><span class="ti-ruler"></span> Diện tích: </span><?php echo " ". $area; ?> m
                     <sup>2</sup>
+                </li>
+
+                <li>
+                    <span class="label">
+                        <img src="<?php echo get_template_directory_uri(); ?>/img/bedroom.png" alt="Bathroom Icon" class="white-icon"> 
+                        <span class="text-label">Phòng ngủ:</span>
+                    </span>
+                    <?php
+                        $bedroom = get_post_meta($post->ID, 'prefix-bedroom', true);
+
+                        if(!empty($bedroom)){
+                            if($bedroom == 6){
+                                echo 'Studio';
+                            }elseif($bedroom == 7){
+                                echo '1 phòng ngủ +';
+                            }elseif($bedroom == 8){
+                                echo '2 phòng ngủ +';
+                            }else{
+                                echo $bedroom . ' phòng ngủ';
+                            }
+                        }else{
+                            echo '&nbsp;';
+                        }
+                    ?>
+                </li>
+
+                <li>
+                    <span class="label"><span class="ti-bathroom"></span> 
+                        <img src="<?php echo get_template_directory_uri(); ?>/img/bathroom.png" alt="Bathroom Icon" class="white-icon">
+                         <span class="text-label">Nhà vệ sinh:</span>
+                    </span>
+
+                    <?php
+                        $bathroom = get_post_meta($post->ID, 'prefix-bathroom', true);
+                        if(!empty($bathroom)){
+                            echo $bathroom  ." phòng";
+                        }else{
+                            echo '&nbsp;';
+                        }
+                    ?>
                 </li>
             </ul>
 
