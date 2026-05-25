@@ -8326,9 +8326,9 @@ border-radius .read-more a:hover {
 }
 .detail-page h1 {
   clear: both;
-  font-size: 3rem;
-  font-weight: 700;
-  margin-bottom: 10px;
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: normal;
   color: var(--title-post);
   font-family: "Lexend", serif;
 }
@@ -8481,11 +8481,13 @@ border-radius .read-more a:hover {
 }
 .title-box-detail {
   position: relative;
-  font-weight: 600;
-  text-shadow: 1px 1px 0 #fff;
-  font-size: 2.5rem;
+  font-weight: normal;
+  font-size: 18px;
   clear: both;
-  font-family: "Source Serif Pro", serif;
+  font-family: "Lexend";
+  color: rgb(44, 44, 44);
+  line-height: 28px;
+  margin-top: 28px;
 }
 .block-detail {
   border-bottom: 1px solid #debe20;
@@ -8494,22 +8496,7 @@ border-radius .read-more a:hover {
 .block-detail p {
   padding-bottom: 10px;
 }
-.list-detail-real {
-  width: 100%;
-  float: left;
-  margin-bottom: 30px;
-  padding: 0 0 0 20px;
-  border-radius: 3px;
-  background: var(--bg-color);
-  color: #fff;
-  flex-wrap: wrap;
-}
-.list-detail-real li {
-  width: calc(50% - 20px);
-  margin: 0 20px 0 0;
-  padding: 10px 0;
-  transition: all 0.3s ease;
-}
+
 .list-detail-real li:nth-last-child(1),
 .list-detail-real li:nth-last-child(2) {
   border-bottom: none;
@@ -8521,10 +8508,7 @@ border-radius .read-more a:hover {
 /* .list-detail-real li span[class*="ti"] {
   margin-right: 5px;
 } */
-.list-detail-real .label {
-  font-weight: 600;
-  display: inline-block;
-}
+
 .list-detail-real.box-media {
   padding: 0;
 }
@@ -8773,8 +8757,6 @@ border-radius .read-more a:hover {
 }
 @media only screen and (max-width: 600px) {
   .list-detail-real {
-    width: calc(100% + 30px);
-    margin-left: -15px;
     border-radius: 0;
   }
   .list-detail-real li {
@@ -8848,7 +8830,7 @@ border-radius .read-more a:hover {
     font-size: 2.5rem;
   }
   .detail-page h1 {
-    font-size: 2.5rem;
+    font-size: 24px;
   }
   .featured-news-2 .right-news .wrap-list {
     max-height: 350px;

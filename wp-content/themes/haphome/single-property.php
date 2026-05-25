@@ -103,7 +103,7 @@
         height:18px;
         object-fit:contain;
         vertical-align:middle;
-        filter: invert(1);
+        /* filter: invert(1); */
     }
     /* .ti-bathroom .white-icon{
         height: 16px;
@@ -113,13 +113,78 @@
         vertical-align: middle;
     }
 
-    .info-contact strong{
-        color:#fff !important;
-    }
+.list-detail-real{
+    width:100%;
+    margin:20px 0 30px;
+    padding:0;
+    list-style:none;
+    display:flex;
+    flex-wrap:wrap;
+    border-bottom:1px solid #e5e5e5;
+}
 
-    .info-contact .name{
-        color:#fff;
-    }
+.list-detail-real li{
+    width:50%;
+    box-sizing:border-box;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 10px 15px 10px 5px;
+    border:1px solid #e5e5e5;
+    font-family:"Roboto";
+    font-size:16px;
+    color:#2c2c2c;
+}
+
+.list-detail-real li:nth-child(odd){
+    padding-right:35px;
+}
+
+.list-detail-real li:nth-child(even){
+    padding-left:5px;
+}
+
+.item-left{
+    display:flex;
+    align-items:center;
+    gap:9px;
+}
+
+.item-right{
+    text-align:right;
+    font-weight:400;
+    color:#2c2c2c;
+}
+
+.list-detail-real .label{
+    font-size:16px;
+    font-weight:600;
+    color:#2c2c2c;
+    margin:0;
+}
+
+.list-detail-real .icon{
+    width:34px;
+    height:34px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+    color:#000;
+    flex-shrink:0;
+}
+
+.all-location{
+    margin-bottom: 15px;
+    border-bottom: 1px solid #cccccc;
+    padding-bottom: 20px;
+    margin-top: 10px;
+    font-size: 16px;
+    font-family: 'Roboto';
+    line-height: 20px;
+    color: #2c2c2c;
+    font-weight: normal;
+}
 
 @media(max-width:768px){
     .mobile-floating-bar{
@@ -216,6 +281,28 @@
         line-height:1;
         filter:brightness(0) invert(1);
         flex-shrink:0;
+    }
+    .list-detail-real li{
+        width:100%;
+    }
+
+    .list-detail-real li:nth-child(odd),
+    .list-detail-real li:nth-child(even){
+        padding-left:5px;
+        padding-right:15px;
+    }
+
+    .item-left{
+        min-width:140px;
+        gap:10px;
+    }
+
+    .list-detail-real .label{
+        font-size:15px;
+    }
+
+    .item-right{
+        font-size:14px;
     }
 }
 </style>
@@ -390,176 +477,191 @@
             <?php edit_post_link('<i class="ti-pencil"></i>'); }// Always handy to have Edit Post Links available ?>
 
             <h1><?php the_title(); ?></h1>
+            
+            <div class="all-location">
+                <span class="icon">
+                    <span class="ti-location-pin"></span>
+                </span>
 
-            <p class="price">
-                <strong><span class="ti-tag"></span> Giá:</strong>
-                    <span class="num">
-                            <?php
-                            if ($price) {
+                <span class="address-inline">
+                    <?php echo esc_html($address); ?>
+                    <?php
+                        $terms = get_the_terms(get_the_ID(), "property_location");
+                        if (!empty($terms) && !is_wp_error($terms)) {
+                            echo implode(', ', wp_list_pluck($terms, 'name'));
+                        }
+                    ?>
+                </span>
+            </div>
 
-                                if ($price >= 1000000000) {
-
-                                    $value = $price / 1000000000;
-
-                                    echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
-
-                                } elseif ($price >= 1000000) {
-
-                                    $value = $price / 1000000;
-
-                                    echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
-
-                                } else {
-
-                                    echo number_format($price, 0, ',', '.');
-
-                                }
-
-                            }
-                            ?>
+             <h2 class="title-box-detail">Thông tin Bất động sản</h2>
+                <ul class="list-detail-real">
+                    
+                    <li>
+                        <div class="item-left">
+                            <span class="icon">
+                                <span class="ti-tag"></span>
                             </span>
 
-                            <?php
-                            if ($price) {
+                            <span class="label">Giá</span>
+                        </div>
 
-                                if ($price >= 1000000000) {
-
-                                    echo ' tỷ';
-
-                                } elseif ($price >= 1000000) {
-
-                                    echo ' triệu';
-
-                                } else {
-
-                                    if ($unit == 'trieu') {
-
-                                        echo ' triệu';
-
-                                    } elseif ($unit == 'ty') {
-
-                                        echo ' tỷ';
-
-                                    } else {
-
-                                        echo ' đ';
-
+                        <div class="item-right">
+                           <span class="num">
+                                <?php
+                                    if ($price) {
+                                        if ($price >= 1000000000) {
+                                            $value = $price / 1000000000;
+                                            echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
+                                        } elseif ($price >= 1000000) {
+                                            $value = $price / 1000000;
+                                            echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
+                                        } else {
+                                            if ($unit == 'trieu' && $price > 1000) {
+                                                $value = $price / 1000;
+                                                echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
+                                            } else {
+                                                echo number_format($price, 0, ',', '.');
+                                            }
+                                        }
                                     }
+                                    ?>
+                                    </span>
+                                    <?php
+                                    if ($price) {
+                                        if ($price >= 1000000000) {
+                                            echo ' tỷ';
+                                        } elseif ($price >= 1000000) {
+                                            echo ' triệu';
+                                        } else {
+                                            if ($unit == 'trieu') {
+                                                if ($price > 1000) {
+                                                    echo 'tỷ';
+                                                } else {
+                                                    echo ' triệu';
+                                                }
+                                            } elseif ($unit == 'ty') {
+                                                echo ' tỷ';
+                                            } else {
+                                                echo ' đ';
+                                            }
+                                        }
+                                    }
+                                ?>
+                            </span>
+                        </div>
+                    </li>
 
+                    <li>
+                        <div class="item-left">
+                            <span class="icon">
+                                <span class="ti-ruler"></span>
+                            </span>
+
+                            <span class="label">Diện tích</span>
+                        </div>
+
+                        <div class="item-right">
+                            <?php echo !empty($area) ? $area : '0'; ?> m<sup>2</sup>
+                        </div>
+                    </li>
+
+                    <li>
+                        <div class="item-left">
+                            <span class="icon">
+                                <img src="<?php echo get_template_directory_uri(); ?>/img/bedroom.png"
+                                    alt="Bedroom Icon"
+                                    class="white-icon">
+                            </span>
+
+                            <span class="label">Phòng ngủ</span>
+                        </div>
+
+                        <div class="item-right">
+                            <?php
+                            $bedroom = get_post_meta($post->ID, 'prefix-bedroom', true);
+                            if (!empty($bedroom)) {
+                                if ($bedroom == 6) {
+                                    echo 'Studio';
+                                } elseif ($bedroom == 7) {
+                                    echo '1+';
+                                } elseif ($bedroom == 8) {
+                                    echo '2+';
+                                } else {
+                                    echo $bedroom ;
                                 }
-
+                            } else {
+                                echo '---';
                             }
                             ?>
-                    </span>
-            </p>
-            </p>
-            <?php //echo $unit == 'ty' ? ' selected' : ''?>
+                        </div>
+                    </li>
+
+                    <li>
+                        <div class="item-left">
+                            <span class="icon">
+                                <img src="<?php echo get_template_directory_uri(); ?>/img/bathroom.png"
+                                    alt="Bathroom Icon"
+                                    class="white-icon">
+                            </span>
+
+                            <span class="label">Nhà vệ sinh, nhà tắm</span>
+                        </div>
+
+                        <div class="item-right">
+                            <?php
+                            $bathroom = get_post_meta($post->ID, 'prefix-bathroom', true);
+
+                            if (!empty($bathroom)) {
+                                echo $bathroom;
+                            } else {
+                                echo '---';
+                            }
+                            ?>
+                        </div>
+                    </li>
+
+                    <li>
+                        <div class="item-left">
+                            <span class="icon">
+                                <span class="ti-direction-alt"></span>
+                            </span>
+                            <span class="label">Hướng</span>
+                        </div>
+                        <div class="item-right">
+                            <?php
+                            $terms = get_the_terms(get_the_ID(), "property_direction");
+
+                            echo (!empty($terms) && !is_wp_error($terms))
+                                ? implode(', ', wp_list_pluck($terms, 'name'))
+                                : '---';
+                            ?>
+                        </div>
+                    </li>
+
+                    <li>
+                        <div class="item-left">
+                            <span class="icon">
+                                <span class="ti-layout-grid2"></span>
+                            </span>
+                            <span class="label">Loại BĐS</span>
+                        </div>
+                        <div class="item-right">
+                            <?php
+                            $terms = get_the_terms(get_the_ID(), "property_type");
+                            echo (!empty($terms) && !is_wp_error($terms))
+                                ? implode(', ', wp_list_pluck($terms, 'name'))
+                                : '---';
+                            ?>
+                        </div>
+                    </li>
+                </ul>
 
             <h2 class="title-box-detail">Mô tả</h2>
             <div class="description block-detail">
                 <?php the_content(); ?>
             </div>
             <div class="infor-bds">
-            <h2 class="title-box-detail">Thông tin Bất động sản</h2>
-            <ul class="list-detail-real">
-                <li>
-                    <span class="label">
-                        <span class="ti-location-pin"></span> Khu vực:
-                    </span>
-                    <?php
-                    $terms = get_the_terms(get_the_ID(), "property_location");
-                    echo (!empty($terms) && !is_wp_error($terms))
-                        ? implode(', ', wp_list_pluck($terms, 'name'))
-                        : '---';
-                    ?>
-                </li>
-                <li>
-                    <span class="label">
-                        <span class="ti-map-alt"></span> Địa chỉ:
-                    </span>
-                    <?php echo !empty($address) ? esc_html($address) : '---'; ?>
-                </li>
-                <li>
-                    <span class="label">
-                        <span class="ti-direction-alt"></span> Hướng:
-                    </span>
-                    <?php
-                    $terms = get_the_terms(get_the_ID(), "property_direction");
-                    echo (!empty($terms) && !is_wp_error($terms))
-                        ? implode(', ', wp_list_pluck($terms, 'name'))
-                        : '---';
-                    ?>
-                </li>
-                <li>
-                    <span class="label"><span class="ti-menu-alt"></span> Loại tin:</span>
-                    <?php
-                        $status_terms = get_the_terms( $post->ID,"property_status" );
-                        if(!empty( $status_terms )){
-                            $status_count = 0;
-                            foreach( $status_terms as $term ){
-                                if( $status_count > 0 ){
-                                    echo ', ';
-                                }
-                                echo $term->name;
-                            }
-                        }
-                    ?>
-                </li>
-                <li>
-                    <span class="label">
-                        <span class="ti-menu-alt"></span> Loại BĐS:
-                    </span>
-                    <?php
-                    $terms = get_the_terms(get_the_ID(), "property_type");
-                    echo (!empty($terms) && !is_wp_error($terms))
-                        ? implode(', ', wp_list_pluck($terms, 'name'))
-                        : '---';
-                    ?>
-                </li>
-                <li><span class="label"><span class="ti-ruler"></span> Diện tích: </span><?php echo " ". $area; ?> m
-                    <sup>2</sup>
-                </li>
-
-                <li>
-                    <span class="label">
-                        <img src="<?php echo get_template_directory_uri(); ?>/img/bedroom.png" alt="Bathroom Icon" class="white-icon"> 
-                        <span class="text-label">Phòng ngủ:</span>
-                    </span>
-                    <?php
-                        $bedroom = get_post_meta($post->ID, 'prefix-bedroom', true);
-
-                        if(!empty($bedroom)){
-                            if($bedroom == 6){
-                                echo 'Studio';
-                            }elseif($bedroom == 7){
-                                echo '1 phòng ngủ +';
-                            }elseif($bedroom == 8){
-                                echo '2 phòng ngủ +';
-                            }else{
-                                echo $bedroom . ' phòng ngủ';
-                            }
-                        }else{
-                            echo '&nbsp;';
-                        }
-                    ?>
-                </li>
-
-                <li>
-                    <span class="label"><span class="ti-bathroom"></span> 
-                        <img src="<?php echo get_template_directory_uri(); ?>/img/bathroom.png" alt="Bathroom Icon" class="white-icon">
-                         <span class="text-label">Nhà vệ sinh:</span>
-                    </span>
-
-                    <?php
-                        $bathroom = get_post_meta($post->ID, 'prefix-bathroom', true);
-                        if(!empty($bathroom)){
-                            echo $bathroom  ." phòng";
-                        }else{
-                            echo '&nbsp;';
-                        }
-                    ?>
-                </li>
-            </ul>
 
             <?php if ( $video ) : ?>
             <h2 class="title-box-detail">Video</h2>
