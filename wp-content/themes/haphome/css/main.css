@@ -4744,7 +4744,7 @@ aside .content-inf p {
   width: 100%;
   float: left;
   margin-bottom: 15px;
-  padding-bottom: 15px;
+  /* padding-bottom: 15px; */
   border-bottom: 1px solid #eee;
 }
 @media only screen and (max-width: 1024px) {
@@ -5888,9 +5888,9 @@ nav a {
 .main-menu > li > .sub-menu > li {
   position: relative;
 }
-.main-menu > li > .sub-menu > li:not(:last-child) {
+/* .main-menu > li > .sub-menu > li:not(:last-child) {
   border-bottom: 1px solid #ffe73f40;
-}
+} */
 .main-menu > li > .sub-menu > li > .sub-menu {
   min-width: 200px;
   background: var(--bg-color);
@@ -6246,7 +6246,7 @@ nav a {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  margin-bottom: 15px;
+  margin-bottom: 5px;
   color: var(--title-post);
 }
 .wrap-btn-quick-view {
@@ -6503,6 +6503,8 @@ nav a {
 }
 .des{
   color: var(--desc) !important;
+  font-family: "Roboto";
+  font-size: 14px;
 }
 @media only screen and (max-width: 1279px) {
   .list-style .content .des {
@@ -6514,10 +6516,13 @@ nav a {
   font-size: 18px;
   color: var(--meta);
   line-height: 26px;
+  font-family: "Roboto Regular", Roboto, Arial;
+  margin-top: 8px;
 }
 
 .meta{
   color: var(--meta);
+  font-family: "Roboto Regular", Roboto, Arial;
 }
 .list-style .side-content {
   background: linear-gradient(42deg, #a17400 0%, #ffe8a0 42%, #ffa600 100%);
@@ -6819,6 +6824,7 @@ nav a {
 .featured-post .item:first-child .title-post {
   clear: both;
   font-size: 2.6rem;
+  color: var(--title-h2);
 }
 @media only screen and (max-width: 767px) {
   .featured-post .item:first-child {
@@ -6847,6 +6853,8 @@ nav a {
 }
 .featured-post .item:nth-child(2) .title-post {
   clear: both;
+  color: var(--title-h2);
+  font-weight: 400;
 }
 .featured-post .item:nth-child(2) .des {
   display: none;
@@ -6884,6 +6892,8 @@ nav a {
 }
 .featured-post .item:nth-child(3) .title-post {
   clear: both;
+  color: var(--title-h2);
+  font-weight: 400;
 }
 .featured-post .item:nth-child(3) .des {
   display: none;
@@ -6924,6 +6934,8 @@ nav a {
   font-size: 1.5rem;
   display: inline-block;
   margin-top: -6px;
+  color: var(--title-h2);
+  font-weight: 400;
 }
 .featured-post .item:nth-child(n + 4) .des {
   display: none;
@@ -7702,6 +7714,7 @@ border-radius .read-more a:hover {
   border-radius: 3px;
   padding: 10px;
   font-size: 20px;
+  margin-top: 30px;
 }
 .block .list-news-block {
   width: 100%;
@@ -7960,7 +7973,8 @@ border-radius .read-more a:hover {
   }
 }
 .category .list-news .title-post {
-  color: var(--title-post);
+  color: var(--title-h2);
+  font-weight: 400;
 }
 @media only screen and (max-width: 767px) {
   .category .list-news .title-post {

@@ -99,16 +99,16 @@
     .mobile-nav .submenu-toggle {
         position: absolute;
         top: 0;
-        right: 0;
-        width: 44px;
+        right: -2px;
+        width: 60px;
         height: 48px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 22px;
+        font-size: 17px;
         font-weight: 700;
         cursor: pointer;
-        color: #333;
+        color: #FFF;
     }
 
     .mobile-nav .sub-menu {
@@ -174,9 +174,9 @@
         justify-content:center;
     }
 
-    .header-right{
+    /* .header-right{
         display:none !important;
-    }
+    } */
 
     .desktop-nav{
         display:none !important;
@@ -233,7 +233,7 @@
         padding-top:60px;
     }
 
-    .mobile-extra-link{
+    /* .mobile-extra-link{
         display:flex;
         align-items:center;
         gap:10px;
@@ -246,7 +246,7 @@
 
     .mobile-extra-link span{
         font-size:18px;
-    }
+    } */
 }
 </style>
 
@@ -390,7 +390,7 @@ window.addEventListener("load", function(){
                     <?php html5blank_nav(); ?>
 
                     <div class="mobile-extra">
-                    <a href="<?php echo home_url('tinh-lai-suat-vay'); ?>" class="mobile-extra-link">
+                    <!-- <a href="<?php echo home_url('tinh-lai-suat-vay'); ?>" class="mobile-extra-link">
                         <span class="ti-bar-chart-alt"></span>
                         Tính lãi suất
                     </a>
@@ -398,7 +398,7 @@ window.addEventListener("load", function(){
                         <span class="ti-location-pin"></span>
                         Chuyển đổi địa chỉ
                     </a>
-                </div>
+                </div> -->
             </nav>
             <!-- /nav -->
          </section> 

@@ -27,23 +27,25 @@
     /* title-post */
      --title-post:#16A085;
 
+     --title-h2:#1c1f22;
+
      /* price */
      --price:#16A085;
 
      /* phone */
-     --phone:#999;
+     --phone:#2c2c2c;
 
      /* name */
-     --name:#999;
+     --name:#2c2c2c;
 
      /* meta */
-     --meta:#444444;
+     --meta:#999;
 
      /* address */
     --address:#16A085;
 
     /* desc */
-    --desc:#2C2C2C;
+    --desc:#1c1f22;
 
     /* date  */
     --date:#16A085;

@@ -113,6 +113,14 @@
         vertical-align: middle;
     }
 
+    .info-contact strong{
+        color:#fff !important;
+    }
+
+    .info-contact .name{
+        color:#fff;
+    }
+
 @media(max-width:768px){
     .mobile-floating-bar{
             position:fixed;
