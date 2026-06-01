@@ -1,6 +1,33 @@
 <!doctype html>
 <html <?php language_attributes(); ?> class="no-js">
 <style>
+.link-login{
+    background:#fff;
+    color:#333;
+    border:1px solid #ddd;
+}
+
+.link-register{
+    background:#f2b600;
+    color:#fff;
+}
+
+.link-login,
+.link-register{
+    padding:10px 16px;
+    border-radius:8px;
+    font-weight:600;
+    text-decoration:none;
+    transition:all .3s;
+}
+
+.link-register:hover{
+    background:#d89f00;
+}
+
+.link-login:hover{
+    background:#f5f5f5;
+}
 
 @media (max-width: 1024px){
 
@@ -315,14 +342,14 @@
 
 
 </head>
-<script>
+<!-- <script>
 window.addEventListener("load", function(){
 
     document.getElementById("loading-page").style.opacity = "0";
     document.getElementById("loading-page").style.visibility = "hidden";
 
 });
-</script>
+</script> -->
 
 <body id="container" <?php body_class(); ?>>
     <!-- <div id="loading-page">
@@ -376,6 +403,22 @@ window.addEventListener("load", function(){
                     <a href="<?php echo home_url('chuyen-doi-dia-chi'); ?>" class="link link-featured">
                         <span class="ti-location-pin"></span> <?php echo wp_is_mobile() ? 'Đổi địa chỉ' : 'Chuyển đổi địa chỉ' ?>
                     </a>
+                    <?php if (!is_user_logged_in()) : ?>
+                        <a href="javascript:void(0)" class="link link-login login">
+                            <span class="ti-user"></span>
+                            <?php echo wp_is_mobile() ? 'ĐN' : 'Đăng nhập'; ?>
+                        </a>
+
+                        <a href="<?php echo home_url('/dang-ky'); ?>" class="link link-register">
+                            <span class="ti-pencil-alt"></span>
+                            <?php echo wp_is_mobile() ? 'ĐK' : 'Đăng ký'; ?>
+                        </a>
+                    <?php else : ?>
+                        <a href="<?php echo wp_logout_url(home_url()); ?>" class="link link-login">
+                            <span class="ti-power-off"></span>
+                            Đăng xuất
+                        </a>
+                    <?php endif; ?>
                 </div>
             </div>
             <span class="mobile-menu"><span class="ti-menu"></span></span>
@@ -403,6 +446,10 @@ window.addEventListener("load", function(){
             <!-- /nav -->
          </section> 
         <!--End Main menu-->
+
+<div class="user">
+    <?php get_template_part('popup-login'); ?>
+</div>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 

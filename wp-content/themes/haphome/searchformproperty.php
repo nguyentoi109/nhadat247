@@ -1255,7 +1255,7 @@ $(function () {
         }
     });
 
-    $('button[type="submit"]').click(function(e){
+    $('#form-search .btn').click(function(e){
         e.preventDefault();
         var property_location = $('#parent_location').val();
         var child_location = $('#child_location').val();

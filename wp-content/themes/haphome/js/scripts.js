@@ -82,6 +82,15 @@
         $(".login, .user .mask-popup").click(function() {
             $('.user .popup-wrapper').toggleClass("show");
             $('.user .mask-popup').toggleClass("show");
+
+            $('body').addClass('popup-open');
+        });
+
+        $(".user .mask-popup").click(function() {
+            $('.user .popup-wrapper').removeClass("show");
+            $('.user .mask-popup').removeClass("show");
+
+            $('body').removeClass('popup-open');
         });
 
         $(".mask-popup").click(function() {
