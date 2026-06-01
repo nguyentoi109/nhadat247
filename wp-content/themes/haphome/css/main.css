@@ -221,6 +221,7 @@ table {
   font-weight: normal;
   font-style: normal;
 }
+
 .mdi:before,
 .mdi-set {
   display: inline-block;
@@ -458,6 +459,19 @@ table {
   font-weight: normal;
   font-style: normal;
 }
+
+@font-face {
+    font-family: 'Roboto-Regular';
+    src: url('../fonts/Roboto-Regular.ttf') format('truetype');
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: 'Roboto';
+    src: url('../fonts/Roboto-Bold.ttf') format('truetype');
+    font-weight: 700;
+}
+
 [class^="ti-"],
 [class*=" ti-"] {
   font-family: "themify";
@@ -8204,6 +8218,14 @@ border-radius .read-more a:hover {
 .breadcrumb_last {
   font-size: 1.4rem;
 }
+
+.content-detail{
+  font-family: 'Roboto-Regular';
+  font-size: 15px;
+  font-weight: normal;
+  line-height: 24px;
+}
+
 .content-detail h2,
 .content-detail h3,
 .content-detail h4,
@@ -8325,12 +8347,13 @@ border-radius .read-more a:hover {
   float: left;
 }
 .detail-page h1 {
-  clear: both;
+  /* clear: both; */
   font-size: 24px;
   line-height: 32px;
   font-weight: normal;
   color: var(--title-post);
   font-family: "Lexend", serif;
+  margin-bottom: 10px;
 }
 .detail-page .price {
   border-bottom: 1px solid #debe20;
@@ -8488,10 +8511,15 @@ border-radius .read-more a:hover {
   color: rgb(44, 44, 44);
   line-height: 28px;
   margin-top: 28px;
+  margin-bottom: 20px;
 }
 .block-detail {
-  border-bottom: 1px solid #debe20;
-  margin-bottom: 30px;
+  border-bottom: 1px solid #e5e5e5;
+  margin-bottom: 28px;
+  font-weight: normal;
+  font-family: 'Roboto-Regular';
+  font-size: 14px;
+  line-height: 24px;
 }
 .block-detail p {
   padding-bottom: 10px;
@@ -8514,19 +8542,20 @@ border-radius .read-more a:hover {
 }
 .info-contact,
 .info-contact-fixed {
-  background: var(--bg-color);
+  /* background: var(--bg-color); */
   padding: 20px;
-  border: 1px solid #f1f1f1;
+  border: 1px solid #e5e5e5;
   border-radius: 3px;
   width: 100%;
   float: left;
   align-items: center;
   box-shadow: 8px 0px 8px rgba(0, 0, 0, 0.06);
-  color: #fff;
+  color: #2c2c2c;
+  font-family: "Roboto";
 }
 .info-contact .avata-user,
 .info-contact-fixed .avata-user {
-  width: 200px;
+  width: 120px;
 }
 .info-contact .avata-user img,
 .info-contact-fixed .avata-user img {
@@ -8536,7 +8565,7 @@ border-radius .read-more a:hover {
 .info-contact .info-user,
 .info-contact-fixed .info-user {
   width: calc(100% - 200px);
-  padding-left: 20px;
+  padding-left: 30px;
 }
 .info-contact .info-user p,
 .info-contact-fixed .info-user p {
@@ -8545,8 +8574,9 @@ border-radius .read-more a:hover {
 }
 .info-contact .info-user .name,
 .info-contact-fixed .info-user .name {
-  font-family: "Source Serif Pro", serif;
-  font-size: 2.1rem;
+  font-family: "Roboto";
+  font-size: 16px;
+  font-weight: bold;
 }
 .info-contact-fixed {
   position: fixed;

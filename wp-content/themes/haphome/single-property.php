@@ -1,4 +1,8 @@
 <style>
+body{
+    background: #f2b60008 !important;
+}
+
 .description.block-detail img {
         text-align: center;
     }
@@ -418,7 +422,7 @@
             
             <?php if ( $maps ) : ?>
                 <!-- Maps -->
-            <div id="tab-maps" class="content-tab" style="position: absolute;opacity: 0;visibility: hidden;">
+            <div id="tab-maps" class="content-tab" style="position: absolute;opacity: 0;visibility: hidden; margin-bottom: 10px;">
                 <div class="wrap-maps">
                     <?php echo $maps; ?>
                 </div>
@@ -685,17 +689,15 @@
                     <a href="" class="thumb thumb-1x1"><?php echo get_avatar($gavatar, 300); ?></a>
                 </div>
                 <div class="info-user">
-                    <p><strong>Họ tên: <span
-                                class="name"><?php if($name_custom){echo $name_custom; }else{echo get_the_author_meta('nickname');} ?></span>
-                        </strong></p>
-                    <p><strong><span class="ti-email"></span>:&nbsp;</strong> <a target="_blank"
+                    <p><span class="name"><?php if($name_custom){echo $name_custom; }else{echo get_the_author_meta('nickname');} ?></span></p>
+                    <p><span class="ti-email"></span>:&nbsp;<a target="_blank"
                             href="https://mail.google.com/mail/?view=cm&fs=1&to=<?php if($email_custom){echo $email_custom;}else{echo get_the_author_meta('user_email');} ?>"
                             title="<?php if($email_custom){echo $email_custom;}else{echo get_the_author_meta('user_email');} ?>"><?php if($email_custom){echo $email_custom;}else{echo get_the_author_meta('user_email');} ?></a>
                     </p>
-                    <p><strong><span class="ti-mobile"></span>:&nbsp;</strong>
+                    <p><span class="ti-mobile"></span>:&nbsp;
                         <?php if($phone_custom){echo $phone_custom;}else{echo get_the_author_meta('phone');} ?> </p>
 
-                    <p><strong><span class="ti-direction"></span>:&nbsp;</strong>
+                    <p><span class="ti-location-pin"></span>:&nbsp;
                         <?php echo get_the_author_meta('address'); ?> </p>
                 </div>
             </div>
