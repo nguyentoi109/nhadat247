@@ -888,6 +888,34 @@ function custom_property_search_filter($query) {
 }
 add_action('pre_get_posts', 'custom_property_search_filter');
 
+
+add_action('wp_ajax_custom_ajax_login', 'custom_ajax_login');
+add_action('wp_ajax_nopriv_custom_ajax_login', 'custom_ajax_login');
+
+function custom_ajax_login(){
+
+    $creds = array(
+        'user_login'    => sanitize_text_field($_POST['username']),
+        'user_password' => $_POST['password'],
+        'remember'      => true
+    );
+
+    $user = wp_signon($creds, false);
+
+    if(is_wp_error($user)){
+
+        wp_send_json(array(
+            'success' => false,
+            'message' => 'Tên đăng nhập hoặc mật khẩu không đúng'
+        ));
+
+    }
+
+    wp_send_json(array(
+        'success' => true,
+        'redirect' => home_url()
+    ));
+}
 ///////////////////
 function html5blank_conditional_scripts() {}
 function html5_blank_view_article() {}
