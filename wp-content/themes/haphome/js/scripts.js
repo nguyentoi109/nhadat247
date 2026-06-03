@@ -93,6 +93,67 @@
             $('body').removeClass('popup-open');
         });
 
+        // REGISTER
+        $(".open-register-popup").click(function() {
+            $('.register .popup-wrapper').addClass("show");
+            $('.register .mask-popup').addClass("show");
+
+            $('body').addClass('popup-open');
+        });
+
+        $(".register .mask-popup").click(function() {
+            $('.register .popup-wrapper').removeClass("show");
+            $('.register .mask-popup').removeClass("show");
+
+            $('body').removeClass('popup-open');
+        });
+
+        $(document).on("click", ".open-register-from-login", function(e){
+            e.preventDefault();
+            $('.user .popup-wrapper').removeClass("show");
+            $('.user .mask-popup').removeClass("show");
+            $('.register .popup-wrapper').addClass("show");
+            $('.register .mask-popup').addClass("show");
+        });
+
+        $(document).on("click", ".open-login-from-register", function(e){
+            e.preventDefault();
+            $('.register .popup-wrapper').removeClass("show");
+            $('.register .mask-popup').removeClass("show");
+            $('.user .popup-wrapper').addClass("show");
+            $('.user .mask-popup').addClass("show");
+        });
+
+        // OTP
+        document.addEventListener("DOMContentLoaded", function(){
+            const mask = document.querySelector('.otp-mask');
+            mask.addEventListener('click', function(){
+                document.querySelector('.otp-popup').classList.remove('show');
+                document.querySelector('.otp-mask').classList.remove('show');
+            });
+        });
+
+        $(document).on("click", ".register-otp .mask-popup", function(){
+            $('.register-otp .popup-wrapper').removeClass('show');
+            $('.register-otp .mask-popup').removeClass('show');
+        });
+
+        $(document).on('click', '.otp-back-btn', function(e){
+            e.preventDefault();
+            $('.otp-popup').removeClass('show');
+            $('.otp-mask').removeClass('show');
+
+            $('.register .popup-wrapper').addClass('show');
+            $('.register .mask-popup').addClass('show');
+        });
+
+        // PASSWORD POP-UP
+        $(document).on("click", ".password-mask", function(){
+            $('.password-popup').removeClass('show');
+            $('.password-mask').removeClass('show');
+            $('body').removeClass('popup-open');
+        });
+
         $(".mask-popup").click(function() {
            if($('#filterPopup').hasClass('active')){
                 $('#filterPopup').removeClass('active');

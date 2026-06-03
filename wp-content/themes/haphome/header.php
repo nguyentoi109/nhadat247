@@ -405,12 +405,10 @@ window.addEventListener("load", function(){
                     </a>
                     <?php if (!is_user_logged_in()) : ?>
                         <a href="javascript:void(0)" class="link link-login login">
-                            <span class="ti-user"></span>
                             <?php echo wp_is_mobile() ? 'ĐN' : 'Đăng nhập'; ?>
                         </a>
 
-                        <a href="<?php echo home_url('/dang-ky'); ?>" class="link link-register">
-                            <span class="ti-pencil-alt"></span>
+                        <a href="javascript:void(0)" class="link link-register open-register-popup">
                             <?php echo wp_is_mobile() ? 'ĐK' : 'Đăng ký'; ?>
                         </a>
                     <?php else : ?>
@@ -449,6 +447,18 @@ window.addEventListener("load", function(){
 
 <div class="user">
     <?php get_template_part('popup-login'); ?>
+</div>
+
+<div class="register">
+    <?php get_template_part('popup-register'); ?>
+</div>
+
+<div class="register-otp">
+    <?php get_template_part('popup-register-otp'); ?>
+</div>
+
+<div class="register-password">
+    <?php get_template_part('popup-password'); ?>
 </div>
 <script>
 document.addEventListener("DOMContentLoaded", function () {

@@ -4504,6 +4504,7 @@ table {
 .popup-search-property {
   width: calc(100% - 30px);
   max-width: 500px;
+  min-height: 700px;
   position: fixed;
   left: 50%;
   top: 50%;
@@ -4519,7 +4520,7 @@ table {
 }
 .popup-wrapper.show,
 .show.popup-search-property {
-  transform: translate(-50%, -50%) scale(0.91);
+  transform: translate(-50%, -50%) scale(0.9);
   opacity: 1;
   visibility: visible;
 }
@@ -8521,9 +8522,9 @@ border-radius .read-more a:hover {
   font-size: 14px;
   line-height: 24px;
 }
-.block-detail p {
+/* .block-detail p {
   padding-bottom: 10px;
-}
+} */
 
 .list-detail-real li:nth-last-child(1),
 .list-detail-real li:nth-last-child(2) {
@@ -9460,5 +9461,216 @@ select.form-control option {
 
 .custom-breadcrumb span{
     color:#2c2c2c;
+}
+
+.section-form-login{
+    width:100%;
+    max-width:470px;
+    margin:auto;
+    padding:15px;
+}
+
+.login-title-small{
+    font-size:18px;
+    color:#333;
+    margin-bottom:8px;
+    font-weight:500;
+}
+
+.login-title{
+    font-size:24px;
+    font-weight:500;
+    line-height: 32px;
+    color:#2c2c2c;
+    margin-bottom:30px;
+    letter-spacing: -0.2px;
+    font-family: "Lexend";
+}
+
+.form-field input{
+    width:100%;
+    height:60px;
+    border: 1px solid rgb(204, 204, 204);
+    caret-color: rgb(0, 0, 0);
+    border-radius:8px;
+    padding-left:50px;
+    padding-right:15px;
+    font-size:16px;
+    font-family: "Roboto" !important;
+    line-height: 20px;
+}
+
+.login-user-input{
+    margin-bottom: 15px;
+}
+
+.form-field input:hover{
+    border: 1px solid rgb(44, 44, 44);
+    cursor: initial;
+}
+
+.btn-login{
+    font-family: 'Lexend';
+    display: inline-block;
+    width:100%;
+    height:60px;
+    border:none;
+    border-radius:8px;
+    background: #e03c31;
+    color:#ffffff;
+    font-size:16px;
+    font-weight:500;
+    line-height: 20px;
+    cursor:pointer;
+    margin-top:10px;
+}
+
+.btn-login:hover{
+    background:#ff837a;
+}
+
+.login-option{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin:20px 0;
+}
+
+.login-option a{
+    font-family: "Roboto";
+    color:#e03c31;
+    font-size: 16px;
+    line-height: 20px;
+    font-weight: 400;
+}
+
+.remember-wrap{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    cursor:pointer;
+}
+
+.remember-text{
+    font-family: "Roboto";
+    color:#2c2c2c;
+    font-size:16px;
+    font-weight:400;
+    line-height: 20px;
+}
+
+.divider{
+    font-family: "Roboto";
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:25px 0;
+    color: #999999;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+}
+
+.divider::before,
+.divider::after{
+    content:'';
+    flex:1;
+    height:1px;
+    background:#ddd;
+}
+
+.social-btn{
+    font-family: 'Lexend';
+    width:100%;
+    height:64px;
+    border: 1px solid #cccccc;
+    border-radius:8px;
+    background:#ffffff;
+    margin-bottom:16px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:10px;
+    font-size:14px;
+    font-weight:400;
+    color: #2c2c2c;
+}
+
+.social-btn:hover{
+    background-color: #f2f2f2;
+    color: #2c2c2c;
+    border: 1px solid #cccccc;
+}
+
+.login-policy{
+    font-family: "Roboto";
+    margin-top:30px;
+    text-align:center;
+    font-size:14.5px;
+    color:#888;
+    line-height:16px;
+}
+
+.login-policy a{
+    color:#e03c31;
+    text-decoration:none;
+}
+
+.login-register{
+    font-family: "Roboto";
+    text-align:center;
+    margin-top:40px;
+    font-size:16px;
+    line-height: 20px;
+}
+
+.login-register a{
+    color:#e03c31;
+    font-weight:500;
+    text-decoration:none;
+}
+
+.login-error{
+    color:#e03c31;
+    font-size:14px;
+    margin-bottom:10px;
+    margin-top: 8px;
+    text-align:left;
+    font-family: "Roboto";
+    font-weight: 400;
+    line-height: 16px;
+}
+
+.form-field{
+    position: relative;
+    display: flex;
+}
+
+.icon{
+    pointer-events: none;
+    position: absolute;
+    left: 15px;
+    top: 18px;
+}
+
+.icon-eye{
+    position: absolute;
+    right: 15px;
+    top: 20px;
+    cursor:pointer;
+}
+
+.register-policy {
+    font-family: "Roboto";
+    margin-top: 15px;
+    text-align: center;
+    font-size: 14.5px;
+    color: #888;
+    line-height: 16px;
+}
+
+.register-policy a {
+    color: #e03c31;
+    text-decoration: none;
 }
 /*# sourceMappingURL=main.css.map */
