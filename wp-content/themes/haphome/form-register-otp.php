@@ -141,127 +141,189 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function(){
-
     const inputs = document.querySelectorAll(".otp-input");
     const btnConfirm = document.getElementById("btn-con");
 
     function checkOtpComplete(){
-
         let otp = '';
-
         inputs.forEach(input => {
             otp += input.value;
         });
-
         btnConfirm.disabled = otp.length !== 6;
     }
-
     inputs.forEach((input, index) => {
-
         input.addEventListener("input", function(){
-
             this.value = this.value.replace(/[^0-9]/g,'');
-
             if(this.value.length === 1 && index < inputs.length - 1){
                 inputs[index + 1].focus();
             }
-
             checkOtpComplete();
         });
-
         input.addEventListener("keydown", function(e){
-
             if(e.key === "Backspace"){
-
                 if(this.value === '' && index > 0){
                     inputs[index - 1].focus();
                 }
-
                 setTimeout(checkOtpComplete, 0);
             }
-
         });
-
     });
-
     inputs[0].addEventListener("paste", function(e){
-
         e.preventDefault();
-
         const data = e.clipboardData.getData("text").trim();
-
         if(/^\d{6}$/.test(data)){
-
             data.split('').forEach((num, index) => {
                 inputs[index].value = num;
             });
-
             checkOtpComplete();
             inputs[5].focus();
         }
-
     });
-
     btnConfirm.disabled = true;
-
 });
 </script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function(){
-    function startOtpCountdown(){
-        let time = 60;
-        const countdownWrap = document.getElementById("otp-countdown");
-        const countdownTime = document.getElementById("otp-resend-time");
-        countdownWrap.innerHTML = ` <span>Gửi lại mã sau </span> <span id="otp-resend-time"> 01:00 </span>`;
-
-        const timer = setInterval(function(){
-            time--;
-            let minutes = Math.floor(time / 60);
-            let seconds = time % 60;
-            let display = String(minutes).padStart(2,'0') + ':' + String(seconds).padStart(2,'0');
-
-            document.getElementById('otp-resend-time').innerText = display;
-            if(time <= 0){
-                clearInterval(timer);
-                countdownWrap.innerHTML = `Không nhận được mã? <a href="javascript:void(0)" id="resend-otp" class="resend-otp"> Gửi lại mã </a> `;
-            }
-        },1000);
+    let otpTimer = null;
+    window.startOtpCountdown = function(){
+    let time = 60;
+    if(window.otpTimer){
+        clearInterval(window.otpTimer);
     }
-    startOtpCountdown();
+    document.getElementById("otp-countdown").innerHTML ='<span>Gửi lại mã sau </span><span id="otp-resend-time">01:00</span>';
 
-    // Click gửi lại mã
+    window.otpTimer = setInterval(function(){
+        time--;
+        const minute = String(Math.floor(time / 60)).padStart(2,'0');
+        const second = String(time % 60).padStart(2,'0');
+        const target = document.getElementById("otp-resend-time");
+
+        if(target){
+            target.innerText = minute + ":" + second;
+        }
+        if(time <= 0){
+            clearInterval(window.otpTimer);
+            document.getElementById("otp-countdown").innerHTML = 'Không nhận được mã? <a href="#" id="resend-otp" class ="resend-otp">Gửi lại mã</a>';
+        }
+    },1000);
+}
+
+    function resetOtpCountdown(){
+        if(otpTimer){
+            clearInterval(otpTimer);
+        }
+        document.getElementById("otp-countdown").innerHTML ='<span>Gửi lại mã sau </span><span id="otp-resend-time">01:00</span>';
+    }
+
+    document.querySelector(".otp-back-btn").addEventListener("click",function(){
+
+        if(window.otpTimer){
+            clearInterval(window.otpTimer);
+        }
+
+        document.querySelectorAll(".otp-input").forEach(
+            input => {input.value = '';
+
+        });
+
+        const msg = document.getElementById("otp-message");
+        msg.innerHTML = "Mã có hiệu lực trong 3 phút";
+        msg.color = "#999999"
+
+        document.getElementById("btn-con").disabled = true;
+
+        document.querySelector('.otp-popup').classList.remove('show');
+        document.querySelector('.otp-mask').classList.remove('show');
+        document.querySelector('.register .popup-wrapper').classList.add('show');
+        document.querySelector('.register .mask-popup').classList.add('show');
+    });
+
+    document.querySelector(".otp-mask").addEventListener("click",function(){
+
+        if(window.otpTimer){
+            clearInterval(window.otpTimer);
+        }
+        
+        document.querySelectorAll(".otp-input").forEach(input => input.value = '');
+        document.querySelector('.otp-popup').classList.remove('show');
+        document.querySelector('.otp-mask').classList.remove('show');
+    });
+
+    // RESEND OTP
     document.addEventListener("click", function(e){
+        if(e.target.id !== "resend-otp"){
+            return;
+        }
+        e.preventDefault();
+        const phone = sessionStorage.getItem("register_phone");
 
-        if(e.target.id === "resend-otp"){
-
-            e.preventDefault();
-
-            // TODO: AJAX gửi OTP tại đây
+        fetch(
+            "<?php echo admin_url('admin-ajax.php'); ?>",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type":
+                    "application/x-www-form-urlencoded"
+                },
+                body: new URLSearchParams({
+                    action: "send_register_otp",
+                    phone: phone
+                })
+            }
+        )
+        .then(response => response.json())
+        .then(res => {
+            const msg = document.getElementById("otp-message");
+            if(!res.success){
+                msg.innerHTML = res.message || "Gửi OTP thất bại";
+                msg.style.color = "#e03c31";
+                return;
+            }
+            msg.innerHTML = "Mã OTP mới đã được gửi";
+            msg.style.color = "#e03c31";
 
             startOtpCountdown();
-        }
+        })
+        .catch(error => {
+            document.getElementById("otp-message").innerHTML = "Có lỗi xảy ra, vui lòng thử lại !";
+        });
     });
 });
 </script>
 
 <script>
-    document.getElementById('otp-form').addEventListener('submit', function(e){
-        e.preventDefault();
-        let otp = '';
-        document.querySelectorAll('.otp-input').forEach(input => {
-                otp += input.value;
-            });
-        const msg = document.getElementById('otp-message');
+ document.getElementById("otp-form").addEventListener("submit", async function(e){
+    e.preventDefault();
+    let otp = '';
 
-        if(otp !== '123456'){
-            msg.innerHTML ='Mã xác minh không hợp lệ';
-            msg.style.color ='#e03c31';
-            return;
-        }
-        document.querySelector('.otp-popup').classList.remove('show');
-        document.querySelector('.otp-mask').classList.remove('show');
-        document.querySelector('.password-popup').classList.add('show');
-        document.querySelector('.password-mask').classList.add('show');
+    document.querySelectorAll('.otp-input').forEach(input => {
+        otp += input.value;
     });
+
+    const phone = sessionStorage.getItem("register_phone");
+    const formData = new FormData();
+        formData.append("action", "verify_otp");
+        formData.append("phone",phone);
+        formData.append("otp",otp);
+
+    const response = await fetch("<?php echo admin_url('admin-ajax.php'); ?>",
+            {
+                method:'POST',
+                body:formData
+            }
+        );
+
+    const result = await response.json();
+    const msg = document.getElementById("otp-message");
+    if(!result.success){
+        msg.innerHTML = result.data.message;
+        msg.style.color = "#e03c31";
+        return;
+    }
+    document.querySelector('.otp-popup').classList.remove('show');
+    document.querySelector('.otp-mask').classList.remove('show');
+    document.querySelector('.password-popup').classList.add('show');
+    document.querySelector('.password-mask').classList.add('show');
+});
 </script>

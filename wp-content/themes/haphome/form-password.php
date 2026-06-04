@@ -172,3 +172,46 @@
         confirmPasswordInput.addEventListener("input",validatePassword);
     });
 </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+    const btnConfirm = document.getElementById("s-btn-confirm");
+
+    btnConfirm.addEventListener("click", async function(){
+        const phone = sessionStorage.getItem("register_phone");
+        const password = document.getElementById("s-password-input").value;
+        const errorBox = document.getElementById("s-confirm-password-error");
+        btnConfirm.disabled = true;
+        btnConfirm.innerHTML = "Đang tạo tài khoản...";
+
+        try{
+            const formData = new FormData();
+            formData.append("action","register_user");
+            formData.append("phone",phone);
+            formData.append("password",password);
+
+            const response = await fetch("<?php echo admin_url('admin-ajax.php'); ?>",
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
+
+            const result = await response.json();
+            if(!result.success){
+                errorBox.innerHTML = result.data.message;
+                btnConfirm.disabled = false;
+                btnConfirm.innerHTML = "Tiếp tục";
+                return;
+            }
+            alert("Đăng ký thành công");
+            sessionStorage.removeItem( "register_phone");
+            location.reload();
+        }catch(error){
+            errorBox.innerHTML ="Có lỗi xảy ra";
+            btnConfirm.disabled = false;
+            btnConfirm.innerHTML = "Tiếp tục";
+        }
+    });
+});
+</script>

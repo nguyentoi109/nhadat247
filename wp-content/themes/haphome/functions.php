@@ -888,34 +888,229 @@ function custom_property_search_filter($query) {
 }
 add_action('pre_get_posts', 'custom_property_search_filter');
 
+// OTP
+function create_otp_table(){
+    global $wpdb;
+    $table = $wpdb->prefix . 'phone_otp';
+    $charset = $wpdb->get_charset_collate();
+    $sql = "
+    CREATE TABLE IF NOT EXISTS $table (
+        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        phone VARCHAR(20) NOT NULL,
+        otp VARCHAR(10) NOT NULL,
+        expired_at DATETIME NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        is_used TINYINT(1) DEFAULT 0,
 
-add_action('wp_ajax_custom_ajax_login', 'custom_ajax_login');
-add_action('wp_ajax_nopriv_custom_ajax_login', 'custom_ajax_login');
+        INDEX(phone),
+        INDEX(created_at)
+    ) $charset;
+    ";
+    require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+    dbDelta($sql);
+}
+add_action('after_switch_theme','create_otp_table');
 
-function custom_ajax_login(){
+add_action('wp_ajax_nopriv_send_register_otp', 'send_register_otp');
+add_action('wp_ajax_send_register_otp', 'send_register_otp');
+function send_register_otp(){
+    global $wpdb;
+    $phone = sanitize_text_field($_POST['phone']);
+    $user_table = $wpdb->prefix . 'custom_users';
+    $otp_table  = $wpdb->prefix . 'phone_otp';
 
-    $creds = array(
-        'user_login'    => sanitize_text_field($_POST['username']),
-        'user_password' => $_POST['password'],
-        'remember'      => true
+    // CHECK USER 
+    $user_exists = $wpdb->get_var(
+        $wpdb->prepare(
+            "
+            SELECT id
+            FROM $user_table
+            WHERE phone = %s
+            LIMIT 1 ", $phone )
     );
-
-    $user = wp_signon($creds, false);
-
-    if(is_wp_error($user)){
-
-        wp_send_json(array(
-            'success' => false,
-            'message' => 'Tên đăng nhập hoặc mật khẩu không đúng'
-        ));
-
+    if($user_exists){
+        wp_send_json_error(['message' => 'Tài khoản đã tồn tại']);
     }
 
-    wp_send_json(array(
-        'success' => true,
-        'redirect' => home_url()
-    ));
+    if(empty($phone)){
+        wp_send_json_error(['message' => 'Số điện thoại không hợp lệ']);
+    }
+
+    $table = $wpdb->prefix . 'phone_otp';
+    $today = current_time('Y-m-d');
+    $count_today = $wpdb->get_var(
+        $wpdb->prepare(
+            "
+            SELECT COUNT(*)
+            FROM $otp_table
+            WHERE phone = %s
+            AND DATE(created_at) = %s ", $phone, $today)
+    );
+
+    if($count_today >= 5){
+        wp_send_json_error(['message' => 'Bạn đã đạt giới hạn 5 lần gửi OTP hôm nay']);
+    }
+
+    $otp = random_int(100000, 999999);
+    $result = $wpdb->insert(
+        $table,
+        [
+            'phone'      => $phone,
+            'otp'        => $otp,
+            'expired_at' => date('Y-m-d H:i:s',time() + 300),
+            'is_used'    => 0
+        ],['%s','%s','%s','%d']
+    );
+    if(!$result){
+        wp_send_json_error(['message' => 'Không thể tạo OTP']);
+    }
+    wp_send_json_success([
+        'message' => 'OTP đã được gửi thành công'
+    ]);
 }
+
+add_action('wp_ajax_nopriv_verify_otp', 'verify_otp');
+add_action('wp_ajax_verify_otp', 'verify_otp');
+function verify_otp(){
+    global $wpdb;
+    $phone = sanitize_text_field($_POST['phone']);
+    $otp   = sanitize_text_field($_POST['otp']);
+    $table = $wpdb->prefix . 'phone_otp';
+
+    $row = $wpdb->get_row(
+        $wpdb->prepare(
+            "
+            SELECT *
+            FROM $table
+            WHERE phone = %s
+            AND is_used = 0
+            ORDER BY id DESC LIMIT 1",$phone)
+    );
+
+    if(!$row){
+        wp_send_json_error(['message' => 'Không tìm thấy OTP']);
+    }
+    if(strtotime($row->expired_at) < time()){
+        wp_send_json_error(['message' => 'OTP đã hết hạn']);
+    }
+    if($row->otp !== $otp){
+        wp_send_json_error(['message' => 'OTP không đúng']);
+    }
+
+    $wpdb->update(
+        $table,
+        ['is_used' => 1],['id' => $row->id],
+        ['%d'],['%d']
+    );
+    wp_send_json_success(['message' => 'Xác thực thành công']);
+}
+
+// CREATE TABLE USER 
+// function create_user_table(){
+//     global $wpdb;
+//     $table = $wpdb->prefix . 'custom_users';
+//     $charset = $wpdb->get_charset_collate();
+//     $sql = "
+//     CREATE TABLE $table (
+//         id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+//         phone VARCHAR(20) NOT NULL UNIQUE,
+//         password VARCHAR(255) NOT NULL,
+//         full_name VARCHAR(255) NULL,
+//         email VARCHAR(255) NULL,
+//         status TINYINT(1) DEFAULT 1,
+//         google_id VARCHAR(255) NULL,
+//         apple_id VARCHAR(255) NULL,
+//         avatar TEXT NULL,
+//         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+//         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+//         INDEX(phone),
+//         INDEX(email)) $charset ;";
+//     require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+//     dbDelta($sql);
+// }
+// add_action('after_switch_theme','create_user_table');
+// create_user_table();
+
+// REGISTER 
+add_action('wp_ajax_nopriv_register_user', 'register_user');
+add_action('wp_ajax_register_user', 'register_user');
+function register_user(){
+    global $wpdb;
+    $phone = sanitize_text_field($_POST['phone']);
+    $password = $_POST['password'];
+
+    if(empty($phone) || empty($password)){
+        wp_send_json_error(['message' => 'Thiếu dữ liệu']);
+    }
+
+    $full_name = 'user' . random_int(1000000, 9999999);
+    $table = $wpdb->prefix . 'custom_users';
+    $insert = $wpdb->insert(
+        $table,
+        [
+            'phone'      => $phone,
+            'password'   => password_hash($password,PASSWORD_DEFAULT),
+            'full_name'   => $full_name,
+            'created_at' => current_time('mysql')
+        ], ['%s','%s','%s','%s']
+    );
+
+    if(!$insert){
+        wp_send_json_error(['message' => 'Không thể tạo tài khoản']);
+    }
+    wp_send_json_success(['message' => 'Đăng ký thành công']);
+}
+
+// LOGIN 
+add_action('wp_ajax_nopriv_login_user','login_user');
+add_action('wp_ajax_login_user','login_user');
+function login_user(){
+    global $wpdb;
+    $phone = sanitize_text_field($_POST['phone']);
+    $password = $_POST['password'];
+    $table = $wpdb->prefix . 'custom_users';
+
+    $user = $wpdb->get_row(
+        $wpdb->prepare(
+            "
+            SELECT *
+            FROM $table
+            WHERE phone=%s ",$phone)
+    );
+
+    if(!$user){
+        wp_send_json_error(['message' => 'Tài khoản không tồn tại']);
+    }
+    if(!password_verify($password,$user->password)){
+        wp_send_json_error([ 'message' => 'Sai mật khẩu']);
+    }
+    $_SESSION['custom_user_id'] = $user->id;
+    wp_send_json_success([
+        'message'  => 'Đăng nhập thành công',
+        'redirect' => home_url()
+    ]);
+}
+
+add_action('init', 'custom_logout_user');
+function custom_logout_user() {
+    if (isset($_GET['custom_logout']) && $_GET['custom_logout'] == 1) {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        unset($_SESSION['custom_user_id']);
+        session_destroy();
+        wp_redirect(home_url());
+        exit;
+    }
+}
+
+function start_custom_session(){
+    if( !session_id()){
+        session_start();
+    }
+}
+add_action('init','start_custom_session');
 ///////////////////
 function html5blank_conditional_scripts() {}
 function html5_blank_view_article() {}

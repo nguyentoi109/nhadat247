@@ -403,19 +403,25 @@ window.addEventListener("load", function(){
                     <a href="<?php echo home_url('chuyen-doi-dia-chi'); ?>" class="link link-featured">
                         <span class="ti-location-pin"></span> <?php echo wp_is_mobile() ? 'Đổi địa chỉ' : 'Chuyển đổi địa chỉ' ?>
                     </a>
-                    <?php if (!is_user_logged_in()) : ?>
-                        <a href="javascript:void(0)" class="link link-login login">
-                            <?php echo wp_is_mobile() ? 'ĐN' : 'Đăng nhập'; ?>
+                    <?php if (empty($_SESSION['custom_user_id'])) : ?>
+                        <a href="javascript:void(0)"  class="link link-login login">
+                            Đăng nhập
                         </a>
-
                         <a href="javascript:void(0)" class="link link-register open-register-popup">
-                            <?php echo wp_is_mobile() ? 'ĐK' : 'Đăng ký'; ?>
+                            Đăng ký
                         </a>
                     <?php else : ?>
-                        <a href="<?php echo wp_logout_url(home_url()); ?>" class="link link-login">
-                            <span class="ti-power-off"></span>
-                            Đăng xuất
-                        </a>
+                
+
+                        <div class="custom-user-box">
+                            <div class="custom-avatar">
+                            </div>
+
+                            <a href="<?php echo home_url('/?custom_logout=1'); ?>" class="link link-login">
+                                <span class="ti-power-off"></span>
+                                Đăng xuất
+                            </a>
+                        </div>
                     <?php endif; ?>
                 </div>
             </div>

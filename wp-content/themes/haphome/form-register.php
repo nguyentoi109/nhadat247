@@ -16,6 +16,11 @@
     font-weight: 500;
     color: #2c2c2c;
 }
+
+.btn-loading{
+    pointer-events:none;
+    opacity:.7;
+}
 </style>
 
 <section class="section-form-login">
@@ -85,36 +90,49 @@ document.addEventListener("DOMContentLoaded", function(){
 });
 </script>
 <script>
-document.addEventListener("DOMContentLoaded", function(){
-    const form = document.getElementById("register-form");
-    const error = document.getElementById('r-login-error');
+document.getElementById("register-form").addEventListener("submit", async function(e){
+    e.preventDefault();
+    const error = document.getElementById("r-login-error");
+    const phone = document.querySelector('[name="phone"]').value.trim();
+    const phoneRegex = /^(03|05|07|08|09)\d{8}$/;
 
-    form.addEventListener("submit", function(e){
-        e.preventDefault();
-        const phone = document.querySelector('[name="phone"]').value.trim();
-        const phoneRegex = /^(03|05|07|08|09)\d{8}$/;
-        const invalidPhones = ['0000000000','1111111111','2222222222','1234567890','0123456789'];
-        if(phone === ''){
-            error.innerHTML = 'Vui lòng nhập số điện thoại';
+    if(phone === ''){
+        error.innerHTML = 'Vui lòng nhập số điện thoại';
+        return;
+    }
+
+    if(!phoneRegex.test(phone)){
+        error.innerHTML = 'Số điện thoại không hợp lệ';
+        return;
+    }
+    error.innerHTML = '';
+
+    const formData = new FormData();
+    formData.append("action","send_register_otp");
+    formData.append("phone",phone);
+
+    const response = await fetch("<?php echo admin_url('admin-ajax.php'); ?>",
+        {
+            method:"POST",
+            body:formData
+        }
+    );
+
+    const result = await response.json();
+        if(!result.success){
+            error.innerHTML =result.data?.message || "Không thể gửi OTP";
             return;
         }
-        
-        if (!phoneRegex.test(phone) || invalidPhones.includes(phone) || phone.length !== 10) {
-            error.innerHTML = 'Số điện thoại không hợp lệ';
-            return;
-        }
-        error.innerHTML = '';
 
-        document.getElementById('login-error').innerHTML = '';
-        document.getElementById('otp-phone').innerHTML =
-           'Chúng tôi đã gửi mã xác minh gồm 6 số đã được gửi tới số điện thoại <span class="phone-highlight">' + phone + '</span> của bạn qua SMS';
+        sessionStorage.setItem("register_phone",phone);
+        document.getElementById( "otp-phone").innerHTML ='Chúng tôi đã gửi mã xác minh gồm 6 số tới số điện thoại <span class="phone-highlight">' + phone + '</span> qua SMS' ;
 
-        // CLOSE REGISTER
-        document.querySelector('.register .popup-wrapper').classList.remove('show');
+        document.querySelector( '.register .popup-wrapper').classList.remove('show');
         document.querySelector('.register .mask-popup').classList.remove('show');
-        // OPEN OTP 
         document.querySelector('.otp-popup').classList.add('show');
         document.querySelector('.otp-mask').classList.add('show');
-    });
+        if(typeof startOtpCountdown === 'function'){
+            startOtpCountdown();
+        }
 });
 </script>

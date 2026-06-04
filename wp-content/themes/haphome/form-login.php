@@ -92,52 +92,36 @@ document.addEventListener("DOMContentLoaded", function(){
 </script>
 
 <script>
-    var ajaxurl = "<?php echo admin_url('admin-ajax.php'); ?>";
-</script>
+document.getElementById("login-form").addEventListener("submit", async function(e) {
+    e.preventDefault();
 
-<script>
-document.addEventListener("DOMContentLoaded", function(){
+    const phone = document.querySelector('[name="log"]').value.trim();
+    const password = document.querySelector('[name="pwd"]').value;
+    const error = document.getElementById("login-error");
 
-    const form = document.getElementById("login-form");
+    error.innerHTML = "";
+    const formData = new FormData();
+    formData.append("action", "login_user");
+    formData.append("phone", phone);
+    formData.append("password", password);
 
-    form.addEventListener("submit", function(e){
-
-        e.preventDefault();
-
-        let formData = new FormData();
-
-        formData.append("action", "custom_ajax_login");
-        formData.append(
-            "username",
-            form.querySelector('[name="log"]').value
-        );
-
-        formData.append(
-            "password",
-            form.querySelector('[name="pwd"]').value
-        );
-
-        fetch(ajaxurl,{
-            method:"POST",
-            body:formData
-        })
-        .then(response => response.json())
-        .then(data => {
-
-            if(data.success){
-
-                window.location.href = data.redirect;
-
-            }else{
-
-                document.getElementById("login-error").innerHTML =
-                    data.message;
-
+    try {
+        const response = await fetch("<?php echo admin_url('admin-ajax.php'); ?>",
+            {
+                method: "POST",
+                body: formData
             }
+        );
 
-        });
-
-    });
-
+        const result = await response.json();
+        if (!result.success) {
+            error.innerHTML = result.data.message;
+            return;
+        }
+        window.location.href = result.data.redirect;
+    } catch (err) {
+        error.innerHTML = "Có lỗi xảy ra, vui lòng thử lại";
+        error.style.display = "block";
+    }
 });
 </script>
