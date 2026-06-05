@@ -1,7 +1,7 @@
 <style>
-body{
+/* body{
     background: #f2b60008 !important;
-}
+} */
 
 .description.block-detail img {
         text-align: center;

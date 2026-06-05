@@ -18,8 +18,44 @@
 }
 
 .btn-loading{
-    pointer-events:none;
-    opacity:.7;
+    pointer-events: none;
+    opacity: .8;
+    position: relative;
+    background:#e03c31 !important;
+}
+
+.btn-loading::after{
+    content: "";
+    width: 16px;
+    height: 16px;
+    border: 2px solid #fff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 10px;
+    animation: spin .8s linear infinite;
+    vertical-align: middle;
+}
+
+.popup-wrapper,
+.otp-popup{
+    transition: all .3s ease;
+}
+
+.popup-fade-out{
+    opacity:0;
+    transform:translateY(10px);
+}
+
+.popup-fade-in{
+    opacity:1;
+    transform:translateY(0);
+}
+
+@keyframes spin{
+    to{
+        transform: rotate(360deg);
+    }
 }
 </style>
 
@@ -95,6 +131,7 @@ document.getElementById("register-form").addEventListener("submit", async functi
     const error = document.getElementById("r-login-error");
     const phone = document.querySelector('[name="phone"]').value.trim();
     const phoneRegex = /^(03|05|07|08|09)\d{8}$/;
+    const button = document.getElementById("btn-register");
 
     if(phone === ''){
         error.innerHTML = 'Vui lòng nhập số điện thoại';
@@ -107,32 +144,60 @@ document.getElementById("register-form").addEventListener("submit", async functi
     }
     error.innerHTML = '';
 
-    const formData = new FormData();
-    formData.append("action","send_register_otp");
-    formData.append("phone",phone);
+    const originalText = button.innerHTML;
+    button.disabled = true;
+    button.classList.add("btn-loading");
 
-    const response = await fetch("<?php echo admin_url('admin-ajax.php'); ?>",
-        {
-            method:"POST",
-            body:formData
-        }
-    );
+    try{
+        const formData = new FormData();
+        formData.append("action","send_phone_otp");
+        formData.append("phone",phone);
+        formData.append("type","register");
 
-    const result = await response.json();
+        const response = await fetch(
+            "<?php echo admin_url('admin-ajax.php'); ?>",
+            {
+                method:"POST",
+                body:formData
+            }
+        );
+
+        const result = await response.json();
+        await new Promise(resolve => setTimeout(resolve,1200));
+
         if(!result.success){
-            error.innerHTML =result.data?.message || "Không thể gửi OTP";
+            error.innerHTML = result.data?.message ||"Không thể gửi OTP";
+
+            button.disabled = false;
+            button.classList.remove("btn-loading");
+            button.innerHTML = originalText;
+
             return;
         }
-
+        
+        sessionStorage.setItem("otp_type", "register");
         sessionStorage.setItem("register_phone",phone);
-        document.getElementById( "otp-phone").innerHTML ='Chúng tôi đã gửi mã xác minh gồm 6 số tới số điện thoại <span class="phone-highlight">' + phone + '</span> qua SMS' ;
+        document.getElementById("otp-phone").innerHTML = 'Chúng tôi đã gửi mã xác minh gồm 6 số tới số điện thoại <span class="phone-highlight">'+ phone + '</span> qua SMS';
 
-        document.querySelector( '.register .popup-wrapper').classList.remove('show');
+        button.disabled = false;
+        button.classList.remove("btn-loading");
+        button.innerHTML = originalText;
+
+        document.querySelector('.register .popup-wrapper').classList.remove('show');
         document.querySelector('.register .mask-popup').classList.remove('show');
         document.querySelector('.otp-popup').classList.add('show');
         document.querySelector('.otp-mask').classList.add('show');
+
         if(typeof startOtpCountdown === 'function'){
             startOtpCountdown();
         }
+
+    }catch(err){
+        console.log(err);
+        error.innerHTML ="Có lỗi xảy ra, vui lòng thử lại";
+        button.disabled = false;
+        button.classList.remove("btn-loading");
+        button.innerHTML = originalText;
+    }
 });
 </script>

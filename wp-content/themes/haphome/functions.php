@@ -911,13 +911,14 @@ function create_otp_table(){
 }
 add_action('after_switch_theme','create_otp_table');
 
-add_action('wp_ajax_nopriv_send_register_otp', 'send_register_otp');
-add_action('wp_ajax_send_register_otp', 'send_register_otp');
-function send_register_otp(){
+add_action('wp_ajax_nopriv_send_phone_otp','send_phone_otp');
+add_action('wp_ajax_send_phone_otp','send_phone_otp');
+function send_phone_otp(){
     global $wpdb;
     $phone = sanitize_text_field($_POST['phone']);
     $user_table = $wpdb->prefix . 'custom_users';
     $otp_table  = $wpdb->prefix . 'phone_otp';
+    $type  = sanitize_text_field($_POST['type'] ?? 'register');
 
     // CHECK USER 
     $user_exists = $wpdb->get_var(
@@ -928,8 +929,19 @@ function send_register_otp(){
             WHERE phone = %s
             LIMIT 1 ", $phone )
     );
-    if($user_exists){
-        wp_send_json_error(['message' => 'Tài khoản đã tồn tại']);
+
+    // REGISTER
+    if($type === 'register' && $user_exists){
+        wp_send_json_error([
+            'message' => 'Tài khoản đã tồn tại'
+        ]);
+    }
+
+    // FORGOT PASSWORD
+    if($type === 'forgot' && !$user_exists){
+        wp_send_json_error([
+            'message' => 'Số điện thoại chưa đăng ký'
+        ]);
     }
 
     if(empty($phone)){
@@ -1056,10 +1068,13 @@ function register_user(){
         ], ['%s','%s','%s','%s']
     );
 
-    if(!$insert){
-        wp_send_json_error(['message' => 'Không thể tạo tài khoản']);
-    }
-    wp_send_json_success(['message' => 'Đăng ký thành công']);
+    $user_id = $wpdb->insert_id;
+    $_SESSION['custom_user_id'] = $user_id;
+
+    wp_send_json_success([
+        'message'  => 'Đăng ký thành công',
+        'redirect' => home_url('/')
+    ]);
 }
 
 // LOGIN 
@@ -1103,6 +1118,48 @@ function custom_logout_user() {
         wp_redirect(home_url());
         exit;
     }
+}
+
+// FORGOT PASSWORD 
+
+function theme_scripts() {
+    wp_enqueue_script(
+        'password-validation',
+        get_template_directory_uri() . '/js/password-validation.js',
+        array(), null, true
+    );
+}
+add_action('wp_enqueue_scripts', 'theme_scripts');
+
+add_action('wp_ajax_nopriv_custom_reset_password', 'custom_reset_password');
+add_action('wp_ajax_custom_reset_password', 'custom_reset_password');
+function custom_reset_password(){
+    global $wpdb;
+    $phone = sanitize_text_field($_POST['phone'] ?? '');
+    $password = $_POST['password'] ?? '';
+    $table = $wpdb->prefix . 'custom_users';
+    $user = $wpdb->get_row( $wpdb->prepare("SELECT * FROM $table WHERE phone = %s", $phone));
+
+    if(!$user){
+        wp_send_json_error(['message' => 'Không tìm thấy tài khoản']);
+    }
+
+    $wpdb->update(
+        $table,
+        [
+            'password' => password_hash(
+                $password,
+                PASSWORD_DEFAULT
+            )
+        ],
+        ['id' => $user->id],['%s'],['%d']
+    );
+
+    $_SESSION['custom_user_id'] = $user->id;
+    wp_send_json_success([
+        'message'  => 'Đổi mật khẩu thành công',
+        'redirect' => home_url('/')
+    ]);
 }
 
 function start_custom_session(){

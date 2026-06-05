@@ -7348,7 +7348,7 @@ body {
   font-weight: 300;
   min-height: 100vh;
   padding-bottom: 100px;
-  background: rgba(242, 182, 0, 0.06);
+  background: #ffffff;
 }
 body::-webkit-scrollbar {
   width: 5px;
@@ -9471,10 +9471,12 @@ select.form-control option {
 }
 
 .login-title-small{
-    font-size:18px;
-    color:#333;
-    margin-bottom:8px;
-    font-weight:500;
+    font-family: "Lexend";
+    font-size: 18px;
+    line-height: 24px;
+    font-weight: 500;
+    letter-spacing: -0.2px;
+    color: #2c2c2c;
 }
 
 .login-title{
@@ -9693,5 +9695,83 @@ select.form-control option {
 
     font-weight:600;
     font-size:18px;
+}
+
+.success-popup{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.45);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:99999;
+
+    opacity:0;
+    visibility:hidden;
+    transition:.3s;
+}
+
+.success-popup.show{
+    opacity:1;
+    visibility:visible;
+}
+
+.success-box{
+    width:420px;
+    background:#fff;
+    border-radius:12px;
+    padding:40px;
+    text-align:center;
+
+    transform:scale(.8);
+    opacity:0;
+    transition:.3s;
+}
+
+.success-popup.show .success-box{
+    transform:scale(1);
+    opacity:1;
+}
+
+.success-icon{
+    margin:0 auto 20px;
+    text-align:center;
+}
+
+.success-icon img{
+    width:90px;
+    height:90px;
+    object-fit:contain;
+}
+
+.success-popup.show .success-icon{
+    animation:popSuccess .5s ease forwards;
+}
+
+@keyframes popSuccess{
+    0%{
+        transform:scale(0);
+    }
+    70%{
+        transform:scale(1.15);
+    }
+    100%{
+        transform:scale(1);
+    }
+}
+
+.success-title{
+    font-family: 'Roboto';
+    font-size: 26px;
+    font-weight: 500;
+    color: #2c2c2c;
+    margin-bottom: 12px;
+}
+
+.success-desc{
+    font-family: 'Lexend';
+    font-weight: 400;
+    font-size: 19px;
+    color: #666;
 }
 /*# sourceMappingURL=main.css.map */

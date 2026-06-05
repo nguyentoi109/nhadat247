@@ -466,6 +466,14 @@ window.addEventListener("load", function(){
 <div class="register-password">
     <?php get_template_part('popup-password'); ?>
 </div>
+
+<div class="forgot-password">
+    <?php get_template_part('popup-forgot-password'); ?>
+</div>
+
+<div class="reset-password">
+    <?php get_template_part('popup-reset-password'); ?>
+</div>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 

@@ -5,15 +5,6 @@
     margin-bottom: 24px;
 }
 
-.login-title-small{
-    font-family: "Lexend";
-    font-size: 18px;
-    line-height: 24px;
-    font-weight: 500;
-    letter-spacing: -0.2px;
-    color: #2c2c2c;
-}
-
 .title-otp{
     font-family: "Roboto";
     font-size: 16px;
@@ -216,29 +207,6 @@ document.addEventListener("DOMContentLoaded", function(){
         document.getElementById("otp-countdown").innerHTML ='<span>Gửi lại mã sau </span><span id="otp-resend-time">01:00</span>';
     }
 
-    document.querySelector(".otp-back-btn").addEventListener("click",function(){
-
-        if(window.otpTimer){
-            clearInterval(window.otpTimer);
-        }
-
-        document.querySelectorAll(".otp-input").forEach(
-            input => {input.value = '';
-
-        });
-
-        const msg = document.getElementById("otp-message");
-        msg.innerHTML = "Mã có hiệu lực trong 3 phút";
-        msg.color = "#999999"
-
-        document.getElementById("btn-con").disabled = true;
-
-        document.querySelector('.otp-popup').classList.remove('show');
-        document.querySelector('.otp-mask').classList.remove('show');
-        document.querySelector('.register .popup-wrapper').classList.add('show');
-        document.querySelector('.register .mask-popup').classList.add('show');
-    });
-
     document.querySelector(".otp-mask").addEventListener("click",function(){
 
         if(window.otpTimer){
@@ -256,8 +224,9 @@ document.addEventListener("DOMContentLoaded", function(){
             return;
         }
         e.preventDefault();
-        const phone = sessionStorage.getItem("register_phone");
 
+        const otpType = sessionStorage.getItem("otp_type");
+        const phone = otpType === "forgot" ? sessionStorage.getItem("forgot_phone"): sessionStorage.getItem("register_phone");
         fetch(
             "<?php echo admin_url('admin-ajax.php'); ?>",
             {
@@ -267,7 +236,7 @@ document.addEventListener("DOMContentLoaded", function(){
                     "application/x-www-form-urlencoded"
                 },
                 body: new URLSearchParams({
-                    action: "send_register_otp",
+                    action: "send_phone_otp",
                     phone: phone
                 })
             }
@@ -301,7 +270,13 @@ document.addEventListener("DOMContentLoaded", function(){
         otp += input.value;
     });
 
-    const phone = sessionStorage.getItem("register_phone");
+    const otpType = sessionStorage.getItem("otp_type");
+    let phone = "";
+        if (otpType === "register") {
+            phone = sessionStorage.getItem("register_phone");
+        } else if (otpType === "forgot") {
+            phone = sessionStorage.getItem("forgot_phone");
+        }
     const formData = new FormData();
         formData.append("action", "verify_otp");
         formData.append("phone",phone);
@@ -310,7 +285,7 @@ document.addEventListener("DOMContentLoaded", function(){
     const response = await fetch("<?php echo admin_url('admin-ajax.php'); ?>",
             {
                 method:'POST',
-                body:formData
+                body: formData
             }
         );
 
@@ -321,9 +296,17 @@ document.addEventListener("DOMContentLoaded", function(){
         msg.style.color = "#e03c31";
         return;
     }
-    document.querySelector('.otp-popup').classList.remove('show');
-    document.querySelector('.otp-mask').classList.remove('show');
-    document.querySelector('.password-popup').classList.add('show');
-    document.querySelector('.password-mask').classList.add('show');
+    if(otpType === "register"){
+        document.querySelector('.otp-popup').classList.remove('show');
+        document.querySelector('.otp-mask').classList.remove('show');
+        document.querySelector('.password-popup').classList.add('show');
+        document.querySelector('.password-mask').classList.add('show');
+    }
+    else if(otpType === "forgot"){
+        document.querySelector('.otp-popup').classList.remove('show');
+        document.querySelector('.otp-mask').classList.remove('show');
+        document.querySelector('.reset-password-popup').classList.add('show');
+        document.querySelector('.reset-password-mask').classList.add('show');
+    }
 });
 </script>

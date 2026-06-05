@@ -142,9 +142,15 @@
             e.preventDefault();
             $('.otp-popup').removeClass('show');
             $('.otp-mask').removeClass('show');
-
-            $('.register .popup-wrapper').addClass('show');
-            $('.register .mask-popup').addClass('show');
+            const otpType = sessionStorage.getItem("otp_type");
+            if(otpType === "register"){
+                $('.register .popup-wrapper').addClass('show');
+                $('.register .mask-popup').addClass('show');
+            }
+            else if(otpType === "forgot"){
+                $('.forgot-popup').addClass('show');
+                $('.forgot-mask').addClass('show');
+            }
         });
 
         // PASSWORD POP-UP
@@ -165,6 +171,39 @@
             $('.mask-popup').removeClass("show");
             $('body').removeClass('popup-open');
         });
+
+        // FORGOT PASSWORD 
+        $(document).on("click", ".open-forgot-password", function(e){
+            e.preventDefault();
+
+            $('.user .popup-wrapper').removeClass("show");
+            $('.user .mask-popup').removeClass("show");
+            $('.forgot-password .popup-wrapper').addClass("show");
+            $('.forgot-password .mask-popup').addClass("show");
+        });
+
+        $(document).on("click", ".open-login-from-forgot", function(e){
+            e.preventDefault();
+
+            $('.forgot-password .popup-wrapper').removeClass("show");
+            $('.forgot-password .mask-popup').removeClass("show");
+            $('.user .popup-wrapper').addClass("show");
+            $('.user .mask-popup').addClass("show");
+        });
+
+        $(".forgot-password .mask-popup").click(function() {
+            $('.forgot-password .popup-wrapper').removeClass("show");
+            $('.forgot-password .mask-popup').removeClass("show");
+            $('body').removeClass('popup-open');
+        });
+
+        //RESET PASSWORD
+        document.querySelector(".reset-password-mask").addEventListener("click", function(){
+            document.getElementById("reset-password-form").reset();
+            document.querySelector(".reset-password-popup").classList.remove("show");
+            document.querySelector(".reset-password-mask").classList.remove("show");
+        });
+        
 
         $(".search-property, .btn-search-mobile").click(function() {
             $('.popup-search-property').addClass("show");

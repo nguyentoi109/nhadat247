@@ -38,7 +38,7 @@
                 <span class="remember-text">Nhớ tài khoản</span>
             </label>
 
-            <a href="<?php echo wp_lostpassword_url(); ?>">
+            <a href="javascript:void(0)" class="open-forgot-password">
                 Quên mật khẩu?
             </a>
         </div>

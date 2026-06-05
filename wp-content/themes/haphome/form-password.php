@@ -109,67 +109,32 @@
             <li id="rule-number">Chứa ít nhất 1 ký tự số</li>
         </ul>
 
-        <button type="button" class="btn-confirm" id="s-btn-confirm" disabled> Tiếp tục </button>
+        <button type="button" class="btn-confirm" id="s-btn-confirm" disabled> Đăng ký </button>
     </form>
 </section>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        const passwordInput = document.getElementById("s-password-input");
-        const confirmPasswordInput = document.getElementById("s-confirm-password-input");
-        const btnConfirm = document.getElementById("s-btn-confirm");
-        const errorBox = document.getElementById("s-confirm-password-error");
-        const togglePassword = document.getElementById("s-toggle-password");
-        const toggleConfirmPassword = document.getElementById("s-toggle-confirm-password");
-        const eyePassword = document.getElementById("s-eye-icon-password");
-        const eyeConfirm =  document.getElementById("s-eye-icon-confirm");
+         initPasswordForm({
 
-        // VIEW / HIDDEN PASSWORD
-        togglePassword.addEventListener("click", function () {
-            if (passwordInput.type === "password") {
-                passwordInput.type = "text";
-                eyePassword.src = "<?php echo get_template_directory_uri(); ?>/img/view.png";
-            } else {
-                passwordInput.type = "password";
-                eyePassword.src = "<?php echo get_template_directory_uri(); ?>/img/hidden.png";
-            }
+            passwordId: "s-password-input",
+            confirmId: "s-confirm-password-input",
+            buttonId: "s-btn-confirm",
+            errorId: "s-confirm-password-error",
+
+            togglePasswordId: "s-toggle-password",
+            toggleConfirmId: "s-toggle-confirm-password",
+
+            eyePasswordId: "s-eye-icon-password",
+            eyeConfirmId: "s-eye-icon-confirm",
+
+            ruleLength: "rule-length",
+            ruleUppercase: "rule-uppercase",
+            ruleNumber: "rule-number",
+
+            viewIcon: "<?php echo get_template_directory_uri(); ?>/img/view.png",
+            hiddenIcon: "<?php echo get_template_directory_uri(); ?>/img/hidden.png"
         });
-
-        // VIEW / HIDDEN CONFIRM PASSWORD
-        toggleConfirmPassword.addEventListener("click", function () {
-            if (confirmPasswordInput.type === "password") {
-                confirmPasswordInput.type = "text";
-                eyeConfirm.src = "<?php echo get_template_directory_uri(); ?>/img/view.png";
-            } else {
-                confirmPasswordInput.type = "password";
-                eyeConfirm.src = "<?php echo get_template_directory_uri(); ?>/img/hidden.png";
-            }
-        });
-
-        // VALIDATE
-        function validatePassword() {
-            const password = passwordInput.value.trim();
-            const confirmPassword = confirmPasswordInput.value.trim();
-            const hasLength = password.length >= 8;
-            const hasUppercase = /[A-Z]/.test(password);
-            const hasNumber = /[0-9]/.test(password);
-
-            document.getElementById("rule-length").classList.toggle("valid", hasLength);
-            document.getElementById("rule-uppercase").classList.toggle("valid", hasUppercase);
-            document.getElementById("rule-number").classList.toggle("valid", hasNumber);
-
-            const isMatch = password === confirmPassword && confirmPassword !== "";
-            if (confirmPassword !== "" && !isMatch) {
-                errorBox.style.display = "block";
-                errorBox.innerHTML = "Mật khẩu nhập lại không khớp";
-            } else {
-                errorBox.style.display = "none";
-            }
-            btnConfirm.disabled = !( hasLength && hasUppercase && hasNumber && isMatch
-            );
-        }
-        passwordInput.addEventListener("input", validatePassword);
-        confirmPasswordInput.addEventListener("input",validatePassword);
     });
 </script>
 
@@ -201,12 +166,17 @@ document.addEventListener("DOMContentLoaded", function(){
             if(!result.success){
                 errorBox.innerHTML = result.data.message;
                 btnConfirm.disabled = false;
-                btnConfirm.innerHTML = "Tiếp tục";
+                btnConfirm.innerHTML = "Đăng ký";
                 return;
             }
-            alert("Đăng ký thành công");
-            sessionStorage.removeItem( "register_phone");
-            location.reload();
+
+            sessionStorage.removeItem("register_phone");
+            const successPopup = document.getElementById("success-popup");
+            successPopup.classList.add("show");
+
+            setTimeout(() => {
+                window.location.href = result.data.redirect;
+            }, 1200);
         }catch(error){
             errorBox.innerHTML ="Có lỗi xảy ra";
             btnConfirm.disabled = false;
