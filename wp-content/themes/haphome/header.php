@@ -36,7 +36,7 @@
     .header-left{
         display:flex;
         align-items:center;
-        gap:30px;
+        gap:10px;
         flex:1;
     }
 
