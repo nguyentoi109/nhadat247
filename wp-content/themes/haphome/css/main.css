@@ -8362,9 +8362,11 @@ border-radius .read-more a:hover {
   animation: featured 0.2s infinite alternate linear;
 }
 .detail-page p {
-  margin-bottom: 20px;
+  margin-top: 20px;
   line-height: 1.9;
 }
+
+
 .detail-page main {
   width: 100%;
   max-width: 790px;
@@ -8521,8 +8523,9 @@ border-radius .read-more a:hover {
   font-size: 14px;
   line-height: 24px;
 }
-.block-detail p {
-  padding-bottom: 10px;
+
+.block-detail li {
+  margin-top: 4px;
 }
 
 .list-detail-real li:nth-last-child(1),
