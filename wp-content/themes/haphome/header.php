@@ -63,7 +63,7 @@
     .header-left{
         display:flex;
         align-items:center;
-        gap:30px;
+        gap:10px;
         flex:1;
     }
 
@@ -411,18 +411,16 @@ window.addEventListener("load", function(){
                             Đăng ký
                         </a>
                     <?php else : ?>
-                
-
                         <div class="custom-user-box">
-                            <div class="custom-avatar">
+                            <div class="custom-avatar user-avatar-btn">
+                                <?php echo esc_html(get_current_custom_avatar()); ?>
                             </div>
-
-                            <a href="<?php echo home_url('/?custom_logout=1'); ?>" class="link link-login">
-                                <span class="ti-power-off"></span>
-                                Đăng xuất
-                            </a>
                         </div>
                     <?php endif; ?>
+
+                    <a href="<?php echo home_url('/?custom_logout=1'); ?>" class="link link-login">
+                        Đăng tin
+                    </a>
                 </div>
             </div>
             <span class="mobile-menu"><span class="ti-menu"></span></span>
@@ -452,28 +450,33 @@ window.addEventListener("load", function(){
         <!--End Main menu-->
 
 <div class="user">
-    <?php get_template_part('popup-login'); ?>
+    <?php get_template_part('authentication/popup-login'); ?>
 </div>
 
 <div class="register">
-    <?php get_template_part('popup-register'); ?>
+    <?php get_template_part('authentication/popup-register'); ?>
 </div>
 
 <div class="register-otp">
-    <?php get_template_part('popup-register-otp'); ?>
+    <?php get_template_part('authentication/popup-register-otp'); ?>
 </div>
 
 <div class="register-password">
-    <?php get_template_part('popup-password'); ?>
+    <?php get_template_part('authentication/popup-password'); ?>
 </div>
 
 <div class="forgot-password">
-    <?php get_template_part('popup-forgot-password'); ?>
+    <?php get_template_part('authentication/popup-forgot-password'); ?>
 </div>
 
 <div class="reset-password">
-    <?php get_template_part('popup-reset-password'); ?>
+    <?php get_template_part('authentication/popup-reset-password'); ?>
 </div>
+
+<div class="user-menu">
+    <?php get_template_part('authentication/popup-user-menu'); ?>
+</div>
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 

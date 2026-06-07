@@ -207,8 +207,24 @@ document.addEventListener("DOMContentLoaded", function(){
         document.getElementById("otp-countdown").innerHTML ='<span>Gửi lại mã sau </span><span id="otp-resend-time">01:00</span>';
     }
 
-    document.querySelector(".otp-mask").addEventListener("click",function(){
+    function resetOtpPopup() {
+        if (window.otpTimer) {
+            clearInterval(window.otpTimer);
+        }
 
+        document.querySelectorAll(".otp-input").forEach(input => {input.value = "";});
+
+        document.querySelector(".otp-input").focus();
+        document.getElementById("btn-con").disabled = true;
+        const msg = document.getElementById("otp-message");
+        msg.innerHTML = "Mã có hiệu lực trong 3 phút";
+        msg.style.color = "#999999";
+
+        document.getElementById("otp-countdown").innerHTML ='<span>Gửi lại mã sau </span><span id="otp-resend-time">01:00</span>';
+    }
+
+    document.querySelector(".otp-mask").addEventListener("click",function(){
+        resetOtpPopup()
         if(window.otpTimer){
             clearInterval(window.otpTimer);
         }
@@ -301,12 +317,14 @@ document.addEventListener("DOMContentLoaded", function(){
         document.querySelector('.otp-mask').classList.remove('show');
         document.querySelector('.password-popup').classList.add('show');
         document.querySelector('.password-mask').classList.add('show');
+        resetOtpPopup();
     }
     else if(otpType === "forgot"){
         document.querySelector('.otp-popup').classList.remove('show');
         document.querySelector('.otp-mask').classList.remove('show');
         document.querySelector('.reset-password-popup').classList.add('show');
         document.querySelector('.reset-password-mask').classList.add('show');
+        resetOtpPopup();
     }
 });
 </script>

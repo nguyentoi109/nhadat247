@@ -964,12 +964,13 @@ function send_phone_otp(){
     }
 
     $otp = random_int(100000, 999999);
+    $expired = date('Y-m-d H:i:s',current_time('timestamp') + 300);
     $result = $wpdb->insert(
         $table,
         [
             'phone'      => $phone,
             'otp'        => $otp,
-            'expired_at' => date('Y-m-d H:i:s',time() + 300),
+            'expired_at' => $expired,
             'is_used'    => 0
         ],['%s','%s','%s','%d']
     );
@@ -1002,7 +1003,7 @@ function verify_otp(){
     if(!$row){
         wp_send_json_error(['message' => 'Không tìm thấy OTP']);
     }
-    if(strtotime($row->expired_at) < time()){
+    if (strtotime($row->expired_at) < current_time('timestamp')) {
         wp_send_json_error(['message' => 'OTP đã hết hạn']);
     }
     if($row->otp !== $otp){
@@ -1017,8 +1018,7 @@ function verify_otp(){
     wp_send_json_success(['message' => 'Xác thực thành công']);
 }
 
-// CREATE TABLE USER 
-// function create_user_table(){
+// function create_user_table() {
 //     global $wpdb;
 //     $table = $wpdb->prefix . 'custom_users';
 //     $charset = $wpdb->get_charset_collate();
@@ -1029,20 +1029,24 @@ function verify_otp(){
 //         password VARCHAR(255) NOT NULL,
 //         full_name VARCHAR(255) NULL,
 //         email VARCHAR(255) NULL,
+//         avatar TEXT NULL,
+//         address TEXT NULL,
+//         citizen_id VARCHAR(20) NULL,
+//         vip TINYINT(1) DEFAULT 0,
+//         vip_expired_at DATETIME NULL,
+//         last_login DATETIME NULL,
 //         status TINYINT(1) DEFAULT 1,
 //         google_id VARCHAR(255) NULL,
 //         apple_id VARCHAR(255) NULL,
-//         avatar TEXT NULL,
 //         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 //         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
 //         INDEX(phone),
-//         INDEX(email)) $charset ;";
+//         INDEX(email)
+//     ) $charset;
+//     ";
 //     require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 //     dbDelta($sql);
 // }
-// add_action('after_switch_theme','create_user_table');
-// create_user_table();
 
 // REGISTER 
 add_action('wp_ajax_nopriv_register_user', 'register_user');
@@ -1160,6 +1164,26 @@ function custom_reset_password(){
         'message'  => 'Đổi mật khẩu thành công',
         'redirect' => home_url('/')
     ]);
+}
+
+function get_current_custom_user() {
+    global $wpdb;
+    if (empty($_SESSION['custom_user_id'])) {
+        return null;
+    }
+    $table = $wpdb->prefix . 'custom_users';
+    return $wpdb->get_row( $wpdb->prepare("SELECT * FROM $table WHERE id = %d", $_SESSION['custom_user_id']));
+}
+
+function get_current_custom_avatar() {
+    $user = get_current_custom_user();
+    if (!$user || empty($user->full_name)) {
+        return "?";
+    }
+    $name = trim($user->full_name);
+    $parts = preg_split('/\s+/', $name);
+    $lastName = end($parts);
+    return mb_strtoupper(mb_substr($lastName, 0, 1, "UTF-8"),"UTF-8");
 }
 
 function start_custom_session(){

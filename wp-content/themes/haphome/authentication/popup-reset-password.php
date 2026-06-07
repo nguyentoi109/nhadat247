@@ -1,5 +1,5 @@
 <div class="popup-wrapper reset-password-popup">
-    <?php get_template_part('form-reset-password'); ?>
+    <?php get_template_part('authentication/form-reset-password'); ?>
 </div>
 
 <div class="mask-popup reset-password-mask"></div>

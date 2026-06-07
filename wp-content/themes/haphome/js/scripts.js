@@ -203,7 +203,11 @@
             document.querySelector(".reset-password-popup").classList.remove("show");
             document.querySelector(".reset-password-mask").classList.remove("show");
         });
-        
+
+        // MENU USER 
+        $(".user-avatar-btn").click(function(){
+            $(".popup-user-menu").toggleClass("show");
+        });
 
         $(".search-property, .btn-search-mobile").click(function() {
             $('.popup-search-property').addClass("show");
