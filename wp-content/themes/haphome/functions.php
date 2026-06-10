@@ -1192,6 +1192,21 @@ function start_custom_session(){
     }
 }
 add_action('init','start_custom_session');
+
+function ql_register_rewrite_rules() {
+    add_rewrite_rule(
+        '^quan-ly-tai-khoan/([a-z0-9-]+)/?$',
+        'index.php?pagename=quan-ly-tai-khoan&tab=$matches[1]',
+        'top'
+    );
+}
+add_action('init', 'ql_register_rewrite_rules');
+
+function ql_register_query_vars($vars) {
+    $vars[] = 'tab';
+    return $vars;
+}
+add_filter('query_vars', 'ql_register_query_vars');
 ///////////////////
 function html5blank_conditional_scripts() {}
 function html5_blank_view_article() {}

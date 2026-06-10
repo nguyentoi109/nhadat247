@@ -139,42 +139,42 @@
     <ul class="user-menu-list">
 
         <li class="user-menu-item">
-            <a href="#" class="user-menu-link">
+            <a href="<?php echo esc_url(home_url('/quan-ly-tai-khoan/tong-quan/')); ?>" class="user-menu-link">
                 <img class="user-menu-icon" src="<?php echo get_template_directory_uri(); ?>/img/overview.png">
                 <span class="user-menu-text">Tổng quan</span>
             </a>
         </li>
 
         <li class="user-menu-item">
-            <a href="#" class="user-menu-link">
+            <a href="<?php echo esc_url(home_url('/quan-ly-tai-khoan/quan-ly-tin/')); ?>" class="user-menu-link">
                 <img class="user-menu-icon" src="<?php echo get_template_directory_uri(); ?>/img/list.png">
                 <span class="user-menu-text">Quản lý tin đăng</span>
             </a>
         </li>
 
         <li class="user-menu-item">
-            <a href="#" class="user-menu-link">
+            <a href="<?php echo esc_url(home_url('/quan-ly-tai-khoan/tin-da-luu/')); ?>" class="user-menu-link">
                 <img class="user-menu-icon" src="<?php echo get_template_directory_uri(); ?>/img/heart.png">
                 <span class="user-menu-text">Tin đã lưu</span>
             </a>
         </li>
 
         <li class="user-menu-item">
-            <a href="#" class="user-menu-link">
+            <a href="<?php echo esc_url(home_url('/quan-ly-tai-khoan/quan-ly-khach/')); ?>" class="user-menu-link">
                 <img class="user-menu-icon" src="<?php echo get_template_directory_uri(); ?>/img/contact.png">
                 <span class="user-menu-text">Quản lý khách hàng</span>
             </a>
         </li>
 
         <li class="user-menu-item">
-            <a href="#" class="user-menu-link">
+            <a href="<?php echo esc_url(home_url('/quan-ly-tai-khoan/goi-vip/')); ?>" class="user-menu-link">
                 <img class="user-menu-icon" src="<?php echo get_template_directory_uri(); ?>/img/premium.png">
                 <span class="user-menu-text">Gói VIP</span>
             </a>
         </li>
 
         <li class="user-menu-item">
-            <a href="#" class="user-menu-link">
+            <a href="<?php echo esc_url(home_url('/quan-ly-tai-khoan/nap-tien/')); ?>" class="user-menu-link">
                 <img class="user-menu-icon" src="<?php echo get_template_directory_uri(); ?>/img/wallet.png">
                 <span class="user-menu-text">Nạp tiền</span>
             </a>
@@ -183,7 +183,7 @@
         <li class="menu-divider"></li>
 
         <li class="user-menu-item">
-            <a href="#" class="user-menu-link">
+            <a href="<?php echo esc_url(home_url('/quan-ly-tai-khoan/cai-dat/')); ?>" class="user-menu-link">
                 <img class="user-menu-icon" src="<?php echo get_template_directory_uri(); ?>/img/settings.png">
                 <span class="user-menu-text">Cài đặt tài khoản</span>
             </a>
