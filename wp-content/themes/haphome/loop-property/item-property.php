@@ -24,6 +24,94 @@
 	.title-post{
 		color: #2c2c2c;
 	}
+
+.bds-save-btn {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	z-index: 10;
+	width: 34px;
+	height: 34px;
+	border-radius: 50%;
+	background: #ffffff;
+	border: none;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, .18);
+	transition: background .2s, transform .15s;
+	padding: 0;
+	backdrop-filter: blur(4px);
+}
+
+.bds-save-btn:hover {
+	transform: scale(1.1);
+}
+
+.bds-save-btn svg {
+	width: 18px;
+	height: 18px;
+	transition: fill .2s, stroke .2s;
+	pointer-events: none;
+}
+
+.bds-save-btn .icon-heart {
+    fill: none;
+    stroke: #000;
+    stroke-width: 1.8;
+}
+
+.bds-save-btn.is-saved .icon-heart {
+    fill: #ee0033;
+    stroke: none;
+}
+
+@keyframes bds-heart-pop {
+	0% {
+		transform: scale(1);
+	}
+
+	40% {
+		transform: scale(1.3);
+	}
+
+	70% {
+		transform: scale(.9);
+	}
+
+	100% {
+		transform: scale(1);
+	}
+}
+
+.bds-save-btn.pop svg {
+	animation: bds-heart-pop .35s ease;
+}
+
+.bds-toast {
+	position: fixed;
+	bottom: 28px;
+	left: 50%;
+	transform: translateX(-50%) translateY(20px);
+	background: #0d1011;
+	color: #fff;
+	padding: 10px 20px;
+	border-radius: 8px;
+	font-size: 13px;
+	font-weight: 600;
+	z-index: 99999;
+	opacity: 0;
+	transition: opacity .25s, transform .25s;
+	pointer-events: none;
+	white-space: nowrap;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, .2);
+}
+
+.bds-toast.show {
+	opacity: 1;
+	transform: translateX(-50%) translateY(0);
+}
 </style>
 <article id="post-<?php the_ID(); ?>" class="list-news swiper-slide">
 
@@ -42,6 +130,9 @@ $name_custom = rwmb_meta('prefix-name-custom');
 
 $status_terms = get_the_terms($post_id, "property_status");
 $price = (float)$price;
+$custom_user = get_current_custom_user();
+$custom_user_id = $custom_user ? (int)$custom_user->id : 0;
+$is_saved = $custom_user_id ? is_favorited($custom_user_id, $post_id) : false;
 ?>
 
 <?php $is_ngop = get_query_var('is_ngop', false);?>
@@ -99,6 +190,16 @@ $price = (float)$price;
 <?php endif; ?>
 		<?php if (has_post_thumbnail()) : ?>
 <div class="thumb-list">
+	<button
+		class="bds-save-btn <?php echo $is_saved ? 'is-saved' : ''; ?>"
+		data-post="<?php echo esc_attr($post_id); ?>"
+		onclick="favToggle(this, event)"
+		title="Lưu tin">
+		<svg class="icon-heart" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+			<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+		</svg>
+	</button>
+
     <a class="thumb-4x3" href="<?php the_permalink(); ?>">
         <?php the_post_thumbnail('thumb5x3'); ?>
     </a>

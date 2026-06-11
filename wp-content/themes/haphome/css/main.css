@@ -5723,9 +5723,9 @@ header .logo img {
 header .link {
   display: flex;
   align-items: center;
-  color: #9f0000;
-  font-family: "Source Serif Pro", serif;
-  font-weight: 700;
+  color: #2c2c2c;
+  font-weight: normal;
+  letter-spacing: -0.2px;
   margin-left: auto;
   font-family: 'Lexend',Roboto, Arial !important;
   font-size: 14px;

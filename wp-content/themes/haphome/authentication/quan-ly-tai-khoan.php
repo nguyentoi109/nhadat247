@@ -40,7 +40,7 @@ function ql_nav_active($tab, $current_tab) {
 	--ql-red-dark: #cc0022;
 	--ql-red-light: #fef2f2;
 	--ql-border: #e8e8e8;
-	--ql-text: #0d1011;
+	--ql-text: #2c2c2c;
 	--ql-muted: #6b7280;
 	--ql-faint: #9ca3af;
 	--ql-bg: #f7f8fa;
@@ -281,16 +281,20 @@ function ql_nav_active($tab, $current_tab) {
 	border: 1px solid var(--ql-border);
 	border-radius: var(--ql-radius);
 	overflow: hidden;
+	padding: 10px;
 }
 
 .ql-panel-header {
-	padding: 20px 24px 16px;
+	padding: 20px 0px 16px;
 	border-bottom: 1px solid var(--ql-border);
 }
 
 .ql-panel-title {
-	font-size: 18px;
-	font-weight: 700;
+	font-family: "Lexend";
+	font-size: 24px;
+	line-height: 32px;
+	letter-spacing: -0.2;
+	font-weight: normal;
 	color: var(--ql-text);
 	margin: 0;
 }

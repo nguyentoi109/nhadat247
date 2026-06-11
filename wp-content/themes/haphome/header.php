@@ -1,32 +1,43 @@
 <!doctype html>
 <html <?php language_attributes(); ?> class="no-js">
 <style>
-.link-login{
-    background:#fff;
-    color:#333;
-    border:1px solid #ddd;
-}
-
-.link-register{
-    background:#f2b600;
-    color:#fff;
-}
-
 .link-login,
-.link-register{
-    padding:10px 16px;
-    border-radius:8px;
-    font-weight:600;
-    text-decoration:none;
-    transition:all .3s;
+.link-register {
+    background: transparent;
+    border: none;
+    color: #fff;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all .3s;
 }
 
-.link-register:hover{
-    background:#d89f00;
+.link-login:hover,
+.link-register:hover {
+    background: rgba(255,255,255,.15);
 }
 
-.link-login:hover{
-    background:#f5f5f5;
+.link-post {
+    background: transparent;
+    border: 1.5px solid #ccc;
+    color: #fff;
+    padding: 9px 16px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all .3s;
+}
+
+.link-post:hover {
+    color: #2c2c2c;
+    background: #fafafa;
+    border: solid 1px #ccc;
+}
+
+.re-line {
+    width: 1px;
+    height: 16px;
+    background: #e5e5e5;
 }
 
 @media (max-width: 1024px){
@@ -275,6 +286,40 @@
         font-size:18px;
     } */
 }
+
+.hdr-icon-wrap {
+    position: relative;
+    display: flex; align-items: center;
+}
+
+.hdr-icon-btn {
+    padding: 0 5px;
+    position: relative;
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: none; background: transparent;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    transition: background .2s;
+}
+.hdr-icon-btn:hover   { background: rgba(255,255,255,.15); }
+.hdr-icon-btn.active  { background: rgba(255,255,255,.2); }
+
+.hdr-icon-badge {
+    position: absolute;
+    top: 0; right: 0;
+    min-width: 17px; height: 17px;
+    background: #ee0033; color: #fff;
+    font-size: 10px; font-weight: 800;
+    border-radius: 20px; padding: 0 4px;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid transparent;
+    line-height: 1;
+    pointer-events: none;
+}
+
+.header .hdr-icon-btn svg { stroke: #fff; }
 </style>
 
 <head>
@@ -378,7 +423,6 @@ window.addEventListener("load", function(){
                     <!-- logo -->
                     <?php if( is_front_page() ){ ?>
                     <h1 class="logo">
-                        <!--<a href="<?php// echo home_url(); ?>">HAP-HOME</a>-->
                         <a href="<?php echo home_url(); ?>"><img
                                 src="<?php echo get_template_directory_uri() ?>/img/logo_23.png" alt="HAP-HOME"></a>
                     </h1>
@@ -403,24 +447,45 @@ window.addEventListener("load", function(){
                     <a href="<?php echo home_url('chuyen-doi-dia-chi'); ?>" class="link link-featured">
                         <span class="ti-location-pin"></span> <?php echo wp_is_mobile() ? 'Đổi địa chỉ' : 'Chuyển đổi địa chỉ' ?>
                     </a>
-                    <?php if (empty($_SESSION['custom_user_id'])) : ?>
-                        <a href="javascript:void(0)"  class="link link-login login">
-                            Đăng nhập
-                        </a>
-                        <a href="javascript:void(0)" class="link link-register open-register-popup">
-                            Đăng ký
-                        </a>
-                    <?php else : ?>
-                        <div class="custom-user-box">
-                            <div class="custom-avatar user-avatar-btn">
-                                <?php echo esc_html(get_current_custom_avatar()); ?>
-                            </div>
+                    <?php 
+                        $custom_user    = get_current_custom_user();
+                        $custom_user_id = $custom_user ? (int) $custom_user->id : 0;
+                        $fav_count      = $custom_user_id ? count_favorites($custom_user_id) : 0;
+                    ?>
+
+                    <div class="hdr-icon-wrap" id="fav-icon-wrap">
+                        <button class="hdr-icon-btn" id="fav-icon-btn"
+                                onclick="hdToggle('fav')" aria-label="Tin đã lưu">
+                            <img src="<?php echo get_template_directory_uri() ?>/img/heart.png" width="20">
+                            <?php if ($fav_count > 0): ?>
+                            <span class="hdr-icon-badge fav-count-badge"><?php echo esc_html($fav_count); ?></span>
+                            <?php endif; ?>
+                        </button>
+                        <?php get_template_part('authentication/popup-favorites'); ?>
+                    </div>
+
+                    <div class="hdr-icon-wrap" id="notif-icon-wrap">
+                        <button class="hdr-icon-btn" id="notif-icon-btn"
+                                onclick="hdToggle('notif')" aria-label="Thông báo">
+                            <img src="<?php echo get_template_directory_uri() ?>/img/notification.png" width="20">
+                        </button>
+                        <?php get_template_part('authentication/popup-notifications'); ?>
+                    </div>
+                    
+                    <?php if (!empty($_SESSION['custom_user_id'])): ?>
+                    <div class="custom-user-box">
+                        <div class="custom-avatar user-avatar-btn">
+                            <?php echo esc_html(get_current_custom_avatar()); ?>
                         </div>
+                    </div>
+
+                    <?php else: ?>
+                    <a href="javascript:void(0)" class="link link-login login">Đăng nhập</a>
+                    <span class="re-line"></span>
+                    <a href="javascript:void(0)" class="link link-register open-register-popup">Đăng ký</a>
                     <?php endif; ?>
 
-                    <a href="<?php echo home_url('/?custom_logout=1'); ?>" class="link link-login">
-                        Đăng tin
-                    </a>
+                    <a href="<?php echo esc_url(home_url('/dang-tin/')); ?>" class="link link-post">Đăng tin</a>
                 </div>
             </div>
             <span class="mobile-menu"><span class="ti-menu"></span></span>
@@ -546,4 +611,152 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 });
+</script>
+
+<script>
+(function () {
+    var panels = {
+        fav   : { btn: 'fav-icon-btn',    popup: 'fav-popup',    overlay: 'fav-popup-overlay' },
+        notif : { btn: 'notif-icon-btn',  popup: 'notif-popup',  overlay: 'notif-popup-overlay' },
+    };
+
+    function closeAll() {
+        Object.values(panels).forEach(function (p) {
+            var btn     = document.getElementById(p.btn);
+            var popup   = document.getElementById(p.popup);
+            var overlay = document.getElementById(p.overlay);
+            if (btn)     btn.classList.remove('active');
+            if (popup)   popup.classList.remove('show');
+            if (overlay) overlay.classList.remove('show');
+        });
+    }
+
+    window.hdToggle = function (key) {
+        var p       = panels[key];
+        var popup   = document.getElementById(p.popup);
+        var overlay = document.getElementById(p.overlay);
+        var btn     = document.getElementById(p.btn);
+        if (!popup) return;
+        var isOpen = popup.classList.contains('show');
+        closeAll();
+
+        if (!isOpen) {
+            popup.classList.add('show');
+            if (overlay) overlay.classList.add('show');
+            if (btn) btn.classList.add('active');
+        }
+    };
+
+    document.addEventListener('click', function (e) {
+        ['fav-popup-overlay','notif-popup-overlay'].forEach(function (id) {
+            if (e.target && e.target.id === id) closeAll();
+        });
+    });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeAll();
+    });
+
+    window.favRemoveFromPopup = function (btn, e) {
+        e.preventDefault(); e.stopPropagation();
+        var postId = parseInt(btn.dataset.post, 10);
+        if (!window.BDS_FAV && !window.FAV) return;
+        var cfg = window.BDS_FAV || window.FAV;
+
+        var fd = new FormData();
+        fd.append('action',  'bds_toggle_favorite');
+        fd.append('post_id', postId);
+        fd.append('_nonce',  cfg.nonce || cfg.nonce);
+
+        fetch(cfg.ajaxUrl || cfg.ajax_url, { method: 'POST', body: fd })
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+                if (res.success) {
+                    var item = btn.closest('.fav-popup-item');
+                    if (item) {
+                        item.style.transition = 'opacity .25s';
+                        item.style.opacity = '0';
+                        setTimeout(function () { item.remove(); }, 270);
+                    }
+                    var badge = document.querySelector('.fav-count-badge');
+                    if (badge && res.data.count !== undefined) {
+                        badge.textContent = res.data.count;
+                        badge.style.display = res.data.count > 0 ? 'flex' : 'none';
+                    }
+                    document.querySelectorAll('.bds-save-btn[data-post="' + postId + '"]')
+                        .forEach(function (b) {
+                            b.classList.remove('is-saved');
+                            b.dataset.saved = '0';
+                        });
+                }
+            });
+    };
+
+    window.notifSwitchTab = function (key) {
+        document.querySelectorAll('.notif-tab').forEach(function (t) {
+            t.classList.toggle('active', t.dataset.tab === key);
+        });
+        document.querySelectorAll('.notif-item').forEach(function (item) {
+            var t = item.dataset.tabType;
+            if (key === 'all') {
+                item.classList.remove('hidden');
+            } else if (key === 'other') {
+                var known = ['tin_dang','tai_chinh','khuyen_mai'];
+                item.classList.toggle('hidden', known.indexOf(t) !== -1);
+            } else {
+                item.classList.toggle('hidden', t !== key);
+            }
+        });
+    };
+
+    window.notifFilterUnread = function (onlyUnread) {
+        document.querySelectorAll('.notif-item').forEach(function (item) {
+            if (onlyUnread && !item.classList.contains('unread')) {
+                item.classList.add('hidden');
+            } else {
+                var activeTab = document.querySelector('.notif-tab.active');
+                var key = activeTab ? activeTab.dataset.tab : 'all';
+                notifSwitchTab(key);
+            }
+        });
+    };
+    window.notifRead = function (item) {
+        var notifId = item.dataset.id;
+        var link    = item.dataset.link;
+
+        if (item.classList.contains('unread')) {
+            item.classList.remove('unread');
+            item.querySelector('.notif-item-dot')?.classList.remove('active');
+            var badge = document.querySelector('.notif-unread-badge');
+
+            if (badge) {
+                var cur = parseInt(badge.textContent, 10) - 1;
+                badge.textContent = cur;
+                if (cur <= 0) badge.style.display = 'none';
+            }
+            if (notifId) {
+                var fd = new FormData();
+                fd.append('action',    'bds_mark_notif_read');
+                fd.append('notif_id',  notifId);
+                fd.append('_nonce',    '<?php echo wp_create_nonce("notif_nonce"); ?>');
+                fetch('<?php echo esc_js(admin_url("admin-ajax.php")); ?>', { method:'POST', body:fd });
+            }
+        }
+
+        if (link) window.location.href = link;
+    };
+
+    window.notifMarkAll = function () {
+        document.querySelectorAll('.notif-item.unread').forEach(function (item) {
+            item.classList.remove('unread');
+            item.querySelector('.notif-item-dot')?.classList.remove('active');
+        });
+        var badge = document.querySelector('.notif-unread-badge');
+        if (badge) badge.style.display = 'none';
+
+        var fd = new FormData();
+        fd.append('action', 'bds_mark_all_notif_read');
+        fd.append('_nonce', '<?php echo wp_create_nonce("notif_nonce"); ?>');
+        fetch('<?php echo esc_js(admin_url("admin-ajax.php")); ?>', { method:'POST', body:fd });
+    };
+})();
 </script>

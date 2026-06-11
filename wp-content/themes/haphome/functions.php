@@ -889,28 +889,6 @@ function custom_property_search_filter($query) {
 add_action('pre_get_posts', 'custom_property_search_filter');
 
 // OTP
-function create_otp_table(){
-    global $wpdb;
-    $table = $wpdb->prefix . 'phone_otp';
-    $charset = $wpdb->get_charset_collate();
-    $sql = "
-    CREATE TABLE IF NOT EXISTS $table (
-        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        phone VARCHAR(20) NOT NULL,
-        otp VARCHAR(10) NOT NULL,
-        expired_at DATETIME NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        is_used TINYINT(1) DEFAULT 0,
-
-        INDEX(phone),
-        INDEX(created_at)
-    ) $charset;
-    ";
-    require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-    dbDelta($sql);
-}
-add_action('after_switch_theme','create_otp_table');
-
 add_action('wp_ajax_nopriv_send_phone_otp','send_phone_otp');
 add_action('wp_ajax_send_phone_otp','send_phone_otp');
 function send_phone_otp(){
@@ -1018,36 +996,6 @@ function verify_otp(){
     wp_send_json_success(['message' => 'Xác thực thành công']);
 }
 
-// function create_user_table() {
-//     global $wpdb;
-//     $table = $wpdb->prefix . 'custom_users';
-//     $charset = $wpdb->get_charset_collate();
-//     $sql = "
-//     CREATE TABLE $table (
-//         id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-//         phone VARCHAR(20) NOT NULL UNIQUE,
-//         password VARCHAR(255) NOT NULL,
-//         full_name VARCHAR(255) NULL,
-//         email VARCHAR(255) NULL,
-//         avatar TEXT NULL,
-//         address TEXT NULL,
-//         citizen_id VARCHAR(20) NULL,
-//         vip TINYINT(1) DEFAULT 0,
-//         vip_expired_at DATETIME NULL,
-//         last_login DATETIME NULL,
-//         status TINYINT(1) DEFAULT 1,
-//         google_id VARCHAR(255) NULL,
-//         apple_id VARCHAR(255) NULL,
-//         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-//         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-//         INDEX(phone),
-//         INDEX(email)
-//     ) $charset;
-//     ";
-//     require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-//     dbDelta($sql);
-// }
-
 // REGISTER 
 add_action('wp_ajax_nopriv_register_user', 'register_user');
 add_action('wp_ajax_register_user', 'register_user');
@@ -1124,8 +1072,6 @@ function custom_logout_user() {
     }
 }
 
-// FORGOT PASSWORD 
-
 function theme_scripts() {
     wp_enqueue_script(
         'password-validation',
@@ -1166,26 +1112,6 @@ function custom_reset_password(){
     ]);
 }
 
-function get_current_custom_user() {
-    global $wpdb;
-    if (empty($_SESSION['custom_user_id'])) {
-        return null;
-    }
-    $table = $wpdb->prefix . 'custom_users';
-    return $wpdb->get_row( $wpdb->prepare("SELECT * FROM $table WHERE id = %d", $_SESSION['custom_user_id']));
-}
-
-function get_current_custom_avatar() {
-    $user = get_current_custom_user();
-    if (!$user || empty($user->full_name)) {
-        return "?";
-    }
-    $name = trim($user->full_name);
-    $parts = preg_split('/\s+/', $name);
-    $lastName = end($parts);
-    return mb_strtoupper(mb_substr($lastName, 0, 1, "UTF-8"),"UTF-8");
-}
-
 function start_custom_session(){
     if( !session_id()){
         session_start();
@@ -1207,6 +1133,385 @@ function ql_register_query_vars($vars) {
     return $vars;
 }
 add_filter('query_vars', 'ql_register_query_vars');
+
+// PROFILE 
+function get_current_custom_user() {
+    global $wpdb;
+    if (empty($_SESSION['custom_user_id'])) {
+        return null;
+    }
+    $table = $wpdb->prefix . 'custom_users';
+    return $wpdb->get_row( $wpdb->prepare("SELECT * FROM $table WHERE id = %d", $_SESSION['custom_user_id']));
+}
+
+function custom_get_user($user_id = 0){
+    global $wpdb;
+    if(!$user_id){
+        $user_id = $_SESSION['custom_user_id'] ?? 0;
+    }
+
+    if(!$user_id){
+        return false;
+    }
+    return $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_users WHERE id=%d",$user_id));
+}
+
+function custom_get_addresses($user_id){
+    global $wpdb;
+    return $wpdb->get_results($wpdb->prepare("SELECT *FROM {$wpdb->prefix}custom_user_addresses WHERE user_id=%d ORDER BY is_default DESC,id DESC",$user_id));
+}
+
+function get_current_custom_avatar() {
+    $user = get_current_custom_user();
+    if (!$user || empty($user->full_name)) {
+        return "?";
+    }
+    $name = trim($user->full_name);
+    $parts = preg_split('/\s+/', $name);
+    $lastName = end($parts);
+    return mb_strtoupper(mb_substr($lastName, 0, 1, "UTF-8"),"UTF-8");
+}
+
+function custom_save_profile( int $user_id, array $data, array $addr ) {
+    global $wpdb;
+    $table_users = $wpdb->prefix . 'custom_users';
+    $table_addr  = $wpdb->prefix . 'custom_user_addresses';
+    $updated = $wpdb->update($table_users,$data,[ 'id' => $user_id ]);
+ 
+    if ( $updated === false ) {
+        return new WP_Error( 'db_error', 'Không thể lưu thông tin. Vui lòng thử lại.' );
+    }
+    $existing = $wpdb->get_var( $wpdb->prepare("SELECT id FROM $table_addr WHERE user_id = %d AND is_default = 1 LIMIT 1", $user_id));
+    if ( $existing ) {
+        $wpdb->update( $table_addr, $addr, [ 'id' => $existing ] );
+    } else {
+        $wpdb->insert( $table_addr, array_merge( $addr, [ 'user_id' => $user_id,'label' => 'Mặc định', 'is_default' => 1,]));
+    }
+    return true;
+}
+
+function custom_get_default_address( $user_id ) {
+    global $wpdb;
+    return $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_user_addresses WHERE user_id = %d AND is_default = 1 LIMIT 1",$user_id));
+}
+
+function custom_validate_profile_data( array $post ): array {
+    $errors = [];
+    $data   = [];
+    $display_name = sanitize_text_field( $post['display_name'] ?? '' );
+    if ( $display_name === '' ) {
+        $errors[] = 'Tên hiển thị không được để trống.';
+    } else {
+        $data['full_name'] = $display_name;
+    }
+ 
+    $id_card = preg_replace( '/\D/', '', $post['id_card'] ?? '' );
+    if ( $id_card !== '' && ! preg_match( '/^(\d{9}|\d{12})$/', $id_card ) ) {
+        $errors[] = 'Số CCCD/CMND phải là 9 hoặc 12 chữ số.';
+    } else {
+        $data['citizen_id'] = $id_card;
+    }
+ 
+    $gender = sanitize_key( $post['gender'] ?? '' );
+    if ( in_array( $gender, [ 'male', 'female', 'other', '' ], true ) ) {
+        $data['gender'] = $gender ?: null;
+    }
+ 
+    $birth_date = sanitize_text_field( $post['birth_date'] ?? '' );
+    if ( $birth_date !== '' ) {
+        $ts = strtotime( $birth_date );
+        if ( ! $ts || $ts > strtotime( '-10 years' ) || $ts < strtotime( '1930-01-01' ) ) {
+            $errors[] = 'Ngày sinh không hợp lệ.';
+        } else {
+            $data['birthday'] = date( 'Y-m-d', $ts );
+        }
+    } else {
+        $data['birthday'] = null;
+    }
+    $phone = preg_replace( '/\D/', '', $post['phone'] ?? '' );
+    if ( $phone !== '' && ! preg_match( '/^(0[3-9]\d{8})$/', $phone ) ) {
+        $errors[] = 'Số điện thoại không hợp lệ (10 số, bắt đầu bằng 03-09).';
+    } else {
+        $data['phone'] = $phone ?: null;
+    }
+    $email = sanitize_email($post['email'] ?? '');
+    if (!empty($email) && !is_email($email)) {
+        $errors[] = 'Email không hợp lệ.';
+    } else {
+        $data['email'] = $email;
+    }
+
+    $data['address'] = sanitize_textarea_field( $post['address'] ?? '' ) ?: null;
+    $data['bio'] = sanitize_textarea_field( $post['bio'] ?? '' ) ?: null;
+     $data['company_name']    = sanitize_text_field( $post['company_name']    ?? '' ) ?: null;
+    $data['tax_code']        = sanitize_text_field( $post['tax_code']        ?? '' ) ?: null;
+    $data['company_address'] = sanitize_text_field( $post['company_address'] ?? '' ) ?: null;
+     $addr = [
+        'province' => sanitize_text_field( $post['province'] ?? '' ) ?: null,
+        'district' => sanitize_text_field( $post['district'] ?? '' ) ?: null,
+        'ward'     => sanitize_text_field( $post['ward']     ?? '' ) ?: null,
+        'address'  => sanitize_text_field( $post['address']  ?? '' ) ?: null,
+    ];
+    return [ 'data' => $data, 'address' => $addr, 'errors' => $errors ];
+}
+
+function custom_handle_change_password( int $user_id, array $post ): array {
+    global $wpdb;
+ 
+    $current_pw = $post['current_password']  ?? '';
+    $new_pw     = $post['new_password']      ?? '';
+    $confirm_pw = $post['confirm_password']  ?? '';
+ 
+    if ( $current_pw === '' || $new_pw === '' || $confirm_pw === '' ) {
+        return [ 'success' => false, 'message' => 'Vui lòng điền đầy đủ tất cả các trường.' ];
+    }
+ 
+    if ( $new_pw !== $confirm_pw ) {
+        return [ 'success' => false, 'message' => 'Mật khẩu xác nhận không khớp.' ];
+    }
+
+    if (strlen( $new_pw ) < 8 || ! preg_match( '/[A-Z]/', $new_pw ) || ! preg_match( '/[0-9]/', $new_pw )) {
+        return [ 'success' => false, 'message' => 'Mật khẩu mới cần ít nhất 8 ký tự, 1 chữ hoa và 1 chữ số.' ];
+    }
+
+    $table = $wpdb->prefix . 'custom_users';
+    $user  = $wpdb->get_row($wpdb->prepare( "SELECT password FROM $table WHERE id = %d", $user_id ));
+    if ( ! $user ) {
+        return [ 'success' => false, 'message' => 'Không tìm thấy tài khoản.' ];
+    }
+    if ( ! password_verify( $current_pw, $user->password ) ) {
+        return [ 'success' => false, 'message' => 'Mật khẩu hiện tại không đúng.' ];
+    }
+    if ( password_verify( $new_pw, $user->password ) ) {
+        return [ 'success' => false, 'message' => 'Mật khẩu mới không được trùng mật khẩu cũ.' ];
+    }
+    $updated = $wpdb->update($table, [ 'password' => password_hash( $new_pw, PASSWORD_DEFAULT ) ],[ 'id' => $user_id ],[ '%s' ],[ '%d' ]);
+    if ( $updated === false ) {
+        return [ 'success' => false, 'message' => 'Có lỗi xảy ra, vui lòng thử lại.' ];
+    }
+    return [ 'success' => true, 'message' => 'Đổi mật khẩu thành công.' ];
+}
+
+function custom_handle_lock_account( int $user_id, array $post ): array {
+    global $wpdb;
+    $password    = $post['lock_password'] ?? '';
+    $lock_action = sanitize_key( $post['lock_action'] ?? 'lock' );
+ 
+    if ( $password === '' ) {
+        return [ 'success' => false, 'message' => 'Vui lòng nhập mật khẩu để xác nhận.' ];
+    }
+    $table = $wpdb->prefix . 'custom_users';
+    $user  = $wpdb->get_row($wpdb->prepare( "SELECT id, password, status FROM $table WHERE id = %d", $user_id ));
+ 
+    if ( ! $user ) {
+        return [ 'success' => false, 'message' => 'Không tìm thấy tài khoản.' ];
+    }
+ 
+    if ( ! password_verify( $password, $user->password ) ) {
+        return [ 'success' => false, 'message' => 'Mật khẩu không đúng.' ];
+    }
+ 
+    $current_locked = (int) $user->status === 1;
+    if ( $lock_action === 'lock' && $current_locked ) {
+        return [ 'success' => false, 'message' => 'Tài khoản đã bị khóa trước đó.' ];
+    }
+    if ( $lock_action === 'unlock' && ! $current_locked ) {
+        return [ 'success' => false, 'message' => 'Tài khoản đang hoạt động bình thường.' ];
+    }
+ 
+    $new_status = ( $lock_action === 'lock' ) ? 1 : 0;
+ 
+    $updated = $wpdb->update($table,['status'    => $new_status,'locked_at' => $new_status === 1 ? current_time( 'mysql' ) : null,],[ 'id' => $user_id ],[ '%d', '%s' ], [ '%d' ]);
+ 
+    if ( $updated === false ) {
+        return [ 'success' => false, 'message' => 'Có lỗi xảy ra, vui lòng thử lại.' ];
+    }
+    $msg = $new_status === 1 ? 'Tài khoản đã được khóa thành công.' : 'Tài khoản đã được mở khóa thành công.';
+    return [ 'success' => true, 'message' => $msg, 'new_status' => $new_status ];
+}
+ 
+function custom_handle_delete_account( int $user_id, array $post ): array {
+    global $wpdb;
+    $confirm_text = trim( $post['delete_confirm_text'] ?? '' );
+    $password     = $post['delete_password'] ?? '';
+    if ( $confirm_text !== 'XOA TAI KHOAN' ) {
+        return [ 'success' => false, 'message' => 'Cụm từ xác nhận không đúng. Vui lòng nhập "XOA TAI KHOAN".' ];
+    }
+ 
+    if ( $password === '' ) {
+        return [ 'success' => false, 'message' => 'Vui lòng nhập mật khẩu để xác nhận.' ];
+    }
+ 
+    $table_users = $wpdb->prefix . 'custom_users';
+    $user = $wpdb->get_row($wpdb->prepare( "SELECT id, password FROM $table_users WHERE id = %d", $user_id ));
+ 
+    if ( ! $user ) {
+        return [ 'success' => false, 'message' => 'Không tìm thấy tài khoản.' ];
+    }
+ 
+    if ( ! password_verify( $password, $user->password ) ) {
+        return [ 'success' => false, 'message' => 'Mật khẩu không đúng.' ];
+    }
+
+    $wpdb->query( 'START TRANSACTION' );
+    try {
+        $wpdb->delete( $wpdb->prefix . 'custom_user_addresses', [ 'user_id' => $user_id ], [ '%d' ] );
+        $deleted = $wpdb->delete( $table_users, [ 'id' => $user_id ], [ '%d' ] );
+        if ( $deleted === false ) {
+            throw new Exception( 'Không thể xóa tài khoản khỏi database.' );
+        }
+        $wpdb->query( 'COMMIT' );
+        return [ 'success' => true, 'message' => 'Tài khoản đã được xóa vĩnh viễn.' ];
+    } catch ( Exception $e ) {
+        $wpdb->query( 'ROLLBACK' );
+        return [ 'success' => false, 'message' => 'Có lỗi xảy ra: ' . $e->getMessage() ];
+    }
+}
+
+//FAVORITE
+function is_favorited(int $user_id, int $post_id): bool {
+    if (!$user_id || !$post_id) return false;
+    global $wpdb;
+    return (bool) $wpdb->get_var($wpdb->prepare(
+        "SELECT id
+         FROM {$wpdb->prefix}custom_favorites
+         WHERE user_id = %d AND post_id = %d
+         LIMIT 1",
+        $user_id, $post_id
+    ));
+}
+
+function add_favorite(int $user_id, int $post_id, string $folder = 'Mặc định', string $note = ''): array {
+    global $wpdb;
+    if (!$user_id) return ['success' => false, 'message' => 'Chưa đăng nhập.'];
+    if (!$post_id) return ['success' => false, 'message' => 'Tin không hợp lệ.'];
+ 
+    if (is_favorited($user_id, $post_id)) {
+        return ['success' => true,'already_saved'=> true,'id' => 0, 'message' => 'Tin đã được lưu trước đó.',];
+    }
+    $price_at_save = get_post_meta($post_id, 'prefix-price', true) ?: null;
+    $ok = $wpdb->insert(
+        $wpdb->prefix . 'custom_favorites',
+        [
+            'user_id'      => $user_id,
+            'post_id'      => $post_id,
+            'folder'       => sanitize_text_field($folder),
+            'note'         => sanitize_textarea_field($note),
+            'created_at'   => current_time('mysql'),],
+        ['%d', '%d', '%s', '%s', '%s']
+    );
+ 
+    if (!$ok) {
+        return ['success' => false, 'already_saved' => false, 'id' => 0, 'message' => 'Lưu thất bại.'];
+    }
+    return ['success' => true,'already_saved'=> false,'id' => (int) $wpdb->insert_id,'message' => 'Đã lưu tin thành công.',];
+}
+ 
+function remove_favorite(int $user_id, int $post_id): array {
+    global $wpdb;
+    if (!$user_id) return ['success' => false, 'message' => 'Chưa đăng nhập.'];
+ 
+    if (!is_favorited($user_id, $post_id)) {
+        return ['success' => false, 'message' => 'Tin chưa được lưu.'];
+    }
+
+    $ok = $wpdb->delete( $wpdb->prefix . 'custom_favorites',['user_id' => $user_id, 'post_id' => $post_id],['%d', '%d']);
+    return $ok ? ['success' => true,  'message' => 'Đã bỏ lưu tin.'] : ['success' => false, 'message' => 'Xoá thất bại.'];
+}
+ 
+function toggle_favorite(int $user_id, int $post_id, string $folder = 'Mặc định'): array {
+    if (is_favorited($user_id, $post_id)) {
+        $result = remove_favorite($user_id, $post_id);
+        $result['action'] = 'removed';
+        return $result;
+    }
+    $result = add_favorite($user_id, $post_id, $folder);
+    $result['action'] = 'added';
+    return $result;
+}
+ 
+function count_favorites(int $user_id): int {
+    if (!$user_id) return 0;
+    global $wpdb;
+    return (int) $wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*)
+         FROM {$wpdb->prefix}custom_favorites
+         WHERE user_id = %d", $user_id));
+}
+ 
+function get_favorite_folders(int $user_id): array {
+    if (!$user_id) return [];
+    global $wpdb;
+    return $wpdb->get_results($wpdb->prepare(
+        "SELECT folder, COUNT(*) AS total
+         FROM {$wpdb->prefix}custom_favorites
+         WHERE user_id = %d
+         GROUP BY folder
+         ORDER BY total DESC", $user_id)) ?: [];
+}
+
+function update_favorite_note(int $user_id, int $post_id, string $note): bool {
+    if (!$user_id || !$post_id) return false;
+    global $wpdb;
+    $result = $wpdb->update(
+        $wpdb->prefix . 'custom_favorites',
+        ['note' => sanitize_textarea_field($note)],
+        ['user_id' => $user_id, 'post_id' => $post_id],
+        ['%s'],['%d', '%d']);
+    return $result !== false;
+}
+
+function toggle_favorite_notify_price(int $user_id, int $post_id): bool {
+    if (!$user_id || !$post_id) return false;
+    global $wpdb;
+    $table = $wpdb->prefix . 'custom_favorites';
+    $current = (int) $wpdb->get_var($wpdb->prepare("SELECT notify_price FROM $table WHERE user_id = %d AND post_id = %d",$user_id, $post_id));
+    $result = $wpdb->update(
+        $table,
+        ['notify_price' => $current ? 0 : 1],
+        ['user_id' => $user_id, 'post_id' => $post_id],
+        ['%d'], ['%d', '%d']);
+
+    return $result !== false;
+}
+
+function get_favorites(int $user_id, string $folder = '', int $per_page = 20, int $page = 1): array {
+    global $wpdb;
+    if (!$user_id) return ['items' => [], 'total' => 0, 'pages' => 0];
+    $offset = ($page - 1) * $per_page;
+    $table  = $wpdb->prefix . 'custom_favorites';
+ 
+    if ($folder !== '') {
+        $where_sql   = $wpdb->prepare("f.user_id = %d AND f.folder = %s", $user_id, $folder);
+        $count_where = $wpdb->prepare("user_id = %d AND folder = %s", $user_id, $folder);
+    } else {
+        $where_sql   = $wpdb->prepare("f.user_id = %d", $user_id);
+        $count_where = $wpdb->prepare("user_id = %d", $user_id);
+    }
+ 
+    $rows = $wpdb->get_results(
+        "SELECT f.id, f.post_id, f.folder, f.note, f.notify_price, f.notify_status, f.created_at, p.post_title, p.post_status, p.post_date
+         FROM $table f
+         LEFT JOIN {$wpdb->posts} p ON p.ID = f.post_id
+         WHERE $where_sql
+         ORDER BY f.created_at DESC
+         LIMIT $per_page OFFSET $offset") ?: [];
+ 
+    foreach ($rows as &$row) {
+        $pid             = (int) $row->post_id;
+        $row->permalink  = get_permalink($pid);
+        $row->thumbnail  = get_the_post_thumbnail_url($pid, 'medium') ?: '';
+        $row->price      = get_post_meta($pid, 'prefix-price',   true);
+        $row->area       = get_post_meta($pid, 'prefix-area',    true);
+        $row->address    = get_post_meta($pid, 'prefix-address', true);
+    }
+    unset($row);
+    $total = (int) $wpdb->get_var("SELECT COUNT(*) FROM $table WHERE $count_where");
+    return ['items' => $rows,'total' => $total,'pages' => (int) ceil($total / $per_page),];
+}
+
+require_once get_template_directory() . '/authentication/favorite-ajax.php';
+
 ///////////////////
 function html5blank_conditional_scripts() {}
 function html5_blank_view_article() {}
