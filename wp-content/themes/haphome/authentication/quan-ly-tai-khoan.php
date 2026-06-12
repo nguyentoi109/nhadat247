@@ -1,39 +1,3 @@
-<?php
-if (!defined('ABSPATH')) exit;
-$user        = wp_get_current_user();
-$page_url    = get_permalink(); // URL trang Quản lý tài khoản
-$current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'tong-quan';
-
-$tab_map = [
-	'tong-quan'          => 'authentication/tong-quan.php',
-    'quan-ly-tin'        => 'authentication/quan-ly-tin.php',
-    'tin-da-luu'         => 'authentication/tin-da-luu.php',
-    'quan-ly-khach'      => 'authentication/quan-ly-khach.php',
-
-    'so-du-tai-khoan'    => 'authentication/so-du-tai-khoan.php',
-    'lich-su-giao-dich'  => 'authentication/lich-su-giao-dich.php',
-    'voucher'            => 'authentication/voucher.php',
-    'goi-thanh-vien'     => 'authentication/goi-thanh-vien.php',
-
-    'goi-vip'            => 'authentication/goi-vip.php',
-    'nap-tien'           => 'authentication/nap-tien.php',
-    'cai-dat'            => 'authentication/cai-dat.php',
-];
-
-$current_tab = get_query_var('tab') ?: (isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'tong-quan');
-if (!array_key_exists($current_tab, $tab_map)) {
-    $current_tab = 'tong-quan';
-}
-
-function ql_tab_url($tab, $page_url) {
-   return esc_url(home_url('/quan-ly-tai-khoan/' . $tab . '/'));
-}
-
-function ql_nav_active($tab, $current_tab) {
-    return $tab === $current_tab ? 'active' : '';
-}
-?>
-
 <style>
 :root {
 	--ql-red: #ee0033;
@@ -210,12 +174,15 @@ function ql_nav_active($tab, $current_tab) {
 }
 
 .ql-nav-link {
+	font-family: "Roboto";
+	font-weight: 400;
+	line-height: 20px;
+	font-size: 14px;
 	display: flex;
 	align-items: center;
 	gap: 9px;
 	padding: 9px 16px;
-	font-size: 13px;
-	color: #374151;
+	color: #2c2c2c;
 	text-decoration: none;
 	cursor: pointer;
 	transition: background .15s, color .15s;
@@ -224,17 +191,15 @@ function ql_nav_active($tab, $current_tab) {
 	background: none;
 	width: 100%;
 	text-align: left;
-	font-family: inherit;
 }
 
 .ql-nav-link:hover {
-	background: var(--ql-red-light);
-	color: var(--ql-red);
+	background: #f2f2f2;
+	color: #2c2c2c;
 }
 
 .ql-nav-link.active {
-	background: var(--ql-red-light);
-	color: var(--ql-red);
+	color: #74150f;
 	font-weight: 600;
 }
 
@@ -245,7 +210,7 @@ function ql_nav_active($tab, $current_tab) {
 	top: 0;
 	bottom: 0;
 	width: 3px;
-	background: var(--ql-red);
+	background: #999;
 	border-radius: 0 2px 2px 0;
 }
 
@@ -551,19 +516,86 @@ function ql_nav_active($tab, $current_tab) {
 }
 </style>
 
+<?php
+if (!defined('ABSPATH')) exit;
+$user        = wp_get_current_user();
+$page_url    = get_permalink(); // URL trang Quản lý tài khoản
+$current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'tong-quan';
+
+$tab_map = [
+	'tong-quan'          => 'authentication/tong-quan.php',
+    'quan-ly-tin'        => 'authentication/quan-ly-tin.php',
+    'tin-da-luu'         => 'authentication/tin-da-luu.php',
+    'quan-ly-khach'      => 'authentication/quan-ly-khach.php',
+
+    'so-du-tai-khoan'    => 'authentication/so-du-tai-khoan.php',
+    'lich-su-giao-dich'  => 'authentication/lich-su-giao-dich.php',
+    'voucher'            => 'authentication/voucher.php',
+    'goi-thanh-vien'     => 'authentication/goi-thanh-vien.php',
+
+    'goi-vip'            => 'authentication/goi-vip.php',
+    'nap-tien'           => 'authentication/nap-tien.php',
+    'cai-dat'            => 'authentication/cai-dat.php',
+];
+
+$current_tab = get_query_var('tab') ?: (isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'tong-quan');
+if (!array_key_exists($current_tab, $tab_map)) {
+    $current_tab = 'tong-quan';
+}
+
+function ql_tab_url($tab, $page_url) {
+   return esc_url(home_url('/quan-ly-tai-khoan/' . $tab . '/'));
+}
+
+function ql_nav_active($tab, $current_tab) {
+    return $tab === $current_tab ? 'active' : '';
+}
+
+$user = get_current_custom_user();
+$user_id      = (int) $user->id;
+$wallet_data = get_user_wallet($user_id);
+
+$wallet         = $wallet_data['wallet'];
+$balance_main   = $wallet_data['balance_main'];
+$balance_bonus  = $wallet_data['balance_bonus'];
+$balance_total  = $wallet_data['balance_total'];
+
+function ql_fmt_money($n) {
+    if (!$n) return '0 ₫';
+    return number_format($n, 0, ',', '.') . ' ₫';
+}
+?>
+
 <div class="ql-wrap">
   <aside class="ql-sidebar">
 
     <div class="ql-acc-card">
-        <div class="ql-acc-row">
-        <div class="ql-avatar-circle"><?php echo esc_html(mb_substr($user->display_name, 0, 1)); ?></div>
-        <div class="ql-acc-name">Nguyễn Thị Bích Loan</div>
-      </div>
+		<div class="ql-acc-row">
+			<div class="ql-avatar-circle">
+			<?php echo esc_html( get_current_custom_avatar() ); ?>
+			</div>
+			<div style="min-width:0;">
+			<div class="ql-acc-name">
+				<?php echo esc_html( $user->full_name ); ?>
+			</div>
+			<?php if (!empty($user->phone)): ?>
+			<div style="font-size:11px;color:var(--ql-muted);display:flex;align-items:center;gap:5px;">
+				<?php echo esc_html( $user->phone ); ?>
+				<?php if (!empty($user->is_phone_verified)): ?>
+				<span style="display:inline-flex;align-items:center;gap:2px;font-size:10px;font-weight:600;padding:1px 6px;border-radius:20px;background:#d1fae5;color:#065f46;">
+					<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+					Đã xác minh
+				</span>
+				<?php endif; ?>
+			</div>
+			<?php endif; ?>
+			</div>
+		</div>
 
       <div class="ql-bal-section">
-        <div class="ql-bal-row"><span>Số dư</span><span>0 ₫</span></div>
-        <div class="ql-bal-row"><span>Tài khoản tin đăng</span><span>0 ₫</span></div>
-        <div class="ql-bal-row"><span>Tài khoản khuyến mãi</span><span>0 ₫</span></div>
+        <div class="ql-bal-row"><span>Số dư</span><span><?php echo ql_fmt_money($balance_total); ?></span></div>
+        <div class="ql-bal-row"><span>Tài khoản tin đăng</span><span><?php echo ql_fmt_money($balance_main); ?></span></div>
+        <div class="ql-bal-row"><span>Tài khoản khuyến mãi</span><span><?php echo ql_fmt_money($balance_bonus); ?></span></div>
       </div>
 
       <div class="ql-id-box">

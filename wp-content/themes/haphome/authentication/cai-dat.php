@@ -215,14 +215,7 @@
 }
 
 .cs-form-input:focus {
-	border-color: var(--ql-red);
-	box-shadow: 0 0 0 3px rgba(238, 0, 51, .08);
-}
-
-.cs-form-input:disabled {
-	background: #f9fafb;
-	color: var(--ql-faint);
-	cursor: not-allowed;
+	border: 1px solid #2c2c2c;
 }
 
 select.cs-form-input {
@@ -887,9 +880,8 @@ textarea.cs-form-input {
                     </div>
                     <div class="cs-form-group">
                         <label class="cs-form-label">Email</label>
-                        <input class="cs-form-input" type="email"
-                            value="<?php echo esc_attr( $user->email ?? '' ); ?>" disabled>
-                        <span class="cs-helper">Liên hệ hỗ trợ để đổi email</span>
+                        <input class="cs-form-input" type="email" name="email"
+                            value="<?php echo esc_attr( $user->email ?? '' ); ?>">
                     </div>
                     <div class="cs-form-group">
                         <label class="cs-form-label">Số CCCD / CMND</label>
@@ -939,19 +931,24 @@ textarea.cs-form-input {
                         </div>
                     </div>
                     <div class="cs-form-group">
-                        <label class="cs-form-label">Tỉnh / Thành phố</label>
-                        <input class="cs-form-input" type="text" name="province"
-                            value="<?php echo esc_attr( $default_addr->province ?? '' ); ?>">
+                        <label class="cs-form-label">Tỉnh / Thành phố <span class="req">*</span></label>
+                        <select class="cs-form-input" name="province" id="cs-province"
+                                onchange="csLoadDistricts(this.value, false)">
+                            <option value="">— Chọn tỉnh / thành phố —</option>
+                        </select>
                     </div>
                     <div class="cs-form-group">
                         <label class="cs-form-label">Quận / Huyện</label>
-                        <input class="cs-form-input" type="text" name="district"
-                            value="<?php echo esc_attr( $default_addr->district ?? '' ); ?>">
+                        <select class="cs-form-input" name="district" id="cs-district"
+                                onchange="csLoadWards(this.value, false)" disabled>
+                            <option value="">— Chọn quận / huyện —</option>
+                        </select>
                     </div>
                     <div class="cs-form-group">
                         <label class="cs-form-label">Phường / Xã</label>
-                        <input class="cs-form-input" type="text" name="ward"
-                            value="<?php echo esc_attr( $default_addr->ward ?? '' ); ?>">
+                        <select class="cs-form-input" name="ward" id="cs-ward" disabled>
+                            <option value="">— Chọn phường / xã —</option>
+                        </select>
                     </div>
                     <div class="cs-form-group" style="grid-column:1/-1;">
                         <label class="cs-form-label">Địa chỉ chi tiết</label>
@@ -1396,4 +1393,128 @@ function csCheckMatch() {
     if (!pw || !cpw || !hint) return;
     hint.style.display = (cpw.value && cpw.value !== pw.value) ? 'block' : 'none';
 }
+</script>
+
+<script>
+(function () {
+    var JSON_URL = '<?php echo esc_js(get_template_directory_uri()); ?>/data/apivn.json';
+    var SAVED = {
+        province : '<?php echo esc_js($default_addr->province ?? ''); ?>',
+        district : '<?php echo esc_js($default_addr->district ?? ''); ?>',
+        ward     : '<?php echo esc_js($default_addr->ward     ?? ''); ?>',
+    };
+
+    var DATA = [];
+    function getEl(id) { return document.getElementById(id); }
+
+    function fillSelect(sel, items, valueProp, labelProp, placeholder) {
+        sel.innerHTML = '<option value="">' + placeholder + '</option>';
+        items.forEach(function (item) {
+            var opt = document.createElement('option');
+            opt.value       = item[valueProp];  
+            opt.textContent = item[labelProp];
+            sel.appendChild(opt);
+        });
+    }
+
+    function buildProvinces() {
+        var sel = getEl('cs-province');
+        if (!sel) return;
+        fillSelect(sel, DATA, 'code', 'name', '— Chọn tỉnh / thành phố —');
+
+        if (SAVED.province) {
+            sel.value = SAVED.province;
+            csLoadDistricts(SAVED.province, true);
+        }
+    }
+
+    window.csLoadDistricts = function (provinceCode, preselect) {
+        var dSel = getEl('cs-district');
+        var wSel = getEl('cs-ward');
+
+        wSel.innerHTML = '<option value="">— Chọn phường / xã —</option>';
+        wSel.disabled  = true;
+
+        if (!provinceCode) {
+            dSel.innerHTML = '<option value="">— Chọn quận / huyện —</option>';
+            dSel.disabled  = true;
+            return;
+        }
+
+        var province = DATA.find(function (p) {
+            return String(p.code) === String(provinceCode);
+        });
+
+        if (!province || !province.districts.length) {
+            dSel.innerHTML = '<option value="">— Không có dữ liệu —</option>';
+            dSel.disabled  = true;
+            return;
+        }
+
+        fillSelect(dSel, province.districts, 'code', 'name', '— Chọn quận / huyện —');
+        dSel.disabled = false;
+
+        if (preselect && SAVED.district) {
+            dSel.value = SAVED.district;
+            csLoadWards(SAVED.district, true);
+        }
+    };
+
+    window.csLoadWards = function (districtCode, preselect) {
+        var pSel = getEl('cs-province');
+        var wSel = getEl('cs-ward');
+
+        if (!districtCode) {
+            wSel.innerHTML = '<option value="">— Chọn phường / xã —</option>';
+            wSel.disabled  = true;
+            return;
+        }
+
+        var province = DATA.find(function (p) {
+            return String(p.code) === String(pSel.value);
+        });
+        if (!province) { wSel.disabled = true; return; }
+
+        var district = province.districts.find(function (d) {
+            return String(d.code) === String(districtCode);
+        });
+
+        if (!district || !district.wards || !district.wards.length) {
+            wSel.innerHTML = '<option value="">— Không có phường/xã —</option>';
+            wSel.disabled  = true;
+            return;
+        }
+
+        fillSelect(wSel, district.wards, 'name', 'name', '— Chọn phường / xã —');
+        wSel.disabled = false;
+
+        if (preselect && SAVED.ward) {
+            wSel.value = SAVED.ward;
+        }
+    };
+
+    function setLoading(msg) {
+        var sel = getEl('cs-province');
+        if (sel) {
+            sel.innerHTML = '<option>' + msg + '</option>';
+            sel.disabled  = true;
+        }
+    }
+
+    setLoading('Đang tải danh sách địa chỉ...');
+    fetch(JSON_URL)
+        .then(function (r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        })
+        .then(function (json) {
+            DATA = Array.isArray(json) ? json : [];
+            getEl('cs-province').disabled = false;
+            buildProvinces();
+        })
+        .catch(function (err) {
+            console.error('Lỗi load địa chỉ:', err);
+            setLoading('Lỗi tải địa chỉ — thử lại sau');
+        });
+})();
 </script>

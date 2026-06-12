@@ -1013,11 +1013,13 @@ function register_user(){
     $insert = $wpdb->insert(
         $table,
         [
-            'phone'      => $phone,
-            'password'   => password_hash($password,PASSWORD_DEFAULT),
-            'full_name'   => $full_name,
-            'created_at' => current_time('mysql')
-        ], ['%s','%s','%s','%s']
+            'username'  => $full_name,
+            'phone'     => $phone,
+            'password'  => password_hash($password, PASSWORD_DEFAULT),
+            'full_name' => $full_name,
+            'status'    => 1,    // active
+        ],
+        ['%s', '%s', '%s', '%s', '%d']
     );
 
     $user_id = $wpdb->insert_id;
@@ -1243,7 +1245,7 @@ function custom_validate_profile_data( array $post ): array {
 
     $data['address'] = sanitize_textarea_field( $post['address'] ?? '' ) ?: null;
     $data['bio'] = sanitize_textarea_field( $post['bio'] ?? '' ) ?: null;
-     $data['company_name']    = sanitize_text_field( $post['company_name']    ?? '' ) ?: null;
+    $data['company_name']    = sanitize_text_field( $post['company_name']    ?? '' ) ?: null;
     $data['tax_code']        = sanitize_text_field( $post['tax_code']        ?? '' ) ?: null;
     $data['company_address'] = sanitize_text_field( $post['company_address'] ?? '' ) ?: null;
      $addr = [
@@ -1511,6 +1513,28 @@ function get_favorites(int $user_id, string $folder = '', int $per_page = 20, in
 }
 
 require_once get_template_directory() . '/authentication/favorite-ajax.php';
+
+//WALLET
+function get_user_wallet($user_id) {
+    global $wpdb;
+
+    $wallet = $wpdb->get_row(
+        $wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}custom_wallets WHERE user_id = %d",
+            $user_id
+        )
+    );
+
+    $balance_main  = $wallet ? (float) $wallet->balance_main : 0;
+    $balance_bonus = $wallet ? (float) $wallet->balance_bonus : 0;
+
+    return [
+        'wallet'         => $wallet,
+        'balance_main'   => $balance_main,
+        'balance_bonus'  => $balance_bonus,
+        'balance_total'  => $balance_main + $balance_bonus,
+    ];
+}
 
 ///////////////////
 function html5blank_conditional_scripts() {}

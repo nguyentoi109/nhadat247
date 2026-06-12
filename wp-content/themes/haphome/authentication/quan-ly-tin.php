@@ -566,7 +566,7 @@ if (empty($listings)) {
 }
 
 .qlt-dropdown-portal {
-	position: fixed;
+	position: absolute;
 	z-index: 99999;
 	background: #fff;
 	border: 1px solid #e8e8e8;
