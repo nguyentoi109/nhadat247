@@ -1064,12 +1064,11 @@ function login_user(){
 add_action('init', 'custom_logout_user');
 function custom_logout_user() {
     if (isset($_GET['custom_logout']) && $_GET['custom_logout'] == 1) {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
         unset($_SESSION['custom_user_id']);
-        session_destroy();
-        wp_redirect(home_url());
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_destroy();
+        }
+        wp_safe_redirect(home_url());
         exit;
     }
 }
@@ -1119,7 +1118,7 @@ function start_custom_session(){
         session_start();
     }
 }
-add_action('init','start_custom_session');
+add_action('init', 'start_custom_session', 1);
 
 function ql_register_rewrite_rules() {
     add_rewrite_rule(
@@ -1536,6 +1535,256 @@ function get_user_wallet($user_id) {
     ];
 }
 
+//UPLOAD POST
+add_action('init', function () {
+    if (!post_type_exists('property')) {
+        register_post_type('property', [
+            'public'      => true,
+            'label'       => 'Bất động sản',
+            'supports'    => ['title', 'editor', 'thumbnail', 'custom-fields'],
+            'has_archive' => true,
+            'rewrite'     => ['slug' => 'bat-dong-san'],
+        ]);
+    }
+});
+ 
+function dt_upload_image(array $file, int $parent_post_id = 0): int|WP_Error {
+    $allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+ 
+    if (!in_array($file['type'], $allowed_types, true)) {
+        return new WP_Error('invalid_type', 'Định dạng ảnh không hợp lệ: ' . esc_html($file['name']));
+    }
+    if ($file['size'] > 10 * 1024 * 1024) {
+        return new WP_Error('too_large', 'Ảnh vượt quá 10MB: ' . esc_html($file['name']));
+    }
+    if ($file['error'] !== UPLOAD_ERR_OK) {
+        return new WP_Error('upload_err', 'Lỗi upload ảnh: ' . esc_html($file['name']));
+    }
+ 
+    require_once ABSPATH . 'wp-admin/includes/file.php';
+    require_once ABSPATH . 'wp-admin/includes/image.php';
+    require_once ABSPATH . 'wp-admin/includes/media.php';
+ 
+    $uploaded = wp_handle_upload($file, ['test_form' => false]);
+    if (isset($uploaded['error'])) {
+        return new WP_Error('wp_upload', $uploaded['error']);
+    }
+ 
+    $filename   = $uploaded['file'];
+    $file_type  = wp_check_filetype(basename($filename));
+    $title      = preg_replace('/\.[^.]+$/', '', basename($filename));
+    $attach_id = wp_insert_attachment([
+        'post_mime_type' => $file_type['type'],
+        'post_title'     => sanitize_text_field($title),
+        'post_content'   => '',
+        'post_status'    => 'inherit',
+        'post_parent'    => $parent_post_id,
+    ], $filename, $parent_post_id, true); 
+ 
+    if (is_wp_error($attach_id)) {
+        return $attach_id;
+    }
+ 
+    $metadata = wp_generate_attachment_metadata($attach_id, $filename);
+    wp_update_attachment_metadata($attach_id, $metadata);
+    return (int) $attach_id;
+}
+ 
+function dt_reformat_files(array $file_post): array {
+    if (!is_array($file_post['name'])) {
+        return [$file_post];
+    }
+    $result = [];
+    foreach (array_keys($file_post['name']) as $i) {
+        if ($file_post['error'][$i] !== UPLOAD_ERR_OK) continue;
+        $result[] = [
+            'name'     => $file_post['name'][$i],
+            'tmp_name' => $file_post['tmp_name'][$i],
+            'type'     => $file_post['type'][$i],
+            'size'     => $file_post['size'][$i],
+            'error'    => $file_post['error'][$i],
+        ];
+    }
+    return $result;
+}
+ 
+function _dt_uid_key(): ?string {
+    $u = get_current_custom_user();
+    return $u ? 'dang_tin_uid_' . md5((int)$u->id) : null;
+}
+ 
+function get_dang_tin_errors(): array {
+    $k = _dt_uid_key();
+    if (!$k) return [];
+    $e = get_transient('dt_errors_' . $k);
+    return is_array($e) ? $e : [];
+}
+ 
+function old_form_value(string $key, string $fallback = ''): string {
+    $k = _dt_uid_key();
+    if ($k) {
+        $data = get_transient('dt_postdata_' . $k);
+        if (is_array($data) && isset($data[$key])) {
+            return esc_attr($data[$key]);
+        }
+    }
+    return esc_attr($fallback);
+}
+ 
+function dang_tin_success(): bool {
+    return !empty($_GET['dt_success']) && $_GET['dt_success'] === '1';
+}
+ 
+add_action('template_redirect', 'handle_dang_tin_form');
+function handle_dang_tin_form(): void {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
+    if (!isset($_POST['dang_tin_nonce'])) return;
+    if (!wp_verify_nonce($_POST['dang_tin_nonce'], 'dang_tin_action')) return;
+ 
+    $custom_user = get_current_custom_user();
+    if (!$custom_user) {
+        wp_redirect(home_url('/dang-nhap/'));
+        exit;
+    }
+ 
+    $uid      = (int) $custom_user->id;
+    $uid_key  = 'dang_tin_uid_' . md5($uid);
+    $errors   = [];
+    $title   = sanitize_text_field($_POST['post_title']  ?? '');
+    $content = wp_kses_post($_POST['post_content']       ?? '');
+    $mode    = sanitize_text_field($_POST['dt_mode']     ?? 'bds'); 
+     $price_raw = preg_replace('/[^0-9]/', '', $_POST['prefix-price'] ?? '');
+ 
+    if (empty($title))      $errors[] = 'Vui lòng nhập tiêu đề.';
+    if (empty($price_raw))  $errors[] = 'Vui lòng nhập giá.';
+    if (empty($_POST['prefix-area']))    $errors[] = 'Vui lòng nhập diện tích.';
+    if (empty($_POST['prefix-address'])) $errors[] = 'Vui lòng nhập địa chỉ chi tiết.';
+ 
+    if ($mode === 'bds'   && empty($_POST['property_type_val']))
+        $errors[] = 'Vui lòng chọn loại bất động sản.';
+    if ($mode === 'du_an' && empty($_POST['property_developer_val']))
+        $errors[] = 'Vui lòng chọn dự án.';
+ 
+    $has_main_file = isset($_FILES['main_image'])
+                     && $_FILES['main_image']['error'] === UPLOAD_ERR_OK
+                     && $_FILES['main_image']['size'] > 0;
+    if (!$has_main_file) {
+        $errors[] = 'Vui lòng tải lên ảnh chính.';
+    }
+ 
+    if (!empty($errors)) {
+        set_transient('dt_errors_'   . $uid_key, $errors,  120);
+        set_transient('dt_postdata_' . $uid_key, $_POST,   120);
+        wp_redirect(add_query_arg('dt_error', '1', get_permalink()));
+        exit;
+    }
+ 
+    $post_id = wp_insert_post([
+        'post_title'   => $title,
+        'post_content' => $content,
+        'post_status'  => 'pending',   
+        'post_type'    => 'property',
+        'post_author'  => 1,           
+    ], true);
+ 
+    if (is_wp_error($post_id)) {
+        set_transient('dt_errors_' . $uid_key, ['Lỗi tạo tin: ' . $post_id->get_error_message()], 120);
+        wp_redirect(add_query_arg('dt_error', '1', get_permalink()));
+        exit;
+    }
+    $main_attach_id = dt_upload_image($_FILES['main_image'], $post_id);
+    if (is_wp_error($main_attach_id)) {
+        error_log('[DangTin] Main image upload error: ' . $main_attach_id->get_error_message());
+    } else {
+        set_post_thumbnail($post_id, $main_attach_id);
+    }
+ 
+    if (!empty($_FILES['sub_images']['name'][0])) {
+        $sub_files = dt_reformat_files($_FILES['sub_images']);
+        $sub_files = array_slice($sub_files, 0, 5); 
+ 
+        foreach ($sub_files as $sf) {
+            if ($sf['error'] !== UPLOAD_ERR_OK) continue;
+ 
+            $sub_id = dt_upload_image($sf, $post_id);
+            if (is_wp_error($sub_id)) {
+                error_log('[DangTin] Sub image error: ' . $sub_id->get_error_message());
+                continue;
+            }
+            add_post_meta($post_id, 'prefix-image_property', $sub_id, false);
+        }
+    }
+
+    update_post_meta($post_id, 'prefix-price', $price_raw);
+     $text_meta = [
+        'prefix-area'         => 'prefix-area',
+        'prefix-bedroom'      => 'prefix-bedroom',
+        'prefix-bathroom'     => 'prefix-bathroom',
+        'prefix-address'      => 'prefix-address',
+        'prefix-video'        => 'prefix-video',
+        'prefix-name-custom'  => 'prefix-name-custom',
+        'prefix-phone-custom' => 'prefix-phone-custom',
+        'prefix-email-custom' => 'prefix-email-custom',
+        'prefix-address-bds'  => 'prefix-address-bds',
+        'prefix-phap-ly'      => 'prefix-phap-ly',
+        'prefix-noi-that'     => 'prefix-noi-that',
+        'dt-lat'              => 'prefix-maps', 
+        'prefix-unit'         => 'prefix-unit',
+    ];
+ 
+    foreach ($text_meta as $post_key => $meta_key) {
+        if (isset($_POST[$post_key]) && $_POST[$post_key] !== '') {
+            update_post_meta($post_id, $meta_key, sanitize_text_field($_POST[$post_key]));
+        }
+    }
+ 
+    $lat = sanitize_text_field($_POST['dt-lat'] ?? '');
+    $lng = sanitize_text_field($_POST['dt-lng'] ?? '');
+    if ($lat && $lng) {
+        update_post_meta($post_id, 'prefix-maps', $lat . ',' . $lng . ',0');
+    }
+    update_post_meta($post_id, '_custom_user_id', $uid);
+    update_post_meta($post_id, '_dt_mode', $mode);
+ 
+    if ($mode === 'bds' && !empty($_POST['property_type_val'])) {
+        wp_set_post_terms($post_id, [(int)$_POST['property_type_val']], 'property_type');
+    }
+    if ($mode === 'du_an' && !empty($_POST['property_developer_val'])) {
+        wp_set_post_terms($post_id, [(int)$_POST['property_developer_val']], 'property_developer');
+    }
+     if (!empty($_POST['property_location_val'])) {
+        wp_set_post_terms($post_id, [(int)$_POST['property_location_val']], 'property_location');
+    }
+     if (!empty($_POST['huong'])) {
+        wp_set_post_terms($post_id, [(int)$_POST['huong']], 'property_direction');
+    }
+     if (!empty($_POST['loai_tin'])) {
+        // property_status dùng slug: 'can-ban' hoặc 'cho-thue'
+        wp_set_post_terms($post_id, [sanitize_text_field($_POST['loai_tin'])], 'property_status', false);
+    }
+ 
+    delete_transient('dt_errors_'   . $uid_key);
+    delete_transient('dt_postdata_' . $uid_key);
+ 
+    wp_redirect(add_query_arg('dt_success', '1', get_permalink()));
+    exit;
+}
+ 
+add_action('init', function () {
+    add_rewrite_rule(
+        '^quan-ly-tai-khoan/([a-z0-9-]+)/?$',
+        'index.php?pagename=quan-ly-tai-khoan&tab=$matches[1]',
+        'top'
+    );
+});
+ 
+add_filter('query_vars', function ($vars) {
+    $vars[] = 'tab';
+    return $vars;
+});
+ 
+//PAYMENT
+require_once get_template_directory() . '/payment/ajax-handler.php';
 ///////////////////
 function html5blank_conditional_scripts() {}
 function html5_blank_view_article() {}
