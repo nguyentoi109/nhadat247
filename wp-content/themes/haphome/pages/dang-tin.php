@@ -1450,450 +1450,450 @@ get_header();
 <?php get_footer(); ?>
 
 <script>
-    var dtST = {};
-    var dtDevTree = <?php echo json_encode(array_values($developer_tree)); ?> ;
-    var dtLocL2 = <?php echo json_encode($location_l2); ?> ;
-    var dtLocL3 = <?php echo json_encode($location_l3); ?> ;
-    var BLOCKS = 7;
-    var unlocked = [1];
-    var completed = [];
+var dtST = {};
+var dtDevTree = <?php echo json_encode(array_values($developer_tree));?> ;
+var dtLocL2 = <?php echo json_encode($location_l2);?>;
+var dtLocL3 = <?php echo json_encode($location_l3);?>;
+var BLOCKS = 7;
+var unlocked = [1];
+var completed = [];
 
-    function isUnlocked(n) {
-    return unlocked.indexOf(n) !== -1;
-    }
+function isUnlocked(n) {
+   return unlocked.indexOf(n) !== -1;
+}
 
-    function dtToggle(n) {
-    if (!isUnlocked(n)) return;
-    var body = document.getElementById('body-' + n);
-    var arr = document.getElementById('arr-' + n);
-    var isOpen = body.classList.contains('open');
+function dtToggle(n) {
+   if (!isUnlocked(n)) return;
+   var body = document.getElementById('body-' + n);
+   var arr = document.getElementById('arr-' + n);
+   var isOpen = body.classList.contains('open');
 
-    for (var i = 1; i <= BLOCKS; i++) {
-        var b = document.getElementById('body-' + i);
-        var a = document.getElementById('arr-' + i);
-        if (b) b.classList.remove('open');
-        if (a) a.classList.remove('open');
-    }
-    if (!isOpen) {
-        body.classList.add('open');
-        arr.classList.add('open');
-        setTimeout(function () {
-            document.getElementById('block-' + n).scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }, 50);
-    }
-    }
+   for (var i = 1; i <= BLOCKS; i++) {
+      var b = document.getElementById('body-' + i);
+      var a = document.getElementById('arr-' + i);
+      if (b) b.classList.remove('open');
+      if (a) a.classList.remove('open');
+   }
+   if (!isOpen) {
+      body.classList.add('open');
+      arr.classList.add('open');
+      setTimeout(function () {
+         document.getElementById('block-' + n).scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+         });
+      }, 50);
+   }
+}
 
-    function dtUnlock(n) {
-    if (isUnlocked(n)) return;
-    unlocked.push(n);
-    var card = document.getElementById('block-' + n);
-    var nav = document.getElementById('step-' + n + '-nav');
-    if (card) {
-        card.classList.remove('is-locked');
-        card.classList.add('is-active');
-    }
-    if (nav) nav.classList.remove('locked');
-    }
+function dtUnlock(n) {
+   if (isUnlocked(n)) return;
+   unlocked.push(n);
+   var card = document.getElementById('block-' + n);
+   var nav = document.getElementById('step-' + n + '-nav');
+   if (card) {
+      card.classList.remove('is-locked');
+      card.classList.add('is-active');
+   }
+   if (nav) nav.classList.remove('locked');
+}
 
-    function dtMarkDone(n) {
-    var nav = document.getElementById('step-' + n + '-nav');
-    if (nav) {
-        nav.classList.remove('s-active');
-        nav.classList.add('s-done');
-        var num = nav.querySelector('.dt-prog-num');
-        if (num) num.innerHTML = '✓';
-    }
-    if (completed.indexOf(n) === -1) completed.push(n);
-    }
+function dtMarkDone(n) {
+   var nav = document.getElementById('step-' + n + '-nav');
+   if (nav) {
+      nav.classList.remove('s-active');
+      nav.classList.add('s-done');
+      var num = nav.querySelector('.dt-prog-num');
+      if (num) num.innerHTML = '✓';
+   }
+   if (completed.indexOf(n) === -1) completed.push(n);
+}
 
-    function dtNext(n) {
-    dtMarkDone(n);
-    dtUnlock(n + 1);
+function dtNext(n) {
+   dtMarkDone(n);
+   dtUnlock(n + 1);
 
-    var curB = document.getElementById('body-' + n);
-    var curA = document.getElementById('arr-' + n);
-    if (curB) curB.classList.remove('open');
-    if (curA) curA.classList.remove('open');
+   var curB = document.getElementById('body-' + n);
+   var curA = document.getElementById('arr-' + n);
+   if (curB) curB.classList.remove('open');
+   if (curA) curA.classList.remove('open');
 
-    if (n + 1 <= BLOCKS) {
-        var nb = document.getElementById('body-' + (n + 1));
-        var na = document.getElementById('arr-' + (n + 1));
-        var nn = document.getElementById('step-' + (n + 1) + '-nav');
-        if (nb) nb.classList.add('open');
-        if (na) na.classList.add('open');
-        if (nn) {
-            nn.classList.remove('locked');
-            nn.classList.add('s-active');
-        }
-        var ncard = document.getElementById('block-' + (n + 1));
-        if (ncard) setTimeout(function () {
-            ncard.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }, 100);
-    }
-    if (n === 1) setTimeout(dtInitMap, 300);
-    }
+   if (n + 1 <= BLOCKS) {
+      var nb = document.getElementById('body-' + (n + 1));
+      var na = document.getElementById('arr-' + (n + 1));
+      var nn = document.getElementById('step-' + (n + 1) + '-nav');
+      if (nb) nb.classList.add('open');
+      if (na) na.classList.add('open');
+      if (nn) {
+         nn.classList.remove('locked');
+         nn.classList.add('s-active');
+      }
+      var ncard = document.getElementById('block-' + (n + 1));
+      if (ncard) setTimeout(function () {
+         ncard.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+         });
+      }, 100);
+   }
+   if (n === 1) setTimeout(dtInitMap, 300);
+}
 
-    function dtSetMode(mode) {
-    document.getElementById('dt-mode-val').value = mode;
-    document.getElementById('tab-bds').classList.toggle('active', mode === 'bds');
-    document.getElementById('tab-duan').classList.toggle('active', mode === 'du_an');
-    document.getElementById('sec-bds').style.display = mode === 'bds' ? '' : 'none';
-    document.getElementById('sec-duan').style.display = mode === 'du_an' ? '' : 'none';
-    document.getElementById('pt-val').value = '';
-    document.getElementById('dev-val').value = '';
-    document.getElementById('sum-1').textContent = '';
-    }
+function dtSetMode(mode) {
+   document.getElementById('dt-mode-val').value = mode;
+   document.getElementById('tab-bds').classList.toggle('active', mode === 'bds');
+   document.getElementById('tab-duan').classList.toggle('active', mode === 'du_an');
+   document.getElementById('sec-bds').style.display = mode === 'bds' ? '' : 'none';
+   document.getElementById('sec-duan').style.display = mode === 'du_an' ? '' : 'none';
+   document.getElementById('pt-val').value = '';
+   document.getElementById('dev-val').value = '';
+   document.getElementById('sum-1').textContent = '';
+}
 
-    function dtSelectType(el) {
-    document.querySelectorAll('[data-g="property_type"]').forEach(function (c) {
-        c.classList.remove('sel');
-    });
-    el.classList.add('sel');
-    var tid = el.dataset.v;
-    document.getElementById('pt-val').value = tid;
+function dtSelectType(el) {
+   document.querySelectorAll('[data-g="property_type"]').forEach(function (c) {
+      c.classList.remove('sel');
+   });
+   el.classList.add('sel');
+   var tid = el.dataset.v;
+   document.getElementById('pt-val').value = tid;
 
-    var wrap = document.getElementById('pt-sub');
-    var chips = document.getElementById('pt-sub-chips');
-    if (dtST[tid] && dtST[tid].length) {
-        chips.innerHTML = '';
-        dtST[tid].forEach(function (s) {
-            var d = document.createElement('div');
-            d.className = 'dt-chip';
-            d.dataset.g = 'pt_sub';
-            d.dataset.v = s.id;
-            d.textContent = s.name;
-            d.onclick = function () {
-                document.querySelectorAll('[data-g="pt_sub"]').forEach(function (c) {
-                c.classList.remove('sel');
-                });
-                d.classList.add('sel');
-                document.getElementById('pt-val').value = s.id;
-                document.getElementById('sum-1').textContent = s.name;
-            };
-            chips.appendChild(d);
-        });
-        wrap.style.display = '';
-    } else {
-        wrap.style.display = 'none';
-    }
-    document.getElementById('sum-1').textContent = el.textContent.trim();
-    }
-
-    function dtDev1(el) {
-    document.querySelectorAll('[data-g="dev1"]').forEach(function (c) {
-        c.classList.remove('sel');
-    });
-    document.getElementById('dev2-wrap').style.display = 'none';
-    document.getElementById('dev2-chips').innerHTML = '';
-    document.getElementById('dev-val').value = '';
-
-    el.classList.add('sel');
-    var devId = parseInt(el.dataset.v);
-    var devName = el.dataset.name || el.textContent.trim();
-
-    var found = null;
-    for (var i = 0; i < dtDevTree.length; i++) {
-        if (dtDevTree[i].id === devId) {
-            found = dtDevTree[i];
-            break;
-        }
-    }
-
-    if (!found || !found.children || !found.children.length) {
-        document.getElementById('dev-val').value = devId;
-        document.getElementById('sum-1').textContent = devName;
-        return;
-    }
-
-    document.getElementById('dev2-label').textContent = devName;
-    var c2 = document.getElementById('dev2-chips');
-    found.children.forEach(function (sub) {
-        var d = document.createElement('div');
-        d.className = 'dt-chip';
-        d.dataset.g = 'dev2';
-        d.dataset.v = sub.id;
-        d.dataset.name = sub.name;
-        d.textContent = sub.name;
-        d.onclick = function () {
-            document.querySelectorAll('[data-g="dev2"]').forEach(function (c) {
-                c.classList.remove('sel');
+   var wrap = document.getElementById('pt-sub');
+   var chips = document.getElementById('pt-sub-chips');
+   if (dtST[tid] && dtST[tid].length) {
+      chips.innerHTML = '';
+      dtST[tid].forEach(function (s) {
+         var d = document.createElement('div');
+         d.className = 'dt-chip';
+         d.dataset.g = 'pt_sub';
+         d.dataset.v = s.id;
+         d.textContent = s.name;
+         d.onclick = function () {
+            document.querySelectorAll('[data-g="pt_sub"]').forEach(function (c) {
+               c.classList.remove('sel');
             });
             d.classList.add('sel');
-            document.getElementById('dev-val').value = sub.id;
-            document.getElementById('sum-1').textContent = sub.name;
-        };
-        c2.appendChild(d);
-    });
-    document.getElementById('dev2-wrap').style.display = '';
-    document.getElementById('sum-1').textContent = devName;
-    }
+            document.getElementById('pt-val').value = s.id;
+            document.getElementById('sum-1').textContent = s.name;
+         };
+         chips.appendChild(d);
+      });
+      wrap.style.display = '';
+   } else {
+      wrap.style.display = 'none';
+   }
+   document.getElementById('sum-1').textContent = el.textContent.trim();
+}
 
-    function dtLoadL2(tinhId) {
-    var s2 = document.getElementById('sel-quan');
-    var s3 = document.getElementById('sel-phuong');
-    s2.innerHTML = '<option value="">-- Chọn --</option>';
-    s3.innerHTML = '<option value="">-- Chọn --</option>';
-    if (dtLocL2[tinhId]) {
-        dtLocL2[tinhId].forEach(function (q) {
-            var o = document.createElement('option');
-            o.value = q.id;
-            o.textContent = q.name;
-            s2.appendChild(o);
-        });
-    }
-    dtUpdateLoc();
-    }
+function dtDev1(el) {
+   document.querySelectorAll('[data-g="dev1"]').forEach(function (c) {
+      c.classList.remove('sel');
+   });
+   document.getElementById('dev2-wrap').style.display = 'none';
+   document.getElementById('dev2-chips').innerHTML = '';
+   document.getElementById('dev-val').value = '';
 
-    function dtLoadL3(quanId) {
-    var s3 = document.getElementById('sel-phuong');
-    s3.innerHTML = '<option value="">-- Chọn --</option>';
-    if (dtLocL3[quanId]) {
-        dtLocL3[quanId].forEach(function (p) {
-            var o = document.createElement('option');
-            o.value = p.id;
-            o.textContent = p.name;
-            s3.appendChild(o);
-        });
-    }
-    dtUpdateLoc();
-    }
+   el.classList.add('sel');
+   var devId = parseInt(el.dataset.v);
+   var devName = el.dataset.name || el.textContent.trim();
 
-    function dtUpdateLoc() {
-    var s1 = document.getElementById('sel-tinh');
-    var s2 = document.getElementById('sel-quan');
-    var s3 = document.getElementById('sel-phuong');
-    var val = s3.value || s2.value || s1.value;
-    document.getElementById('loc-val').value = val;
+   var found = null;
+   for (var i = 0; i < dtDevTree.length; i++) {
+      if (dtDevTree[i].id === devId) {
+         found = dtDevTree[i];
+         break;
+      }
+   }
 
-    var t1 = s1.selectedIndex > 0 ? s1.options[s1.selectedIndex].text : '';
-    var t2 = s2.selectedIndex > 0 ? s2.options[s2.selectedIndex].text : '';
-    var t3 = s3.selectedIndex > 0 ? s3.options[s3.selectedIndex].text : '';
-    var parts = [t3, t2, t1].filter(Boolean);
-    document.getElementById('sum-2').textContent = parts.join(', ');
-    }
+   if (!found || !found.children || !found.children.length) {
+      document.getElementById('dev-val').value = devId;
+      document.getElementById('sum-1').textContent = devName;
+      return;
+   }
 
-    function dtChip(el, group) {
-    document.querySelectorAll('[data-g="' + group + '"]').forEach(function (c) {
-        c.classList.remove('sel');
-    });
-    el.classList.add('sel');
-    var hid = group + '_val';
-    if (document.getElementById(hid)) document.getElementById(hid).value = el.dataset.v;
-    }
+   document.getElementById('dev2-label').textContent = devName;
+   var c2 = document.getElementById('dev2-chips');
+   found.children.forEach(function (sub) {
+      var d = document.createElement('div');
+      d.className = 'dt-chip';
+      d.dataset.g = 'dev2';
+      d.dataset.v = sub.id;
+      d.dataset.name = sub.name;
+      d.textContent = sub.name;
+      d.onclick = function () {
+         document.querySelectorAll('[data-g="dev2"]').forEach(function (c) {
+            c.classList.remove('sel');
+         });
+         d.classList.add('sel');
+         document.getElementById('dev-val').value = sub.id;
+         document.getElementById('sum-1').textContent = sub.name;
+      };
+      c2.appendChild(d);
+   });
+   document.getElementById('dev2-wrap').style.display = '';
+   document.getElementById('sum-1').textContent = devName;
+}
 
-    function dtChipSingle(el, group, hiddenId) {
-    document.querySelectorAll('[data-g="' + group + '"]').forEach(function (c) {
-        c.classList.remove('sel');
-    });
-    el.classList.add('sel');
-    document.getElementById(hiddenId).value = el.dataset.v;
-    var phl = document.getElementById('phap-ly-val') ? document.getElementById('phap-ly-val').value : '';
-    var ntl = document.getElementById('noi-that-val') ? document.getElementById('noi-that-val').value : '';
-    var parts = [phl, ntl].filter(Boolean);
-    document.getElementById('sum-5').textContent = parts.length ? parts.join(' · ') : '';
-    }
+function dtLoadL2(tinhId) {
+   var s2 = document.getElementById('sel-quan');
+   var s3 = document.getElementById('sel-phuong');
+   s2.innerHTML = '<option value="">-- Chọn --</option>';
+   s3.innerHTML = '<option value="">-- Chọn --</option>';
+   if (dtLocL2[tinhId]) {
+      dtLocL2[tinhId].forEach(function (q) {
+         var o = document.createElement('option');
+         o.value = q.id;
+         o.textContent = q.name;
+         s2.appendChild(o);
+      });
+   }
+   dtUpdateLoc();
+}
 
-    function fmtPrice(inp) {
-    var raw = inp.value.replace(/\./g, '').replace(/[^0-9]/g, '');
-    if (!raw) {
-        document.getElementById('price-hint').textContent = 'Nhập giá → tự động hiển thị bằng chữ';
-        document.getElementById('sum-3').textContent = '';
-        inp.value = '';
-        return;
-    }
-    inp.value = raw.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    var n = parseInt(raw),
-        txt = '';
-    if (n >= 1e9) txt = (+(n / 1e9).toFixed(2)) + ' tỷ đồng';
-    else if (n >= 1e6) txt = (+(n / 1e6).toFixed(1)) + ' triệu đồng';
-    else txt = n.toLocaleString('vi-VN') + ' đồng';
-    document.getElementById('price-hint').textContent = '→ ' + txt;
-    document.getElementById('sum-3').textContent = txt;
-    }
+function dtLoadL3(quanId) {
+   var s3 = document.getElementById('sel-phuong');
+   s3.innerHTML = '<option value="">-- Chọn --</option>';
+   if (dtLocL3[quanId]) {
+      dtLocL3[quanId].forEach(function (p) {
+         var o = document.createElement('option');
+         o.value = p.id;
+         o.textContent = p.name;
+         s3.appendChild(o);
+      });
+   }
+   dtUpdateLoc();
+}
 
-    var dtMap = null,
-    dtMarker = null,
-    mapTimer = null;
+function dtUpdateLoc() {
+   var s1 = document.getElementById('sel-tinh');
+   var s2 = document.getElementById('sel-quan');
+   var s3 = document.getElementById('sel-phuong');
+   var val = s3.value || s2.value || s1.value;
+   document.getElementById('loc-val').value = val;
 
-    function dtInitMap() {
-    if (dtMap) return;
-    if (!document.getElementById('leaflet-css')) {
-        var lc = document.createElement('link');
-        lc.id = 'leaflet-css';
-        lc.rel = 'stylesheet';
-        lc.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-        document.head.appendChild(lc);
-    }
-    if (typeof L === 'undefined') {
-        var ls = document.createElement('script');
-        ls.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-        ls.onload = dtCreateMap;
-        document.head.appendChild(ls);
-    } else {
-        dtCreateMap();
-    }
-    }
+   var t1 = s1.selectedIndex > 0 ? s1.options[s1.selectedIndex].text : '';
+   var t2 = s2.selectedIndex > 0 ? s2.options[s2.selectedIndex].text : '';
+   var t3 = s3.selectedIndex > 0 ? s3.options[s3.selectedIndex].text : '';
+   var parts = [t3, t2, t1].filter(Boolean);
+   document.getElementById('sum-2').textContent = parts.join(', ');
+}
 
-    function dtCreateMap() {
-    var el = document.getElementById('dt-map');
-    if (!el || dtMap) return;
-    dtMap = L.map('dt-map').setView([10.7769, 106.7009], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap',
-        maxZoom: 19
-    }).addTo(dtMap);
-    dtMarker = L.marker([10.7769, 106.7009], {
-        draggable: true
-    }).addTo(dtMap);
-    dtMarker.on('dragend', function (e) {
-        var p = e.target.getLatLng();
-        setMapPos(p.lat, p.lng);
-        dtRevGeo(p.lat, p.lng);
-    });
-    dtMap.on('click', function (e) {
-        dtMarker.setLatLng(e.latlng);
-        setMapPos(e.latlng.lat, e.latlng.lng);
-        dtRevGeo(e.latlng.lat, e.latlng.lng);
-    });
-    }
+function dtChip(el, group) {
+   document.querySelectorAll('[data-g="' + group + '"]').forEach(function (c) {
+      c.classList.remove('sel');
+   });
+   el.classList.add('sel');
+   var hid = group + '_val';
+   if (document.getElementById(hid)) document.getElementById(hid).value = el.dataset.v;
+}
 
-    function setMapPos(lat, lng) {
-    document.getElementById('map-lat').value = lat.toFixed(7);
-    document.getElementById('map-lng').value = lng.toFixed(7);
-    }
+function dtChipSingle(el, group, hiddenId) {
+   document.querySelectorAll('[data-g="' + group + '"]').forEach(function (c) {
+      c.classList.remove('sel');
+   });
+   el.classList.add('sel');
+   document.getElementById(hiddenId).value = el.dataset.v;
+   var phl = document.getElementById('phap-ly-val') ? document.getElementById('phap-ly-val').value : '';
+   var ntl = document.getElementById('noi-that-val') ? document.getElementById('noi-that-val').value : '';
+   var parts = [phl, ntl].filter(Boolean);
+   document.getElementById('sum-5').textContent = parts.length ? parts.join(' · ') : '';
+}
 
-    function dtRevGeo(lat, lng) {
-    fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lng + '&format=json&accept-language=vi')
-        .then(function (r) {
-            return r.json();
-        })
-        .then(function (d) {
-            if (d && d.display_name) {
-                document.getElementById('map-search').value = d.display_name;
-                document.getElementById('map-addr').value = d.display_name;
-            }
-        }).catch(function () {});
-    }
+function fmtPrice(inp) {
+   var raw = inp.value.replace(/\./g, '').replace(/[^0-9]/g, '');
+   if (!raw) {
+      document.getElementById('price-hint').textContent = 'Nhập giá → tự động hiển thị bằng chữ';
+      document.getElementById('sum-3').textContent = '';
+      inp.value = '';
+      return;
+   }
+   inp.value = raw.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+   var n = parseInt(raw),
+      txt = '';
+   if (n >= 1e9) txt = (+(n / 1e9).toFixed(2)) + ' tỷ đồng';
+   else if (n >= 1e6) txt = (+(n / 1e6).toFixed(1)) + ' triệu đồng';
+   else txt = n.toLocaleString('vi-VN') + ' đồng';
+   document.getElementById('price-hint').textContent = '→ ' + txt;
+   document.getElementById('sum-3').textContent = txt;
+}
 
-    function dtMapGoTo(lat, lng, label) {
-    if (!dtMap) {
-        dtInitMap();
-        setTimeout(function () {
-            dtMapGoTo(lat, lng, label);
-        }, 800);
-        return;
-    }
-    dtMap.setView([lat, lng], 16);
-    dtMarker.setLatLng([lat, lng]);
-    setMapPos(lat, lng);
-    document.getElementById('map-search').value = label;
-    document.getElementById('map-addr').value = label;
-    document.getElementById('map-suggest').style.display = 'none';
-    }
+var dtMap = null,
+   dtMarker = null,
+   mapTimer = null;
 
-    var dtMainImg = null;
-    var dtSubImgs = [];
-    var SUB_MAX = 5;
+function dtInitMap() {
+   if (dtMap) return;
+   if (!document.getElementById('leaflet-css')) {
+      var lc = document.createElement('link');
+      lc.id = 'leaflet-css';
+      lc.rel = 'stylesheet';
+      lc.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(lc);
+   }
+   if (typeof L === 'undefined') {
+      var ls = document.createElement('script');
+      ls.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      ls.onload = dtCreateMap;
+      document.head.appendChild(ls);
+   } else {
+      dtCreateMap();
+   }
+}
 
-    function escHtml(str) {
-    return String(str)
-        .replace(/&/g, '&').replace(/</g, '<')
-        .replace(/>/g, '>').replace(/"/g, '"');
-    }
+function dtCreateMap() {
+   var el = document.getElementById('dt-map');
+   if (!el || dtMap) return;
+   dtMap = L.map('dt-map').setView([10.7769, 106.7009], 13);
+   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap',
+      maxZoom: 19
+   }).addTo(dtMap);
+   dtMarker = L.marker([10.7769, 106.7009], {
+      draggable: true
+   }).addTo(dtMap);
+   dtMarker.on('dragend', function (e) {
+      var p = e.target.getLatLng();
+      setMapPos(p.lat, p.lng);
+      dtRevGeo(p.lat, p.lng);
+   });
+   dtMap.on('click', function (e) {
+      dtMarker.setLatLng(e.latlng);
+      setMapPos(e.latlng.lat, e.latlng.lng);
+      dtRevGeo(e.latlng.lat, e.latlng.lng);
+   });
+}
 
-    function cntChars(el, cid, max) {
-    var n = el.value.length;
-    document.getElementById(cid).textContent = n;
-    document.getElementById(cid).style.color = n > max * .9 ? 'var(--c-red)' : '';
-    if (cid === 'cnt-title' && el.value.trim()) {
-        document.getElementById('sum-6').textContent = el.value.trim().substring(0, 35) + (el.value.length > 35 ? '...' : '');
-    }
-    }
+function setMapPos(lat, lng) {
+   document.getElementById('map-lat').value = lat.toFixed(7);
+   document.getElementById('map-lng').value = lng.toFixed(7);
+}
 
-    document.getElementById('dt-form').addEventListener('submit', function (e) {
-    var mode = document.getElementById('dt-mode-val').value;
-    if (mode === 'bds' && !document.getElementById('pt-val').value) {
-        e.preventDefault();
-        alert('Vui lòng chọn loại bất động sản');
-        return;
-    }
-    if (mode === 'du_an' && !document.getElementById('dev-val').value) {
-        e.preventDefault();
-        alert('Vui lòng chọn dự án');
-        return;
-    }
-    if (!document.getElementById('title-inp').value.trim()) {
-        e.preventDefault();
-        document.getElementById('title-inp').focus();
-        alert('Vui lòng nhập tiêu đề');
-        return;
-    }
-    var mainFileInp = document.getElementById('main-file-input');
-    if (!dtMainImg && (!mainFileInp || !mainFileInp.files || !mainFileInp.files.length)) {
-        e.preventDefault();
-        alert('Vui lòng chọn ảnh chính');
-        return;
-    }
-    var btn = document.getElementById('btn-submit');
-    btn.disabled = true;
-    btn.textContent = 'Đang gửi...';
-    });
+function dtRevGeo(lat, lng) {
+   fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lng + '&format=json&accept-language=vi')
+      .then(function (r) {
+         return r.json();
+      })
+      .then(function (d) {
+         if (d && d.display_name) {
+            document.getElementById('map-search').value = d.display_name;
+            document.getElementById('map-addr').value = d.display_name;
+         }
+      }).catch(function () {});
+}
 
-    document.addEventListener('DOMContentLoaded', function () {
-    var si = document.getElementById('map-search');
-    var sg = document.getElementById('map-suggest');
-    if (si) {
-        si.addEventListener('input', function () {
-            clearTimeout(mapTimer);
-            var q = this.value.trim();
-            if (q.length < 3) {
-                sg.style.display = 'none';
-                return;
-            }
-            document.getElementById('map-spin').style.display = 'inline';
-            mapTimer = setTimeout(function () {
-                fetch('https://nominatim.openstreetmap.org/search?q=' +
-                    encodeURIComponent(q + ', Việt Nam') +
-                    '&format=json&limit=6&accept-language=vi&countrycodes=vn')
-                .then(function (r) {
-                    return r.json();
-                })
-                .then(function (res) {
-                    document.getElementById('map-spin').style.display = 'none';
-                    sg.innerHTML = '';
-                    if (!res.length) {
-                        sg.style.display = 'none';
-                        return;
-                    }
-                    res.forEach(function (item) {
-                        var d = document.createElement('div');
-                        d.className = 'dt-suggest-item';
-                        d.textContent = item.display_name;
-                        d.onclick = function () {
-                            dtMapGoTo(item.lat, item.lon, item.display_name);
-                            var a = document.querySelector('[name="prefix-address"]');
-                            if (a && !a.value.trim()) a.value = item.display_name.split(',')[0];
-                        };
-                        sg.appendChild(d);
-                    });
-                    sg.style.display = 'block';
-                })
-                .catch(function () {
-                    document.getElementById('map-spin').style.display = 'none';
-                });
-            }, 400);
-        });
-        document.addEventListener('click', function (e) {
-            if (!si.contains(e.target) && !sg.contains(e.target)) sg.style.display = 'none';
-        });
-    }
-    });
+function dtMapGoTo(lat, lng, label) {
+   if (!dtMap) {
+      dtInitMap();
+      setTimeout(function () {
+         dtMapGoTo(lat, lng, label);
+      }, 800);
+      return;
+   }
+   dtMap.setView([lat, lng], 16);
+   dtMarker.setLatLng([lat, lng]);
+   setMapPos(lat, lng);
+   document.getElementById('map-search').value = label;
+   document.getElementById('map-addr').value = label;
+   document.getElementById('map-suggest').style.display = 'none';
+}
+
+var dtMainImg = null;
+var dtSubImgs = [];
+var SUB_MAX = 5;
+
+function escHtml(str) {
+   return String(str)
+      .replace(/&/g, '&').replace(/</g, '<')
+      .replace(/>/g, '>').replace(/"/g, '"');
+}
+
+function cntChars(el, cid, max) {
+   var n = el.value.length;
+   document.getElementById(cid).textContent = n;
+   document.getElementById(cid).style.color = n > max * .9 ? 'var(--c-red)' : '';
+   if (cid === 'cnt-title' && el.value.trim()) {
+      document.getElementById('sum-6').textContent = el.value.trim().substring(0, 35) + (el.value.length > 35 ? '...' : '');
+   }
+}
+
+document.getElementById('dt-form').addEventListener('submit', function (e) {
+   var mode = document.getElementById('dt-mode-val').value;
+   if (mode === 'bds' && !document.getElementById('pt-val').value) {
+      e.preventDefault();
+      alert('Vui lòng chọn loại bất động sản');
+      return;
+   }
+   if (mode === 'du_an' && !document.getElementById('dev-val').value) {
+      e.preventDefault();
+      alert('Vui lòng chọn dự án');
+      return;
+   }
+   if (!document.getElementById('title-inp').value.trim()) {
+      e.preventDefault();
+      document.getElementById('title-inp').focus();
+      alert('Vui lòng nhập tiêu đề');
+      return;
+   }
+   var mainFileInp = document.getElementById('main-file-input');
+   if (!dtMainImg && (!mainFileInp || !mainFileInp.files || !mainFileInp.files.length)) {
+      e.preventDefault();
+      alert('Vui lòng chọn ảnh chính');
+      return;
+   }
+   var btn = document.getElementById('btn-submit');
+   btn.disabled = true;
+   btn.textContent = 'Đang gửi...';
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+   var si = document.getElementById('map-search');
+   var sg = document.getElementById('map-suggest');
+   if (si) {
+      si.addEventListener('input', function () {
+         clearTimeout(mapTimer);
+         var q = this.value.trim();
+         if (q.length < 3) {
+            sg.style.display = 'none';
+            return;
+         }
+         document.getElementById('map-spin').style.display = 'inline';
+         mapTimer = setTimeout(function () {
+            fetch('https://nominatim.openstreetmap.org/search?q=' +
+                  encodeURIComponent(q + ', Việt Nam') +
+                  '&format=json&limit=6&accept-language=vi&countrycodes=vn')
+               .then(function (r) {
+                  return r.json();
+               })
+               .then(function (res) {
+                  document.getElementById('map-spin').style.display = 'none';
+                  sg.innerHTML = '';
+                  if (!res.length) {
+                     sg.style.display = 'none';
+                     return;
+                  }
+                  res.forEach(function (item) {
+                     var d = document.createElement('div');
+                     d.className = 'dt-suggest-item';
+                     d.textContent = item.display_name;
+                     d.onclick = function () {
+                        dtMapGoTo(item.lat, item.lon, item.display_name);
+                        var a = document.querySelector('[name="prefix-address"]');
+                        if (a && !a.value.trim()) a.value = item.display_name.split(',')[0];
+                     };
+                     sg.appendChild(d);
+                  });
+                  sg.style.display = 'block';
+               })
+               .catch(function () {
+                  document.getElementById('map-spin').style.display = 'none';
+               });
+         }, 400);
+      });
+      document.addEventListener('click', function (e) {
+         if (!si.contains(e.target) && !sg.contains(e.target)) sg.style.display = 'none';
+      });
+   }
+});
 </script>
 <script>
 function dtPreviewMain(inp) {

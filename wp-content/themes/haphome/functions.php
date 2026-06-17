@@ -1547,7 +1547,84 @@ add_action('init', function () {
         ]);
     }
 });
+
+function dt_get_wp_user_id(object $custom_user): int {
+    if (!empty($custom_user->email)) {
+        $wp_user = get_user_by('email', $custom_user->email);
+        if ($wp_user instanceof WP_User) {
+            return (int) $wp_user->ID;
+        }
+    }
+    return 1;
+}
  
+function dt_insert_listing(int $post_id, int $custom_user_id, int $days = 30): bool {
+    global $wpdb;
+ 
+    $expired_at = date('Y-m-d', strtotime("+{$days} days"));
+    $result = $wpdb->insert(
+        $wpdb->prefix . 'custom_post_listings',
+        [
+            'post_id'        => $post_id,
+            'custom_user_id' => $custom_user_id,
+            'plan'           => 'free',
+            'status'         => 'pending', 
+            'expired_at'     => $expired_at,
+        ],
+        ['%d', '%d', '%d', '%s', '%s', '%s']
+    );
+    return $result !== false;
+}
+ 
+add_action('transition_post_status', 'dt_on_post_approved', 10, 3);
+function dt_on_post_approved(string $new, string $old, WP_Post $post): void {
+    if ($post->post_type !== 'property') return;
+    if ($new !== 'publish' || $old === 'publish') return;
+ 
+    global $wpdb;
+    $table = $wpdb->prefix . 'custom_post_listings';
+    $row = $wpdb->get_row($wpdb->prepare(
+        "SELECT * FROM $table WHERE post_id = %d", $post->ID
+    ));
+    if (!$row) return;
+
+    $expired_at = (!empty($row->expired_at) && strtotime($row->expired_at) > time())
+        ? $row->expired_at
+        : date('Y-m-d', strtotime('+30 days'));
+    $wpdb->update(
+        $table,
+        ['status' => 'active', 'expired_at' => $expired_at],
+        ['post_id' => $post->ID],
+        ['%s', '%s'],
+        ['%d']
+    );
+    update_post_meta($post->ID, '_expired_at', $expired_at);
+}
+ 
+add_action('dt_check_expired_listings', 'dt_expire_old_listings');
+function dt_expire_old_listings(): void {
+    global $wpdb;
+    $table = $wpdb->prefix . 'custom_post_listings';
+    $expired_posts = $wpdb->get_col($wpdb->prepare(
+        "SELECT post_id FROM $table WHERE status = 'active' AND expired_at < %s",
+        date('Y-m-d')
+    ));
+ 
+    foreach ($expired_posts as $post_id) {
+        wp_update_post(['ID' => (int)$post_id, 'post_status' => 'draft']);
+        $wpdb->update(
+            $table,
+            ['status' => 'expired'],
+            ['post_id' => (int)$post_id],
+            ['%s'], ['%d']
+        );
+    }
+}
+ 
+if (!wp_next_scheduled('dt_check_expired_listings')) {
+    wp_schedule_event(time(), 'daily', 'dt_check_expired_listings');
+}
+
 function dt_upload_image(array $file, int $parent_post_id = 0): int|WP_Error {
     $allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
  
@@ -1558,7 +1635,7 @@ function dt_upload_image(array $file, int $parent_post_id = 0): int|WP_Error {
         return new WP_Error('too_large', 'Ảnh vượt quá 10MB: ' . esc_html($file['name']));
     }
     if ($file['error'] !== UPLOAD_ERR_OK) {
-        return new WP_Error('upload_err', 'Lỗi upload ảnh: ' . esc_html($file['name']));
+        return new WP_Error('upload_err', 'Lỗi upload: ' . esc_html($file['name']));
     }
  
     require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -1570,30 +1647,27 @@ function dt_upload_image(array $file, int $parent_post_id = 0): int|WP_Error {
         return new WP_Error('wp_upload', $uploaded['error']);
     }
  
-    $filename   = $uploaded['file'];
-    $file_type  = wp_check_filetype(basename($filename));
-    $title      = preg_replace('/\.[^.]+$/', '', basename($filename));
+    $filename  = $uploaded['file'];
+    $file_type = wp_check_filetype(basename($filename));
+    $title     = preg_replace('/\.[^.]+$/', '', basename($filename));
     $attach_id = wp_insert_attachment([
         'post_mime_type' => $file_type['type'],
         'post_title'     => sanitize_text_field($title),
         'post_content'   => '',
         'post_status'    => 'inherit',
         'post_parent'    => $parent_post_id,
-    ], $filename, $parent_post_id, true); 
+    ], $filename, $parent_post_id, true);
  
-    if (is_wp_error($attach_id)) {
-        return $attach_id;
-    }
+    if (is_wp_error($attach_id)) return $attach_id;
  
-    $metadata = wp_generate_attachment_metadata($attach_id, $filename);
-    wp_update_attachment_metadata($attach_id, $metadata);
+    wp_update_attachment_metadata($attach_id, wp_generate_attachment_metadata($attach_id, $filename));
+ 
     return (int) $attach_id;
 }
  
 function dt_reformat_files(array $file_post): array {
-    if (!is_array($file_post['name'])) {
-        return [$file_post];
-    }
+    if (!is_array($file_post['name'])) return [$file_post];
+ 
     $result = [];
     foreach (array_keys($file_post['name']) as $i) {
         if ($file_post['error'][$i] !== UPLOAD_ERR_OK) continue;
@@ -1610,7 +1684,7 @@ function dt_reformat_files(array $file_post): array {
  
 function _dt_uid_key(): ?string {
     $u = get_current_custom_user();
-    return $u ? 'dang_tin_uid_' . md5((int)$u->id) : null;
+    return $u ? 'dang_tin_uid_' . md5((int) $u->id) : null;
 }
  
 function get_dang_tin_errors(): array {
@@ -1634,6 +1708,58 @@ function old_form_value(string $key, string $fallback = ''): string {
 function dang_tin_success(): bool {
     return !empty($_GET['dt_success']) && $_GET['dt_success'] === '1';
 }
+function ql_get_expired_at(int $post_id): string {
+    global $wpdb;
+
+    $table = $wpdb->prefix . 'custom_post_listings';
+    $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table'") === $table;
+    if ($table_exists) {
+        $expired_at = $wpdb->get_var($wpdb->prepare(
+            "SELECT expired_at FROM $table WHERE post_id = %d LIMIT 1",
+            $post_id
+        ));
+        if ($expired_at) return $expired_at; 
+    }
+
+    $meta = get_post_meta($post_id, '_expired_at', true);
+    if ($meta) return $meta;
+    $meta_old = get_post_meta($post_id, 'expiry_date', true);
+    if ($meta_old) {
+        return is_numeric($meta_old)
+            ? date('Y-m-d', (int) $meta_old)
+            : $meta_old;
+    }
+
+    return '';
+}
+
+function ql_format_expired(string $expired_raw): array {
+    if (!$expired_raw) return ['text' => '', 'warning' => false, 'overdue' => false];
+    $ts      = strtotime($expired_raw);
+    $today   = strtotime(date('Y-m-d'));
+    $diff    = (int) (($ts - $today) / 86400); 
+    return [
+        'text'    => date('d/m/Y', $ts),
+        'warning' => ($diff >= 0 && $diff <= 7),   
+        'overdue' => ($diff < 0),                 
+        'days_left' => $diff,
+    ];
+}
+
+function ql_get_listings(int $custom_uid, array $statuses, int $limit = -1): array {
+    return get_posts([
+        'post_type'      => 'property',
+        'post_status'    => $statuses,
+        'posts_per_page' => $limit,
+        'orderby'        => 'date',
+        'order'          => 'DESC',
+        'meta_query'     => [[
+            'key'   => '_custom_user_id',
+            'value' => $custom_uid,
+            'type'  => 'NUMERIC',
+        ]],
+    ]);
+}
  
 add_action('template_redirect', 'handle_dang_tin_form');
 function handle_dang_tin_form(): void {
@@ -1647,76 +1773,79 @@ function handle_dang_tin_form(): void {
         exit;
     }
  
-    $uid      = (int) $custom_user->id;
-    $uid_key  = 'dang_tin_uid_' . md5($uid);
-    $errors   = [];
-    $title   = sanitize_text_field($_POST['post_title']  ?? '');
-    $content = wp_kses_post($_POST['post_content']       ?? '');
-    $mode    = sanitize_text_field($_POST['dt_mode']     ?? 'bds'); 
-     $price_raw = preg_replace('/[^0-9]/', '', $_POST['prefix-price'] ?? '');
+    $uid     = (int) $custom_user->id;  
+    $uid_key = 'dang_tin_uid_' . md5($uid);
+    $errors  = [];
+     $title     = sanitize_text_field($_POST['post_title']  ?? '');
+    $content   = wp_kses_post($_POST['post_content']       ?? '');
+    $mode      = sanitize_key($_POST['dt_mode']            ?? 'bds'); 
+    $price_raw = preg_replace('/[^0-9]/', '', $_POST['prefix-price'] ?? '');
+    $phone     = preg_replace('/[^0-9]/', '', $_POST['prefix-phone-custom'] ?? '');
+    $video_url = esc_url_raw(trim($_POST['prefix-video'] ?? ''));
  
-    if (empty($title))      $errors[] = 'Vui lòng nhập tiêu đề.';
-    if (empty($price_raw))  $errors[] = 'Vui lòng nhập giá.';
-    if (empty($_POST['prefix-area']))    $errors[] = 'Vui lòng nhập diện tích.';
-    if (empty($_POST['prefix-address'])) $errors[] = 'Vui lòng nhập địa chỉ chi tiết.';
- 
-    if ($mode === 'bds'   && empty($_POST['property_type_val']))
+    if (empty($title))
+        $errors[] = 'Vui lòng nhập tiêu đề.';
+    if (empty($price_raw))
+        $errors[] = 'Vui lòng nhập giá.';
+    if (empty($_POST['prefix-area']))
+        $errors[] = 'Vui lòng nhập diện tích.';
+    if (empty($_POST['prefix-address']))
+        $errors[] = 'Vui lòng nhập địa chỉ chi tiết.';
+    if ($mode === 'bds' && empty($_POST['property_type_val']))
         $errors[] = 'Vui lòng chọn loại bất động sản.';
     if ($mode === 'du_an' && empty($_POST['property_developer_val']))
         $errors[] = 'Vui lòng chọn dự án.';
- 
-    $has_main_file = isset($_FILES['main_image'])
-                     && $_FILES['main_image']['error'] === UPLOAD_ERR_OK
-                     && $_FILES['main_image']['size'] > 0;
-    if (!$has_main_file) {
+    if ($phone !== '' && !preg_match('/^0[3-9]\d{8}$/', $phone))
+        $errors[] = 'Số điện thoại không hợp lệ (10 số, bắt đầu 03-09).';
+    if ($video_url !== '' && !preg_match('/youtube\.com|youtu\.be|tiktok\.com/', $video_url))
+        $errors[] = 'Link video chỉ hỗ trợ YouTube hoặc TikTok.';
+     $has_main = isset($_FILES['main_image']) && $_FILES['main_image']['error'] === UPLOAD_ERR_OK && $_FILES['main_image']['size']  > 0;
+    if (!$has_main)
         $errors[] = 'Vui lòng tải lên ảnh chính.';
-    }
  
     if (!empty($errors)) {
-        set_transient('dt_errors_'   . $uid_key, $errors,  120);
-        set_transient('dt_postdata_' . $uid_key, $_POST,   120);
+        set_transient('dt_errors_'   . $uid_key, $errors, 120);
+        set_transient('dt_postdata_' . $uid_key, $_POST,  120);
         wp_redirect(add_query_arg('dt_error', '1', get_permalink()));
         exit;
     }
- 
-    $post_id = wp_insert_post([
+     $wp_user_id = dt_get_wp_user_id($custom_user);
+     $post_id = wp_insert_post([
         'post_title'   => $title,
         'post_content' => $content,
-        'post_status'  => 'pending',   
+        'post_status'  => 'pending',
         'post_type'    => 'property',
-        'post_author'  => 1,           
+        'post_author'  => $wp_user_id, 
     ], true);
  
     if (is_wp_error($post_id)) {
-        set_transient('dt_errors_' . $uid_key, ['Lỗi tạo tin: ' . $post_id->get_error_message()], 120);
+        set_transient('dt_errors_' . $uid_key,
+            ['Lỗi tạo tin: ' . $post_id->get_error_message()], 120);
         wp_redirect(add_query_arg('dt_error', '1', get_permalink()));
         exit;
     }
-    $main_attach_id = dt_upload_image($_FILES['main_image'], $post_id);
-    if (is_wp_error($main_attach_id)) {
-        error_log('[DangTin] Main image upload error: ' . $main_attach_id->get_error_message());
+ 
+    $main_id = dt_upload_image($_FILES['main_image'], $post_id);
+    if (is_wp_error($main_id)) {
+        error_log('[DangTin] Main image: ' . $main_id->get_error_message());
     } else {
-        set_post_thumbnail($post_id, $main_attach_id);
+        set_post_thumbnail($post_id, $main_id);
     }
  
     if (!empty($_FILES['sub_images']['name'][0])) {
-        $sub_files = dt_reformat_files($_FILES['sub_images']);
-        $sub_files = array_slice($sub_files, 0, 5); 
- 
+        $sub_files = array_slice(dt_reformat_files($_FILES['sub_images']), 0, 5);
         foreach ($sub_files as $sf) {
-            if ($sf['error'] !== UPLOAD_ERR_OK) continue;
- 
             $sub_id = dt_upload_image($sf, $post_id);
             if (is_wp_error($sub_id)) {
-                error_log('[DangTin] Sub image error: ' . $sub_id->get_error_message());
+                error_log('[DangTin] Sub image: ' . $sub_id->get_error_message());
                 continue;
             }
             add_post_meta($post_id, 'prefix-image_property', $sub_id, false);
         }
     }
-
+ 
     update_post_meta($post_id, 'prefix-price', $price_raw);
-     $text_meta = [
+    $text_meta = [
         'prefix-area'         => 'prefix-area',
         'prefix-bedroom'      => 'prefix-bedroom',
         'prefix-bathroom'     => 'prefix-bathroom',
@@ -1728,44 +1857,51 @@ function handle_dang_tin_form(): void {
         'prefix-address-bds'  => 'prefix-address-bds',
         'prefix-phap-ly'      => 'prefix-phap-ly',
         'prefix-noi-that'     => 'prefix-noi-that',
-        'dt-lat'              => 'prefix-maps', 
         'prefix-unit'         => 'prefix-unit',
     ];
  
     foreach ($text_meta as $post_key => $meta_key) {
-        if (isset($_POST[$post_key]) && $_POST[$post_key] !== '') {
+        if (!empty($_POST[$post_key])) {
             update_post_meta($post_id, $meta_key, sanitize_text_field($_POST[$post_key]));
         }
     }
  
     $lat = sanitize_text_field($_POST['dt-lat'] ?? '');
     $lng = sanitize_text_field($_POST['dt-lng'] ?? '');
-    if ($lat && $lng) {
-        update_post_meta($post_id, 'prefix-maps', $lat . ',' . $lng . ',0');
+    if ($lat !== '' && $lng !== '') {
+        update_post_meta($post_id, 'prefix-maps', "{$lat},{$lng},0");
+        update_post_meta($post_id, '_dt_lat', $lat);
+        update_post_meta($post_id, '_dt_lng', $lng);
     }
     update_post_meta($post_id, '_custom_user_id', $uid);
     update_post_meta($post_id, '_dt_mode', $mode);
+     $expired_at = date('Y-m-d', strtotime('+30 days'));
+    update_post_meta($post_id, '_expired_at', $expired_at);
  
     if ($mode === 'bds' && !empty($_POST['property_type_val'])) {
-        wp_set_post_terms($post_id, [(int)$_POST['property_type_val']], 'property_type');
+        wp_set_post_terms($post_id, [(int) $_POST['property_type_val']], 'property_type');
     }
     if ($mode === 'du_an' && !empty($_POST['property_developer_val'])) {
-        wp_set_post_terms($post_id, [(int)$_POST['property_developer_val']], 'property_developer');
+        wp_set_post_terms($post_id, [(int) $_POST['property_developer_val']], 'property_developer');
     }
-     if (!empty($_POST['property_location_val'])) {
-        wp_set_post_terms($post_id, [(int)$_POST['property_location_val']], 'property_location');
+    if (!empty($_POST['property_location_val'])) {
+        wp_set_post_terms($post_id, [(int) $_POST['property_location_val']], 'property_location');
     }
-     if (!empty($_POST['huong'])) {
-        wp_set_post_terms($post_id, [(int)$_POST['huong']], 'property_direction');
+    if (!empty($_POST['huong'])) {
+        wp_set_post_terms($post_id, [(int) $_POST['huong']], 'property_direction');
     }
-     if (!empty($_POST['loai_tin'])) {
-        // property_status dùng slug: 'can-ban' hoặc 'cho-thue'
-        wp_set_post_terms($post_id, [sanitize_text_field($_POST['loai_tin'])], 'property_status', false);
+    if (!empty($_POST['loai_tin'])) {
+        wp_set_post_terms(
+            $post_id,
+            [sanitize_text_field($_POST['loai_tin'])],
+            'property_status',
+            false
+        );
     }
  
+    dt_insert_listing($post_id, $uid, 30);
     delete_transient('dt_errors_'   . $uid_key);
     delete_transient('dt_postdata_' . $uid_key);
- 
     wp_redirect(add_query_arg('dt_success', '1', get_permalink()));
     exit;
 }
