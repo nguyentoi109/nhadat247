@@ -311,7 +311,6 @@ $methods = [
 </div>
 
 <div class="ql-panel-body">
-
     <div class="nt-bal-grid">
         <div class="nt-bal-card">
             <div class="nt-bal-label">Tài khoản tin đăng</div>
@@ -331,10 +330,10 @@ $methods = [
         <div class="nt-method-card <?php echo $i === 0 ? 'selected' : ''; ?>"
              style="--ntc:<?php echo esc_attr($m['color']); ?>;"
              onclick="ntSelectMethod(this)"
-             data-method="<?php echo esc_attr($m['id']); ?>">
+             data-method="<?php echo esc_attr($m['id']); ?>"
+             data-label="<?php echo esc_attr($m['label']); ?>">
 
-            <div class="nt-method-icon"
-                 style="background:<?php echo esc_attr($m['bg']); ?>;">
+            <div class="nt-method-icon" style="background:<?php echo esc_attr($m['bg']); ?>;">
                 <svg viewBox="0 0 24 24" fill="none"
                      stroke="<?php echo esc_attr($m['color']); ?>"
                      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -353,7 +352,6 @@ $methods = [
                     <path d="M20 6L9 17l-5-5"/>
                 </svg>
             </div>
-
         </div>
         <?php endforeach; ?>
     </div>
@@ -367,28 +365,6 @@ $methods = [
         </ul>
     </div>
 
-    <!-- ── Mệnh giá ── -->
-    <div class="nt-section-title" style="margin-bottom:10px;">Chọn mệnh giá</div>
-    <div class="nt-chips" id="nt-chips">
-        <?php foreach ([50000, 100000, 200000, 500000, 1000000, 2000000] as $amount): ?>
-        <button type="button" class="nt-chip"
-                onclick="ntSelectAmount(<?php echo $amount; ?>, this)">
-            <?php echo number_format($amount, 0, ',', '.'); ?> ₫
-        </button>
-        <?php endforeach; ?>
-    </div>
-
-    <div class="nt-input-row">
-        <div class="nt-input-group">
-            <label class="nt-input-label">Hoặc nhập số tiền khác (tối thiểu 50.000 ₫)</label>
-            <input class="nt-input" type="number" id="nt-amount"
-                   min="50000" step="10000" placeholder="Nhập số tiền...">
-        </div>
-        <div id="nt-bonus-preview" style="font-size:12px;color:#059669;font-weight:600;padding-bottom:10px;display:none;">
-            + tặng <span id="nt-bonus-val">0</span> ₫ KM
-        </div>
-    </div>
-
     <div class="ql-form-footer" style="margin-top:20px;">
         <button class="nt-submit-btn" onclick="ntSubmit()">
             Tiến hành nạp tiền
@@ -397,81 +373,18 @@ $methods = [
 
 </div><!-- /.ql-panel-body -->
 
-<script>
-var ntSelectedMethod = '<?php echo esc_js($methods[0]['id']); ?>';
-var ntSelectedAmount = 0;
+<?php get_template_part('payment/popup-payment'); ?>
 
-var ntBonusTiers = [
-    { min: 2000000, pct: 12 },
-    { min: 500000,  pct: 5  },
-    { min: 1,       pct: 0, first: true },
-];
+<script>
+window.ntSelectedMethod = '<?php echo esc_js($methods[0]['id']); ?>';
+window.ntSelectedLabel  = '<?php echo esc_js($methods[0]['label']); ?>';
 
 function ntSelectMethod(card) {
     document.querySelectorAll('.nt-method-card').forEach(function(c) {
         c.classList.remove('selected');
     });
     card.classList.add('selected');
-    ntSelectedMethod = card.dataset.method;
-}
-
-function ntSelectAmount(val, btn) {
-    document.querySelectorAll('#nt-chips .nt-chip').forEach(function(b) {
-        b.classList.remove('active');
-    });
-    btn.classList.add('active');
-    document.getElementById('nt-amount').value = val;
-    ntSelectedAmount = val;
-    ntUpdateBonus(val);
-}
-
-function ntUpdateBonus(val) {
-    var bonusEl  = document.getElementById('nt-bonus-preview');
-    var bonusVal = document.getElementById('nt-bonus-val');
-    var bonus = 0;
-    if (val >= 2000000)     bonus = Math.round(val * 0.12);
-    else if (val >= 500000) bonus = Math.round(val * 0.05);
-    if (bonus > 0) {
-        bonusEl.style.display = 'block';
-        bonusVal.textContent  = bonus.toLocaleString('vi-VN');
-    } else {
-        bonusEl.style.display = 'none';
-    }
-}
-
-document.getElementById('nt-amount').addEventListener('input', function() {
-    var val = parseInt(this.value) || 0;
-    ntSelectedAmount = val;
-    document.querySelectorAll('#nt-chips .nt-chip').forEach(function(b) {
-        b.classList.remove('active');
-    });
-    ntUpdateBonus(val);
-});
-
-function ntSubmit() {
-    var amount = parseInt(document.getElementById('nt-amount').value) || ntSelectedAmount;
-    if (!ntSelectedMethod) { alert('Vui lòng chọn phương thức thanh toán.'); return; }
-    if (!amount || amount < 50000) { alert('Số tiền tối thiểu là 50.000 ₫.'); return; }
-
-    fetch('<?php echo esc_js(admin_url("admin-ajax.php")); ?>', {
-        method: 'POST',
-        headers: {'Content-Type':'application/x-www-form-urlencoded'},
-        body: 'action=bds_initiate_payment'
-            + '&method='  + encodeURIComponent(ntSelectedMethod)
-            + '&amount='  + encodeURIComponent(amount)
-            + '&_nonce=<?php echo wp_create_nonce("bds_payment_nonce"); ?>',
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-        if (data.success && data.data.redirect_url) {
-            window.location.href = data.data.redirect_url;
-        } else if (data.success && data.data.qr_code) {
-            // Hiện QR code popup
-            alert('QR Code: ' + data.data.qr_code);
-        } else {
-            alert(data.data && data.data.message ? data.data.message : 'Có lỗi xảy ra. Vui lòng thử lại.');
-        }
-    })
-    .catch(function() { alert('Có lỗi xảy ra, vui lòng thử lại.'); });
+    window.ntSelectedMethod = card.dataset.method;
+    window.ntSelectedLabel  = card.dataset.label;
 }
 </script>

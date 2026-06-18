@@ -57,4 +57,15 @@
     --bg-color:#16A085;
 
     --button-border-radius:4px;
+
+    --c-red: #e53935;
+	--c-red-lt: #fdf2f2;
+	--c-border: #e0e0e0;
+	--c-bg: #f5f5f5;
+	--c-white: #fff;
+	--c-text: #212121;
+	--c-muted: #757575;
+	--c-success: #2e7d32;
+	--radius: 4px;
+	--radius-lg: 8px;
 }
