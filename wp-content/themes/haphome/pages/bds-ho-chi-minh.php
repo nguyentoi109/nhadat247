@@ -6,12 +6,13 @@ get_header();
 ?>
 <section class="container wrap-content">
 	<main role="main" class="full-page">
+        <div class="breadcrumb-container">
+            <?php
+            set_query_var('breadcrumb_location', 54);
 
-    <?php
-    set_query_var('breadcrumb_location', 54);
-
-    get_template_part('custom-breadcrumb');
-    ?>
+            get_template_part('custom-breadcrumb');
+            ?>
+        </div>
     <section class="section section-home-search clear">
     <?php 
         set_query_var('ngop_location_id', $location_id ?? 54);
@@ -21,8 +22,7 @@ get_header();
         get_template_part('bat-dong-san-ngop'); 
     ?>
     </section>
-		<div class="list-style list-all">
-
+        <div class="list-style list-all container">
 			<?php
 			$paged = max(1, get_query_var('paged'));
 

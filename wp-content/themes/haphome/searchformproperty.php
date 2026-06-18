@@ -371,6 +371,15 @@ body.popup-open{
 	height:48px;
 }
 
+.search-container{
+	width: 100%;
+}
+
+.search-advance{
+	width: 1260px;
+    margin-left: auto;
+    margin-right: auto;
+}
 @media (max-width: 768px){
 	.search-action-group{
 		width:100%;
@@ -417,6 +426,7 @@ body.popup-open{
 }
 </style>
 <!-- Property search -->
+<div class="search-container">
 <form action="<?php bloginfo('url');?>" method="get" class="search-advance" id="form-search">
 	<div class="form-group input-search">
 		<label for="">
@@ -620,6 +630,7 @@ body.popup-open{
 			<button type="submit" class="btn"><span class="ti-search"></span> Tìm kiếm</button>
 		</div>
 </form>
+</div>
 <!-- end Property search -->
  <script>
 document.addEventListener('DOMContentLoaded', function(){

@@ -6,12 +6,13 @@ get_header();
 ?>
 <section class="container wrap-content">
 	<main role="main" class="full-page">
-        <?php
-            set_query_var('breadcrumb_all', 1);
-            get_template_part('custom-breadcrumb');
-        ?>
-		<div class="list-style list-all">
-
+        <div class="breadcrumb-container">
+            <?php
+                set_query_var('breadcrumb_all', 1);
+                get_template_part('custom-breadcrumb');
+            ?>
+        </div>
+        <div class="list-style list-all container">
 			<?php
 			$paged = max(1, get_query_var('paged'));
 

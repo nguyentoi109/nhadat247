@@ -20,12 +20,13 @@ if ($query->have_posts()) :
     $temp_query = $wp_query;
     $wp_query = $query;
 ?>
-    <?php
-        set_query_var('breadcrumb_developer', 113);
-        get_template_part('custom-breadcrumb-developer');
-    ?>
-    <div class="list-style">
-
+    <div class="breadcrumb-container">
+        <?php
+            set_query_var('breadcrumb_developer', 113);
+            get_template_part('custom-breadcrumb-developer');
+        ?>
+    </div>
+    <div class="list-style list-all container">
         <?php while ($query->have_posts()) : $query->the_post(); ?>
             <?php set_query_var('is_ngop', true);?>
             <?php get_template_part('loop-property/item-property'); ?>

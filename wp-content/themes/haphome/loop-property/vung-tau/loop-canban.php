@@ -26,12 +26,14 @@ if ($query->have_posts()) :
     $temp_query = $wp_query;
     $wp_query = $query;
 ?>
+<div class="breadcrumb-container">
 <?php
     set_query_var('breadcrumb_location', 14);
     set_query_var('breadcrumb_status', 6);
 
     get_template_part('custom-breadcrumb');
 ?>
+</div>
 <section class="section section-home-search clear">
 <?php 
     set_query_var('ngop_location_id', $location_id ?? 14);
@@ -41,8 +43,7 @@ if ($query->have_posts()) :
     get_template_part('bat-dong-san-ngop'); 
 ?>
 </section>
-    <div class="list-style">
-
+<div class="list-style list-all container">
         <?php while ($query->have_posts()) : $query->the_post(); ?>
             <?php set_query_var('is_ngop', true);?>
             <?php get_template_part('loop-property/item-property'); ?>
