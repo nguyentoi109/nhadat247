@@ -10,6 +10,15 @@ get_header();
             set_query_var('breadcrumb_location', 14);
             get_template_part('custom-breadcrumb');
         ?>
+        <section class="section section-home-search clear">
+        <?php 
+            set_query_var('ngop_location_id', $location_id ?? 14);
+            set_query_var('ngop_status_id', $status_id ?? 0);
+            set_query_var('ngop_type_id', $type_id ?? 0);
+
+            get_template_part('bat-dong-san-ngop'); 
+        ?>
+        </section>
 		<div class="list-style list-all">
 
 			<?php

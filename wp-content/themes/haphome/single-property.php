@@ -1,7 +1,4 @@
 <style>
-/* body{
-    background: #f2b60008 !important;
-} */
 
 .description.block-detail img {
         text-align: center;
@@ -32,7 +29,6 @@
     .image-popup {
         display: none;
         position: fixed;
-        /* z-index: 99999; */
         left: 0;
         top: 0;
         width: 100%;
@@ -78,24 +74,37 @@
         z-index: 2;
     }
 
-    #gallerys .swiper,
-    #gallerys .swiper-wrapper,
-    #gallerys .swiper-slide {
-        height: auto !important;
-    }
-
     #gallerys .swiper-slide {
         display: flex;
         justify-content: center;
         align-items: center;
     }
 
-    #gallerys .swiper-slide img {
+
+    .mySwiper {
+        margin-top: 3px;
+        height: 90px;
+        margin-bottom: 10px;
+    }
+    .mySwiper .swiper-slide {
+        opacity: 0.5;
+        cursor: pointer;
+        height: 90px;
+    }
+    #gallerys .mySwiper2 img{
+        width:100%;
+        height:100%;
+    }
+
+    .mySwiper .swiper-slide-thumb-active {
+        opacity: 1;
+    }
+    .mySwiper .swiper-slide img {
         width: 100% !important;
-        height: auto !important;
-        max-height: none !important;
+        height: 80px !important;
         object-fit: cover !important;
         display: block;
+        border-radius: 4px;
     }
 
     .mobile-floating-bar{
@@ -107,11 +116,7 @@
         height:18px;
         object-fit:contain;
         vertical-align:middle;
-        /* filter: invert(1); */
     }
-    /* .ti-bathroom .white-icon{
-        height: 16px;
-    } */
     .texx-label{
         font-size: 17px;
         vertical-align: middle;
@@ -188,6 +193,22 @@
     line-height: 20px;
     color: #2c2c2c;
     font-weight: normal;
+}
+
+.title-breadcrumb{
+    font-size: 16px;
+    color: #2c2c2c;
+    font-style: italic;
+}
+
+.title-breadcrumb a{
+    color: var(--title-post);
+    font-weight: normal;
+    text-decoration: underline;
+}
+
+.title-breadcrumb a:hover{
+    color:var(--menu-text-selected);
 }
 
 @media(max-width:768px){
@@ -334,12 +355,9 @@
 
         <article <?php post_class(); ?> class="detail-content">
         <?php
-            if( $image_360 || $gallerys || $video || $maps || has_post_thumbnail() ) :
+            if($gallerys || $video || $maps || has_post_thumbnail() ) :
         ?>
             <div class="header-wrap-tab">
-                <?php if( has_post_thumbnail() ) : ?>
-                <button id="btn-image" class="item-tab" onclick="openTab('tab-image')">Hình ảnh</button>
-                <?php endif; ?>
                 <?php if($gallerys) : ?>
                 <button id="btn-gallerys" class="item-tab" onclick="openTab('gallerys')">Thư viện ảnh</button>
                 <?php endif; ?>
@@ -377,17 +395,16 @@
             </script>
             <?php } ?>
 
-            <?php if( has_post_thumbnail() ) :?>
-                <div id="tab-image" class="featured-image content-tab" >
-                    <?php the_post_thumbnail('large'); ?>
-                </div>
-            <?php endif; ?>
-
-            <?php if($gallerys): ?>
+            <?php if ($gallerys || has_post_thumbnail()):?>
                 <!-- Gallery-- -->
-            <div id="gallerys" class="content-tab" style="position: absolute;opacity: 0;visibility: hidden;">
+            <div id="gallerys" class="content-tab" style="position: absolute;opacity: 0;">
                 <div class="swiper mySwiper2">
                     <div class="swiper-wrapper">
+                        <?php if (has_post_thumbnail()) : ?>
+                        <div class="swiper-slide">
+                            <img src="<?php echo get_the_post_thumbnail_url(get_the_ID(), 'full'); ?>" />
+                        </div>
+                        <?php endif; ?>
                         <?php foreach ( $gallerys as $gallery ) : ?>
                         <div class="swiper-slide">
                             <img src="<?= $gallery['full_url']; ?>" />
@@ -397,6 +414,11 @@
                 </div>
                 <div thumbsSlider="" class="swiper mySwiper">
                     <div class="swiper-wrapper">
+                        <?php if (has_post_thumbnail()) : ?>
+                        <div class="swiper-slide">
+                            <img src="<?php echo get_the_post_thumbnail_url(get_the_ID(), 'full'); ?>" />
+                        </div>
+                        <?php endif; ?>
                         <?php foreach ( $gallerys as $gallery ) : ?>
                         <div class="swiper-slide">
                             <img src="<?= $gallery['url']; ?>" />
@@ -471,6 +493,11 @@
                 const element = document.getElementById("breadcrumbs");
                 element.scrollIntoView();
             }
+            document.addEventListener("DOMContentLoaded", function () {
+                <?php if($gallerys): ?>
+                openTab('gallerys');
+                <?php endif; ?>
+            });
             </script>
 
             <?php
@@ -480,12 +507,12 @@
                     class="ti-trash"></i></a> |
             <?php edit_post_link('<i class="ti-pencil"></i>'); }// Always handy to have Edit Post Links available ?>
 
-            <h1><?php the_title(); ?></h1>
+            <h1 ><?php the_title(); ?></h1>
             
             <div class="all-location">
-                <span class="icon">
+                <!-- <span class="icon">
                     <span class="ti-location-pin"></span>
-                </span>
+                </span> -->
 
                 <span class="address-inline">
                     <?php echo esc_html($address); ?>
@@ -678,10 +705,43 @@
             </div>
         </div>
             <?php endif; ?>
+            <h2 class="title-breadcrumb">
+                Mục:
+                <!-- <div class="breadcrumb-all"> -->
+                <?php
+                $location = get_the_terms(get_the_ID(), 'property_location');
+                $status   = get_the_terms(get_the_ID(), 'property_status');
+                $type     = get_the_terms(get_the_ID(), 'property_type');
+                $location_custom_links = array(
+                    'tp-ho-chi-minh'  => 'tp-ho-chi-minh',
+                    'binh-duong'      => 'binh-duong',
+                    'dong-nai'        => 'dong-nai',
+                    'ba-ria-vung-tau' => 'vung-tau',
+                );
+                $location_url = '';
 
-            <?php
-        $gavatar = get_the_author_meta('user_email');
-    ?>
+                if (!empty($location) && !is_wp_error($location)) {
+                    $location_slug = $location[0]->slug;
+                    $location_url = $location_custom_links[$location_slug] ?? $location_slug;
+                    echo '<a href="'.home_url('/'.$location_url).'">'.$location[0]->name.'</a>';
+                }
+
+                if (!empty($status) && !is_wp_error($status)) {
+                    echo ' <a href="'.home_url('/'.$status[0]->slug.'-'.$location_url).'">'.
+                            mb_strtolower($status[0]->name, 'UTF-8').
+                        '</a>';
+                }
+
+                if (!empty($type) && !is_wp_error($type)) {
+                    echo ' <a href="'.home_url('/'.$status[0]->slug.'-'.$type[0]->slug.'-'.$location_url).'">'.
+                            mb_strtolower($type[0]->name, 'UTF-8').
+                        '</a>';
+                }
+                ?>
+                <!-- </div> -->
+            </h2>
+
+            <?php $gavatar = get_the_author_meta('user_email');?>
             <div class="infor-con">
             <h2 class="title-box-detail">Thông tin liên hệ</h2>
             <div class="info-contact width-common flexbox">

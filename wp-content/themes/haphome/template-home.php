@@ -42,23 +42,14 @@ get_header();
     <div class="swiper-pagination"></div>
   </div> -->
 
-  <div class="popular clear">
-    <h2 class="title-section"><span>Bất động sản ngộp</span></h2>
-    <div class="popular-real grid swiper-container">
-       <div class="list-popular-real swiper-wrapper">
-         <?php get_template_part('bat-dong-san-ngop'); ?>
-       </div>
-    </div>
+  
+         <?php 
+          set_query_var('ngop_location_id', $location_id ?? 0);
+          set_query_var('ngop_status_id', $status_id ?? 0);
+          set_query_var('ngop_type_id', $type_id ?? 0);
 
-    <span class="btn-prev">
-        <span class="ti-arrow-left"></span>
-    </span>
-    <span class="btn-next">
-      <span class="ti-arrow-right"></span>
-    </span>
-    
-    <div class="swiper-pagination"></div>
-  </div>
+          get_template_part('bat-dong-san-ngop'); 
+        ?>
 </section>
 
 

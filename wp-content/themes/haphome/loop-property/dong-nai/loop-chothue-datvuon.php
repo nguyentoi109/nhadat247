@@ -38,6 +38,15 @@ if ($query->have_posts()) :
 
     get_template_part('custom-breadcrumb');
 ?>
+<section class="section section-home-search clear">
+<?php 
+    set_query_var('ngop_location_id', $location_id ?? 136);
+    set_query_var('ngop_status_id', $status_id ?? 7);
+    set_query_var('ngop_type_id', $type_id ?? 133);
+
+    get_template_part('bat-dong-san-ngop'); 
+?>
+</section>
     <div class="list-style">
 
         <?php while ($query->have_posts()) : $query->the_post(); ?>

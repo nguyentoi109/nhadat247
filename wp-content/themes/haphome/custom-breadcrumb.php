@@ -6,9 +6,8 @@
     ?>
 
     <div class="custom-breadcrumb">
-        <a href="<?php echo home_url(); ?>">Trang chủ</a>
                  <?php if ($all_page): ?>
-                    / <span class="active">Tất cả bất động sản</span>
+                    <span class="active">Tất cả bất động sản</span>
                 <?php endif; ?>
             <?php
                 $location_slug      = '';
@@ -17,7 +16,6 @@
 
                 $location_custom_links = array(
                     'tp-ho-chi-minh'  => 'tp-ho-chi-minh',
-                    'ha-noi'          => 'ha-noi',
                     'binh-duong'      => 'binh-duong',
                     'dong-nai'        => 'dong-nai',
                     'ba-ria-vung-tau' => 'vung-tau',
@@ -31,9 +29,9 @@
                         $location_link = home_url('/' . $location_url_slug);
 
                         if (!$status_id && !$type_id) {
-                            echo ' / <span class="active">' . esc_html($location_term->name) . '</span>';
+                            echo ' <span class="active">' . esc_html($location_term->name) . '</span>';
                         } else {
-                            echo ' / <a href="' . esc_url($location_link) . '">' . esc_html($location_term->name) . '</a>';
+                            echo ' <a href="' . esc_url($location_link) . '">' . esc_html($location_term->name) . '</a>';
                         }
                     }
                 }
