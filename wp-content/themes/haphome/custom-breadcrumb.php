@@ -29,9 +29,9 @@
                         $location_link = home_url('/' . $location_url_slug);
 
                         if (!$status_id && !$type_id) {
-                            echo ' <span class="active">' . esc_html($location_term->name) . '</span>';
+                            echo ' / <span class="active">' . esc_html($location_term->name) . '</span>';
                         } else {
-                            echo ' <a href="' . esc_url($location_link) . '">' . esc_html($location_term->name) . '</a>';
+                            echo ' / <a href="' . esc_url($location_link) . '">' . esc_html($location_term->name) . '</a>';
                         }
                     }
                 }

@@ -322,6 +322,20 @@ function property_meta_box( $meta_boxes ) {
 				'desc' => esc_html__( 'Địa chỉ Bất Động Sản', 'html5blank' ),
 				'placeholder' => esc_html__( 'Địa chỉ Bất Động Sản', 'html5blank' ),
 			),
+            array(
+                'id' => $prefix . 'phap-ly',
+                'type' => 'text',
+                'name' => esc_html__('Giấy tờ pháp lý', 'html5blank'),
+                'desc' => esc_html__( 'Loại giấy tờ', 'html5blank' ),
+                'placeholder' => esc_html__('Loại giấy tờ', 'html5blank'),
+            ),
+            array(
+                'id' => $prefix . 'noi-that',
+                'type' => 'text',
+                'name' => esc_html__('Tình trạng nội thất', 'html5blank'),
+                'desc' => esc_html__( 'Tình trạng nội thất', 'html5blank' ),
+                'placeholder' => esc_html__('Tình trạng nội thất', 'html5blank'),
+            ),
 			array(
 				'id' => $prefix . 'video',
 				'type' => 'text',

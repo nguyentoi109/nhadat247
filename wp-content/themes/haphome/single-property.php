@@ -129,20 +129,20 @@
     list-style:none;
     display:flex;
     flex-wrap:wrap;
-    border-bottom:1px solid #e5e5e5;
+    border:1px solid #10b981;
+    border-right:none;
+    border-bottom:1px solid #10b981;
 }
 
 .list-detail-real li{
     width:50%;
     box-sizing:border-box;
     display:flex;
-    align-items:center;
     justify-content:space-between;
-    padding: 10px 15px 10px 5px;
-    border:1px solid #e5e5e5;
-    font-family:"Roboto";
-    font-size:16px;
-    color:#2c2c2c;
+    align-items:center;
+    padding:10px 15px 10px 5px;
+    border-right:1px solid #10b981;
+    border-bottom:1px solid #10b981;
 }
 
 .list-detail-real li:nth-child(odd){
@@ -161,24 +161,24 @@
 
 .item-right{
     text-align:right;
-    font-weight:400;
+    font-weight:500;
     color:#2c2c2c;
 }
 
 .list-detail-real .label{
     font-size:16px;
-    font-weight:600;
+    font-weight:normal;
     color:#2c2c2c;
     margin:0;
 }
 
 .list-detail-real .icon{
-    width:34px;
-    height:34px;
+    width:20px;
+    height:20px;
     display:flex;
     align-items:center;
     justify-content:center;
-    font-size:22px;
+    font-size:20px;
     color:#000;
     flex-shrink:0;
 }
@@ -343,6 +343,8 @@
         $address = rwmb_meta( 'prefix-address' );
         $bathroom = rwmb_meta('prefix-bathroom');
         $bedroom = rwmb_meta('prefix-bedroom');
+        $phap_ly = rwmb_meta('prefix-phap-ly');
+        $noi_that = rwmb_meta('prefix-noi-that');
         $video = rwmb_meta( 'prefix-video' );
         $id_video = explode('?v=', $video);
         $name_custom = rwmb_meta('prefix-name-custom');
@@ -350,16 +352,17 @@
         $email_custom = rwmb_meta('prefix-email-custom');
         $image_360 = rwmb_meta( 'image360', ['size' => 'thumbnail'] );
         $gallerys = rwmb_meta( 'prefix-image_property', ['size' => 'thumbnail'] );
+        $has_gallery = !empty($gallerys);
         $maps = rwmb_meta( 'prefix-maps');
     ?>
 
         <article <?php post_class(); ?> class="detail-content">
         <?php
-            if($gallerys || $video || $maps || has_post_thumbnail() ) :
+            if ($has_gallery || has_post_thumbnail() || $video || $maps) :
         ?>
             <div class="header-wrap-tab">
-                <?php if($gallerys) : ?>
-                <button id="btn-gallerys" class="item-tab" onclick="openTab('gallerys')">Thư viện ảnh</button>
+                <?php if($has_gallery || has_post_thumbnail()) : ?>
+                <button id="btn-gallerys" class="item-tab" onclick="openTab('gallerys')">Hình ảnh</button>
                 <?php endif; ?>
                 <?php if($image_360) : ?>
                 <button class="item-tab" onclick="openTab('image_360')">Ảnh 360</button>
@@ -395,40 +398,50 @@
             </script>
             <?php } ?>
 
-            <?php if ($gallerys || has_post_thumbnail()):?>
                 <!-- Gallery-- -->
-            <div id="gallerys" class="content-tab" style="position: absolute;opacity: 0;">
+            <div id="gallerys" class="content-tab" style="position: absolute; opacity: 0;">
                 <div class="swiper mySwiper2">
                     <div class="swiper-wrapper">
                         <?php if (has_post_thumbnail()) : ?>
-                        <div class="swiper-slide">
-                            <img src="<?php echo get_the_post_thumbnail_url(get_the_ID(), 'full'); ?>" />
-                        </div>
+                            <div class="swiper-slide">
+                                <img src="<?php echo esc_url(get_the_post_thumbnail_url(get_the_ID(), 'full')); ?>"
+                                    alt="<?php the_title_attribute(); ?>">
+                            </div>
                         <?php endif; ?>
-                        <?php foreach ( $gallerys as $gallery ) : ?>
-                        <div class="swiper-slide">
-                            <img src="<?= $gallery['full_url']; ?>" />
-                        </div>
-                        <?php endforeach ?>
+
+                        <?php if ($has_gallery) : ?>
+                            <?php foreach ($gallerys as $gallery) : ?>
+                                <div class="swiper-slide">
+                                    <img src="<?= esc_url($gallery['full_url']); ?>" alt="">
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+
                     </div>
                 </div>
-                <div thumbsSlider="" class="swiper mySwiper">
-                    <div class="swiper-wrapper">
-                        <?php if (has_post_thumbnail()) : ?>
-                        <div class="swiper-slide">
-                            <img src="<?php echo get_the_post_thumbnail_url(get_the_ID(), 'full'); ?>" />
+
+                <?php if ($has_gallery) : ?>
+                    <div thumbsSlider="" class="swiper mySwiper">
+                        <div class="swiper-wrapper">
+
+                            <?php if (has_post_thumbnail()) : ?>
+                                <div class="swiper-slide">
+                                    <img src="<?php echo esc_url(get_the_post_thumbnail_url(get_the_ID(), 'thumbnail')); ?>"
+                                        alt="<?php the_title_attribute(); ?>">
+                                </div>
+                            <?php endif; ?>
+
+                            <?php foreach ($gallerys as $gallery) : ?>
+                                <div class="swiper-slide">
+                                    <img src="<?= esc_url($gallery['url']); ?>" alt="">
+                                </div>
+                            <?php endforeach; ?>
+
                         </div>
-                        <?php endif; ?>
-                        <?php foreach ( $gallerys as $gallery ) : ?>
-                        <div class="swiper-slide">
-                            <img src="<?= $gallery['url']; ?>" />
-                        </div>
-                        <?php endforeach ?>
                     </div>
-                </div>
+                <?php endif; ?>
             </div>
             <!-- end Gallery-- -->
-            <?php endif;?>
 
             <?php if ( $video ) : ?>
                 <!-- Video -->
@@ -452,30 +465,30 @@
             <!-- end Maps -->
             <?php endif; ?>
 
-            <?php if( $gallerys ): ?>
-            <script>
-            var swiper = new Swiper(".mySwiper", {
-                spaceBetween: 1,
-                slidesPerView: 5,
-                freeMode: true,
-                watchSlidesProgress: true,
-                breakpoints: {
-                    600: {
-                        slidesPerView: 3,
-                    },
-                    820: {
-                        slidesPerView: 4,
-                    },
-                },
-            });
-            var swiper2 = new Swiper(".mySwiper2", {
-                spaceBetween: 10,
-                thumbs: {
-                    swiper: swiper,
-                },
-            });
-            </script>
+            <?php if ($has_gallery) : ?>
+                <script>
+                var swiper = new Swiper(".mySwiper", {
+                    spaceBetween: 10,
+                    slidesPerView: 5,
+                    freeMode: true,
+                    watchSlidesProgress: true,
+                });
 
+                var swiper2 = new Swiper(".mySwiper2", {
+                    spaceBetween: 10,
+                    thumbs: {
+                        swiper: swiper,
+                    },
+                });
+                </script>
+
+                <?php else : ?>
+
+                <script>
+                new Swiper(".mySwiper2", {
+                    spaceBetween: 10,
+                });
+                </script>
             <?php endif; ?>
 
             <script>
@@ -494,7 +507,7 @@
                 element.scrollIntoView();
             }
             document.addEventListener("DOMContentLoaded", function () {
-                <?php if($gallerys): ?>
+                <?php if ($has_gallery || has_post_thumbnail()) : ?>
                 openTab('gallerys');
                 <?php endif; ?>
             });
@@ -538,48 +551,50 @@
                         </div>
 
                         <div class="item-right">
-                           <span class="num">
-                                <?php
-                                    if ($price) {
-                                        if ($price >= 1000000000) {
-                                            $value = $price / 1000000000;
-                                            echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
-                                        } elseif ($price >= 1000000) {
-                                            $value = $price / 1000000;
-                                            echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
-                                        } else {
-                                            if ($unit == 'trieu' && $price > 1000) {
-                                                $value = $price / 1000;
+                            <div class="detail-price" style="color: var(--menu-text-selected);">
+                                <span class="num">
+                                    <?php
+                                        if ($price) {
+                                            if ($price >= 1000000000) {
+                                                $value = $price / 1000000000;
+                                                echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
+                                            } elseif ($price >= 1000000) {
+                                                $value = $price / 1000000;
                                                 echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
                                             } else {
-                                                echo number_format($price, 0, ',', '.');
-                                            }
-                                        }
-                                    }
-                                    ?>
-                                    </span>
-                                    <?php
-                                    if ($price) {
-                                        if ($price >= 1000000000) {
-                                            echo ' tỷ';
-                                        } elseif ($price >= 1000000) {
-                                            echo ' triệu';
-                                        } else {
-                                            if ($unit == 'trieu') {
-                                                if ($price > 1000) {
-                                                    echo 'tỷ';
+                                                if ($unit == 'trieu' && $price > 1000) {
+                                                    $value = $price / 1000;
+                                                    echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
                                                 } else {
-                                                    echo ' triệu';
+                                                    echo number_format($price, 0, ',', '.');
                                                 }
-                                            } elseif ($unit == 'ty') {
-                                                echo ' tỷ';
-                                            } else {
-                                                echo ' đ';
                                             }
                                         }
-                                    }
-                                ?>
-                            </span>
+                                        ?>
+                                        </span>
+                                        <?php
+                                        if ($price) {
+                                            if ($price >= 1000000000) {
+                                                echo ' tỷ';
+                                            } elseif ($price >= 1000000) {
+                                                echo ' triệu';
+                                            } else {
+                                                if ($unit == 'trieu') {
+                                                    if ($price > 1000) {
+                                                        echo 'tỷ';
+                                                    } else {
+                                                        echo ' triệu';
+                                                    }
+                                                } elseif ($unit == 'ty') {
+                                                    echo ' tỷ';
+                                                } else {
+                                                    echo ' đ';
+                                                }
+                                            }
+                                        }
+                                    ?>
+                                </span>
+                            </div>
                         </div>
                     </li>
 
@@ -591,9 +606,10 @@
 
                             <span class="label">Diện tích</span>
                         </div>
-
-                        <div class="item-right">
-                            <?php echo !empty($area) ? $area : '0'; ?> m<sup>2</sup>
+                            <div class="item-right">
+                                <div class="detail-area" style="color: var(--menu-text-selected);">
+                                <?php echo !empty($area) ? $area : '0'; ?> m<sup>2</sup>
+                            </div>
                         </div>
                     </li>
 
@@ -684,6 +700,34 @@
                                 ? implode(', ', wp_list_pluck($terms, 'name'))
                                 : '---';
                             ?>
+                        </div>
+                    </li>
+
+                    <li>
+                        <div class="item-left">
+                            <span class="icon">
+                                <span class="ti-files"></span>
+                            </span>
+                            <span class="label">Giấy tờ pháp lý</span>
+                        </div>
+
+                        <div class="item-right">
+                            <?php echo !empty($phap_ly) ? esc_html($phap_ly) : '---'; ?>
+                        </div>
+                    </li>
+
+                    <li>
+                        <div class="item-left">
+                            <span class="icon">
+                                <img src="<?php echo get_template_directory_uri(); ?>/img/interior-design.png"
+                                    alt="Bedroom Icon"
+                                    class="white-icon">
+                            </span>
+                            <span class="label">Nội thất</span>
+                        </div>
+
+                        <div class="item-right">
+                            <?php echo !empty($noi_that) ? esc_html($noi_that) : '---'; ?>
                         </div>
                     </li>
                 </ul>
