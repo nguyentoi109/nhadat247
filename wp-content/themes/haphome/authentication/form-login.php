@@ -1,4 +1,5 @@
- <section class="section-form-login">
+
+<section class="section-form-login">
     <div class="login-title-small">
         Xin chào bạn
     </div>
@@ -9,7 +10,7 @@
     <form method="post" id="login-form" action="<?php echo home_url('/'); ?>">
         <div class="form-field login-user-field">
 
-            <div class="icon">
+            <div class="icon-form">
                 <img src="<?php echo get_template_directory_uri() ?>/img/person.png" width="20">
             </div>  
 
@@ -17,7 +18,7 @@
         </div>
 
         <div class="form-field password-field">
-            <div class="icon">
+            <div class="icon-form">
                 <img src="<?php echo get_template_directory_uri() ?>/img/locked.png" width="20">
             </div>
 

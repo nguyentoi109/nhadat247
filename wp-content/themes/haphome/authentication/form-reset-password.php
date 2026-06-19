@@ -7,7 +7,7 @@
     <form id="reset-password-form">
 
         <div class="form-field password-field">
-            <div class="icon">
+            <div class="icon-form">
                 <img src="<?php echo get_template_directory_uri() ?>/img/locked.png" width="20">
             </div>
 
@@ -23,7 +23,7 @@
         </div>
 
         <div class="form-field password-field">
-            <div class="icon">
+            <div class="icon-form">
                 <img src="<?php echo get_template_directory_uri() ?>/img/locked.png" width="20">
             </div>
 

@@ -82,7 +82,7 @@
     </div>
     <form id="s-password-form">
         <div class="form-field password-field">
-            <div class="icon">
+            <div class="icon-form">
                 <img src="<?php echo get_template_directory_uri() ?>/img/locked.png" width="20">
             </div>
             <input type="password" id="s-password-input" name="password" placeholder="Nhập mật khẩu" required>
@@ -92,7 +92,7 @@
         </div>
 
         <div class="form-field confirm-password-field">
-            <div class="icon">
+            <div class="icon-form">
                 <img src="<?php echo get_template_directory_uri() ?>/img/locked.png" width="20">
             </div>
             <input type="password" id="s-confirm-password-input" name="confirm_password" placeholder="Nhập lại mật khẩu" required>

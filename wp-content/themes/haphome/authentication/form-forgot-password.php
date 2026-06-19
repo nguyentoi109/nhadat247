@@ -22,7 +22,7 @@
 
     <form id="forgot-password-form">
         <div class="form-field">
-            <div class="icon">
+            <div class="icon-form">
                 <img src="<?php echo get_template_directory_uri(); ?>/img/phone.png" width="20">
             </div>
             <input type="tel" name="forgot_phone"  placeholder="Nhập số điện thoại">

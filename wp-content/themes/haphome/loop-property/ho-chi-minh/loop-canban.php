@@ -33,7 +33,7 @@ if ($query->have_posts()) :
     get_template_part('custom-breadcrumb');
 ?>
 </div>
-<section class="section section-home-search clear">
+<section class="section section-home-search clear full-bleed">
 <?php 
     set_query_var('ngop_location_id', $location_id ?? 54);
     set_query_var('ngop_status_id', $status_id ?? 6);

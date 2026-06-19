@@ -523,9 +523,9 @@
             <h1 ><?php the_title(); ?></h1>
             
             <div class="all-location">
-                <!-- <span class="icon">
+                <span class="icon-location">
                     <span class="ti-location-pin"></span>
-                </span> -->
+                </span>
 
                 <span class="address-inline">
                     <?php echo esc_html($address); ?>

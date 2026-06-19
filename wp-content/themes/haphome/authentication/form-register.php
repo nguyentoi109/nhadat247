@@ -70,7 +70,7 @@
     <form method="post" id="register-form" action="<?php echo home_url('/'); ?>">
         
         <div class="form-field">
-            <div class="icon">
+            <div class="icon-form">
                 <img src="<?php echo get_template_directory_uri(); ?>/img/phone.png" width="20">
             </div>
             <input type="tel" name="phone" placeholder="Nhập số điện thoại">
