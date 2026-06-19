@@ -131,7 +131,7 @@
     flex-wrap:wrap;
     border:1px solid #10b981;
     border-right:none;
-    border-bottom:1px solid #10b981;
+    border-bottom:none;
 }
 
 .list-detail-real li{

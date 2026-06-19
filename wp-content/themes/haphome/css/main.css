@@ -8541,7 +8541,7 @@ border-radius .read-more a:hover {
 
 .list-detail-real li:nth-last-child(1),
 .list-detail-real li:nth-last-child(2) {
-  border-bottom: none;
+  border-bottom: 1px solid #10b981;
   margin-bottom: 0;
 }
 .list-detail-real li:hover {
