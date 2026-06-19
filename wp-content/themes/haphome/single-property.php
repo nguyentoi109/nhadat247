@@ -166,6 +166,7 @@
 }
 
 .list-detail-real .label{
+    font-family: 'Roboto-Regular';
     font-size:16px;
     font-weight:normal;
     color:#2c2c2c;
@@ -219,14 +220,13 @@
             bottom:0;
             width:100%;
             background:#fff;
-
+            /* border-top: 1px solid #0e9aa7; */
             display:flex;
             align-items:center;
             gap:12px;
             z-index: 9;
-
             padding:10px 12px;
-            box-shadow:0 -2px 10px rgba(0,0,0,0.15);
+            box-shadow:0 -2px 10px rgba(0,0,0,0.35);
         }
 
 
@@ -236,9 +236,9 @@
     }
 
     .mobile-floating-bar .avatar-btn{
-        width:64px;
-        height:64px;
-        min-width:64px;
+        width:60px;
+        height:60px;
+        min-width:60px;
         border-radius:50%;
         overflow:hidden;
         border:2px solid #0e9aa7;
@@ -256,11 +256,11 @@
     }
 
     .mobile-floating-bar .zalo-btn{
-        height:64px;
+        height:54px;
         width: 25%;
         background:#fff;
         border:1px solid #d9d9d9;
-        border-radius:14px;
+        border-radius:7px;
         display:flex;
         align-items:center;
         justify-content:center;
@@ -273,16 +273,16 @@
     }
 
     .mobile-floating-bar .zalo-btn img{
-        width:28px;
-        height:28px;
+        width:26px;
+        height:26px;
         object-fit:contain;
         flex-shrink:0;
     }
 
     .mobile-floating-bar .call-btn{
-        height:64px;
+        height:54px;
         background:linear-gradient(180deg,#11b4bd,#069aa3);
-        border-radius:14px;
+        border-radius:7px;
         display:flex;
         align-items:center;
         justify-content:center;
@@ -302,7 +302,7 @@
     }
 
     .mobile-floating-bar .phone-icon{
-        font-size:22px;
+        font-size:20px;
         line-height:1;
         filter:brightness(0) invert(1);
         flex-shrink:0;
@@ -313,8 +313,8 @@
 
     .list-detail-real li:nth-child(odd),
     .list-detail-real li:nth-child(even){
-        padding-left:5px;
-        padding-right:15px;
+        padding-left:10px;
+        padding-right:20px;
     }
 
     .item-left{
@@ -354,6 +354,18 @@
         $gallerys = rwmb_meta( 'prefix-image_property', ['size' => 'thumbnail'] );
         $has_gallery = !empty($gallerys);
         $maps = rwmb_meta( 'prefix-maps');
+
+        $room_type_ids = array(8, 9, 11);
+        $property_type_terms = get_the_terms(get_the_ID(), "property_type");
+        $has_rooms = false;
+        if (!empty($property_type_terms) && !is_wp_error($property_type_terms)) {
+            foreach ($property_type_terms as $term) {
+                if (in_array($term->term_id, $room_type_ids)) {
+                    $has_rooms = true;
+                    break;
+                }
+            }
+        }
     ?>
 
         <article <?php post_class(); ?> class="detail-content">
@@ -612,7 +624,7 @@
                             </div>
                         </div>
                     </li>
-
+                    <?php if ($has_rooms): ?>
                     <li>
                         <div class="item-left">
                             <span class="icon">
@@ -667,7 +679,7 @@
                             ?>
                         </div>
                     </li>
-
+                    <?php endif; ?>
                     <li>
                         <div class="item-left">
                             <span class="icon">

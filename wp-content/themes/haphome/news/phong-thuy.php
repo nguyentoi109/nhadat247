@@ -34,7 +34,7 @@
 				'category_name'=> 'phong-thuy',
 				'orderby' => 'ID',
 				'order' => 'DESC',
-				'posts_per_page' => 5,
+				'posts_per_page' => 3,
 			));
 			if ($query->have_posts()): while ($query->have_posts()) : $query->the_post();
 

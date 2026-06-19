@@ -133,6 +133,19 @@ $price = (float)$price;
 $custom_user = get_current_custom_user();
 $custom_user_id = $custom_user ? (int)$custom_user->id : 0;
 $is_saved = $custom_user_id ? is_favorited($custom_user_id, $post_id) : false;
+
+//check bds
+$room_type_ids = array(8, 9, 11);
+$property_type_terms = get_the_terms($post_id, "property_type");
+$has_rooms = false;
+if (!empty($property_type_terms) && !is_wp_error($property_type_terms)) {
+    foreach ($property_type_terms as $term) {
+        if (in_array($term->term_id, $room_type_ids)) {
+            $has_rooms = true;
+            break;
+        }
+    }
+}
 ?>
 
 <?php $is_ngop = get_query_var('is_ngop', false);?>
@@ -276,6 +289,7 @@ $is_saved = $custom_user_id ? is_favorited($custom_user_id, $post_id) : false;
 				<span class="area">
 					<?php echo $area; ?> m<sup>2<sup>
 				</span> |
+				<?php if ($has_rooms): ?>
 				<span class="bedroom">
 					<img src="<?php echo get_template_directory_uri(); ?>/img/bedroom.png"
 						alt="Bedroom Icon"
@@ -309,7 +323,8 @@ $is_saved = $custom_user_id ? is_favorited($custom_user_id, $post_id) : false;
 							echo '&nbsp;';
 						}
 					?>
-				</span> |
+				</span>|
+				<?php endif; ?> 
 				<span class="location">
 					<!-- <strong><span class="ti-location-pin"></span>:</strong> -->
 					<?php

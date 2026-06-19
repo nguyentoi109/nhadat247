@@ -8166,7 +8166,7 @@ border-radius .read-more a:hover {
 }
 .box-tinh-lai-suat,
 .item-banner {
-  grid-row: 3 / 7;
+  grid-row: 1 / 7;
   border-top: 1px solid #debe20;
   padding-top: 20px;
 }
@@ -8256,7 +8256,7 @@ border-radius .read-more a:hover {
   font-size: 1.4rem;
   background: #debe20;
   padding: 5px;
-  border-radius: 3px;
+  /* border-radius: 3px; */
   position: sticky;
   position: -webkit-sticky;
   top: 75px;
@@ -8267,8 +8267,8 @@ border-radius .read-more a:hover {
     top: 0;
     display: flex;
     overflow-x: auto;
-    width: calc(100% + 30px);
-    margin: 0 -15px;
+    /* width: calc(100% + 30px);
+    margin: 0 -15px; */
   }
 }
 @media only screen and (max-width: 600px) {
