@@ -374,12 +374,6 @@ body.popup-open{
 .search-container{
 	width: 100%;
 }
-
-.search-advance{
-	width: 1260px;
-    margin-left: auto;
-    margin-right: auto;
-}
 @media (max-width: 768px){
 	.search-action-group{
 		width:100%;

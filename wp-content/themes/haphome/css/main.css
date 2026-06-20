@@ -4541,7 +4541,7 @@ table {
 }
 .mask-popup.show {
   visibility: visible;
-  opacity: 1;
+  opacity: 0.5;
 }
 .search-property {
   width: 50px;
@@ -7545,6 +7545,7 @@ border-radius .read-more a:hover {
   border-radius: 3px;
   font-style: italic;
   font-size: 1.5rem;
+  margin: 10px;
 }
 .btn-search-mobile .ti-search {
   margin-right: 5px;
@@ -9172,6 +9173,7 @@ border-radius .read-more a:hover {
   }
   .footer-link .container .list-link {
     width: 50%;
+    padding: 0 20px;
   }
 }
 @media only screen and (max-width: 720px) {
@@ -9793,5 +9795,14 @@ select.form-control option {
     right: 50%;
     margin-left: -50vw;
     margin-right: -50vw;
+}
+
+@media (max-width:1024px){  
+  .list-all{
+    padding: 0px 10px;
+  }
+  .related .container{
+    padding: 0 10px;
+  }
 }
 /*# sourceMappingURL=main.css.map */

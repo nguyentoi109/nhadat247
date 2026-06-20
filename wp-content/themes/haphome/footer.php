@@ -1,7 +1,6 @@
 <div class="container clear">
 		<!-- <a title="Chính chủ bán gấp đất TP Đồng Xoài ngay trung tâm thương mại giá rẻ hời cho đầu tư" target="_blank" href="https://haphome.vn/bat-dong-san/chinh-chu-ban-gap-dat-tp-dong-xoai-ngay-trung-tam-thuong-mai-gia-re-hoi-cho-dau-tu"><img src="https://haphome.vn/wp-content/uploads/2022/08/banner-ban-dat-trung-tam-thanh-pho-dong-xoai-1.gif" alt="Chính chủ bán gấp đất TP Đồng Xoài ngay trung tâm thương mại giá rẻ hời cho đầu tư" style="width: 100%;float: left;margin: 30px 0; "></a> -->
 	</div>
-<div class="footer-container">
 <section class="footer-link">
 		<div class="container">
 			<ul class="list-link">
@@ -53,7 +52,6 @@
 			if(!dynamic_sidebar('widget-bottom-3')) ;
 		?>
 	</section>
-</div>
 	
 	<footer class="footer" role="contentinfo">
 		<div class="container">
