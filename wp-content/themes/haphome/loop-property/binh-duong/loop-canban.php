@@ -1,28 +1,36 @@
 <?php
-$query = new WP_Query(array(
-    'post_type'      => 'property',
-    'tax_query'      => array(
+$paged = max(1, get_query_var('paged'));
+$price_area_meta_query = bds_filter_price_area_meta_query();
+
+$query_args = array(
+    'post_type' => 'property',
+    'post_status' => 'publish',
+    'orderby' => 'ID',
+    'order' => 'DESC',
+    'paged' => $paged,
+    'posts_per_page' => 20,
+    'tax_query' => array(
         array(
             'taxonomy' => 'property_status',
-            'field'    => 'id',
-            'terms'    => 6,
+            'field' => 'term_id',
+            'terms' => 6,
         ),
         array(
             'taxonomy' => 'property_location',
-            'field'    => 'id',
-            'terms'    => 12,
+            'field' => 'term_id',
+            'terms' => 12,
+            'include_children' => true,
         ),
     ),
-    'post_status'    => 'publish',
-    'orderby'        => 'ID',
-    'order'          => 'DESC',
-    'paged'          => get_query_var('paged'),
-    'posts_per_page' => 20
-));
+);
 
-if ($query->have_posts()) :
-    $temp_query = $wp_query;
-    $wp_query = $query;
+if (!empty($price_area_meta_query)) {
+    $query_args['meta_query'] = $price_area_meta_query;
+}
+
+$query = new WP_Query($query_args);
+
+set_query_var('related_posts', get_related_posts_by_location(12, 5));
 ?>
 <div class="breadcrumb-container">
 <?php
@@ -41,23 +49,40 @@ if ($query->have_posts()) :
     get_template_part('bat-dong-san-ngop'); 
 ?>
 </section>
-<div class="list-style list-all container">
+<div class="list-style-wrap container">
+    <div class="list-style list-all">
+        <?php if ($query->have_posts()) : ?>
+            <?php
+            $temp_query = $wp_query;
+            $wp_query   = $query;
+            ?>
             <?php while ($query->have_posts()) : $query->the_post(); ?>
-            <?php set_query_var('is_ngop', true);?>
-            <?php get_template_part('loop-property/item-property'); ?>
+                <?php set_query_var('is_ngop', true); ?>
+                <?php get_template_part('loop-property/item-property'); ?>
+            <?php endwhile; ?>
 
-        <?php endwhile; ?>
+            <div class="pagination">
+                <?php
+                if (function_exists('wp_pagenavi')) {
+                    wp_pagenavi(array('query' => $query));
+                } else {
+                    echo paginate_links(array(
+                        'total'   => $query->max_num_pages,
+                        'current' => $paged,
+                    ));
+                }
+                ?>
+            </div>
+
+            <?php
+            $wp_query = $temp_query;
+            wp_reset_postdata();
+            ?>
+
+        <?php else : ?>
+            <h2>Không có bất động sản nào</h2>
+        <?php endif; ?>
     </div>
 
-    <div class="pagination">
-        <?php get_template_part('pagination'); ?>
-    </div>
-
-<?php
-    // Khôi phục lại query cũ
-    $wp_query = $temp_query;
-
-endif;
-
-wp_reset_postdata();
-?>
+    <?php get_template_part('sidebar-filter-property') ?>
+</div>

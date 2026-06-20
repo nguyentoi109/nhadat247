@@ -459,12 +459,12 @@ if (!empty($property_type_terms) && !is_wp_error($property_type_terms)) {
 				</span>
 		</strong>
 	</span>
-		<?php if($post_link): ?>
+		<!-- <?php if($post_link): ?>
 		<div class="wrap-news">
 			<div class="title">Tin tức liên quan</div>
 			<a href="<?php echo $post_link[1]?>" target="_blank" title="<?php echo $post_link[0]?>"><?php echo $post_link[0]?></a>
 		</div>
-		<?php endif; ?>
+		<?php endif; ?> -->
       <a href="<?php the_permalink(); ?>" title="<?php the_title(); ?>" class="btn">Xem chi tiết</a>
 		</div>
 	</article>

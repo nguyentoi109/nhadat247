@@ -1918,7 +1918,121 @@ add_filter('query_vars', function ($vars) {
     $vars[] = 'tab';
     return $vars;
 });
+
+function bds_filter_price_area_meta_query() {
+    $meta_query = array();
+     if (!empty($_GET['price_range']) && $_GET['price_range'] !== '0') {
+        $price_range = sanitize_text_field($_GET['price_range']);
+        $parts = explode('-', $price_range);
  
+        if (count($parts) === 2) {
+            $min_trieu = (float) $parts[0];
+            $min_vnd = $min_trieu * 1000000;
+ 
+            if ($parts[1] === 'max') {
+                $meta_query[] = array(
+                    'key'     => 'prefix-price',
+                    'value'   => $min_vnd,
+                    'compare' => '>=',
+                    'type'    => 'NUMERIC',
+                );
+            } else {
+                $max_trieu = (float) $parts[1];
+                $max_vnd = $max_trieu * 1000000;
+                $meta_query[] = array(
+                    'key'     => 'prefix-price',
+                    'value'   => array($min_vnd, $max_vnd),
+                    'compare' => 'BETWEEN',
+                    'type'    => 'NUMERIC',
+                );
+            }
+        }
+    }
+ 
+    if (!empty($_GET['area_range']) && $_GET['area_range'] !== '0') {
+        $area_range = sanitize_text_field($_GET['area_range']);
+        $parts = explode('-', $area_range);
+ 
+        if (count($parts) === 2) {
+            $min_area = (float) $parts[0];
+            if ($parts[1] === 'max') {
+                $meta_query[] = array(
+                    'key'     => 'prefix-area',
+                    'value'   => $min_area,
+                    'compare' => '>=',
+                    'type'    => 'NUMERIC',
+                );
+            } else {
+                $max_area = (float) $parts[1];
+                $meta_query[] = array(
+                    'key'     => 'prefix-area',
+                    'value'   => array($min_area, $max_area),
+                    'compare' => 'BETWEEN',
+                    'type'    => 'NUMERIC',
+                );
+            }
+        }
+    }
+ 
+    if (count($meta_query) > 1) {
+        $meta_query['relation'] = 'AND';
+    }
+    return $meta_query;
+}
+ 
+function get_related_posts_by_location($location_id, $limit = 5){
+    global $wpdb;
+    $location = get_term($location_id, 'property_location');
+    if (!$location || is_wp_error($location)) {
+        return new WP_Query();
+    }
+
+    $keywords = explode('-', strtolower($location->slug));
+    $ignore = ['tp','thanh','pho','tinh'];
+    $keywords = array_filter($keywords, function ($k) use ($ignore) {
+        return strlen($k) >= 2 && !in_array($k, $ignore);
+    });
+    if (empty($keywords)) {
+        return new WP_Query();
+    }
+
+    $conditions = [];
+    foreach ($keywords as $word) {
+        $conditions[] = $wpdb->prepare(
+            "(t.slug LIKE %s OR t.name LIKE %s)",
+            '%' . $wpdb->esc_like($word) . '%',
+            '%' . $wpdb->esc_like($word) . '%'
+        );
+    }
+
+    $where = implode(' OR ', $conditions);
+    $sql = "
+        SELECT DISTINCT p.ID
+        FROM {$wpdb->posts} p
+        INNER JOIN {$wpdb->term_relationships} tr ON p.ID = tr.object_id
+        INNER JOIN {$wpdb->term_taxonomy} tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+        INNER JOIN {$wpdb->terms} t ON tt.term_id = t.term_id
+        LEFT JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id AND pm.meta_key = 'post_views_count'
+        WHERE
+            p.post_status = 'publish'
+            AND p.post_type = 'post'
+            AND tt.taxonomy = 'post_tag'
+            AND ($where)
+        ORDER BY CAST(COALESCE(pm.meta_value, 0) AS UNSIGNED) DESC, p.post_date DESC
+        LIMIT %d";
+    $ids = $wpdb->get_col(
+        $wpdb->prepare($sql, $limit)
+    );
+
+    if (empty($ids)) {
+        return new WP_Query();
+    }
+    return new WP_Query([
+        'post_type' => 'post',
+        'post__in' => $ids,
+        'orderby' => 'post__in'
+    ]);
+}
 //PAYMENT
 require_once get_template_directory() . '/payment/ajax-handler.php';
 ///////////////////

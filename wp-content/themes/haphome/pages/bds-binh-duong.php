@@ -10,6 +10,7 @@ get_header();
         <div class="breadcrumb-container">
             <?php
                 set_query_var('breadcrumb_location', 12);
+                set_query_var('related_posts',get_related_posts_by_location(12, 5));
                 get_template_part('custom-breadcrumb');
             ?>
         </div>
@@ -22,10 +23,11 @@ get_header();
         get_template_part('bat-dong-san-ngop'); 
     ?>
     </section>
-        <div class="list-style list-all container">
-
+        <div class="list-style-wrap container">
+            <div class="list-style list-all">
             <?php
             $paged = max(1, get_query_var('paged'));
+            $price_area_meta_query = bds_filter_price_area_meta_query();
 
             $query = new WP_Query(array(
                 'post_type'      => 'property',
@@ -71,9 +73,9 @@ get_header();
             <?php endif; ?>
 
             <?php wp_reset_postdata(); ?>
-
+            </div>
+           <?php get_template_part('sidebar-filter-property') ?>
         </div>
-
     </main>
 </section>
 
