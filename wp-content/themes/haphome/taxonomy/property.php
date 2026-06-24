@@ -369,7 +369,7 @@ function property_meta_box( $meta_boxes ) {
 				'type' => 'image_advanced',
 				'name' => esc_html__( 'Hình ảnh', 'html5blank' ),
 				'desc' => esc_html__( 'Hình ảnh Bất Động Sản', 'html5blank' ),
-				'max_file_uploads' => '5',
+				'max_file_uploads' => '9',
 				'max_status' => 'true',
 				'force_delete' => 'false',
 			),

@@ -410,61 +410,61 @@ if (!empty($property_type_terms) && !is_wp_error($property_type_terms)) {
 				</div> -->
 			</div>
 		</div>
-		<div class="side-content">
-			<span class="price">
+		<!-- <div class="side-content"> -->
+			<!-- <span class="price">
 			<strong>
 			<strong><span class="ti-tag"></span> Giá:</strong>
 				<span class="num">
 						<?php
-						if ($price) {
-							if ($price >= 1000000000) {
-								$value = $price / 1000000000;
-								echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
-							} elseif ($price >= 1000000) {
-								$value = $price / 1000000;
-								echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
-							} else {
-								if ($unit == 'trieu' && $price > 1000) {
-									$value = $price / 1000;
-									echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
-								} else {
-									echo number_format($price, 0, ',', '.');
-								}
-							}
-						}
+						// if ($price) {
+						// 	if ($price >= 1000000000) {
+						// 		$value = $price / 1000000000;
+						// 		echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
+						// 	} elseif ($price >= 1000000) {
+						// 		$value = $price / 1000000;
+						// 		echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
+						// 	} else {
+						// 		if ($unit == 'trieu' && $price > 1000) {
+						// 			$value = $price / 1000;
+						// 			echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
+						// 		} else {
+						// 			echo number_format($price, 0, ',', '.');
+						// 		}
+						// 	}
+						// }
 						?>
 						</span>
 
 						<?php
-						if ($price) {
-							if ($price >= 1000000000) {
-								echo ' tỷ';
-							} elseif ($price >= 1000000) {
-								echo ' triệu';
-							} else {
-								if ($unit == 'trieu') {
-									if ($price > 1000) {
-										echo 'tỷ';
-									} else {
-										echo ' triệu';
-									}
-								} elseif ($unit == 'ty') {
-									echo ' tỷ';
-								} else {
-									echo ' đ';
-								}
-							}
-						}
+						// if ($price) {
+						// 	if ($price >= 1000000000) {
+						// 		echo ' tỷ';
+						// 	} elseif ($price >= 1000000) {
+						// 		echo ' triệu';
+						// 	} else {
+						// 		if ($unit == 'trieu') {
+						// 			if ($price > 1000) {
+						// 				echo 'tỷ';
+						// 			} else {
+						// 				echo ' triệu';
+						// 			}
+						// 		} elseif ($unit == 'ty') {
+						// 			echo ' tỷ';
+						// 		} else {
+						// 			echo ' đ';
+						// 		}
+						// 	}
+						// }
 						?>
 				</span>
 		</strong>
-	</span>
+	</span> -->
 		<!-- <?php if($post_link): ?>
 		<div class="wrap-news">
 			<div class="title">Tin tức liên quan</div>
 			<a href="<?php echo $post_link[1]?>" target="_blank" title="<?php echo $post_link[0]?>"><?php echo $post_link[0]?></a>
 		</div>
 		<?php endif; ?> -->
-      <a href="<?php the_permalink(); ?>" title="<?php the_title(); ?>" class="btn">Xem chi tiết</a>
-		</div>
+      <!-- <a href="<?php the_permalink(); ?>" title="<?php the_title(); ?>" class="btn">Xem chi tiết</a> -->
+		<!-- </div> -->
 	</article>

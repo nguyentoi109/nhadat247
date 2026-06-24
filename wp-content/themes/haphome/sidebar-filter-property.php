@@ -87,11 +87,24 @@
 .interested-link:hover {
   color: var(--menu-text-selected, #ffa600);
 }
+
+/* Mobile */
 @media (max-width: 992px) {
   .list-style-wrap {
     flex-direction: column;
   }
   .sidebar-filter-property {
+    width: 100%;
+    padding: 10px;
+  }
+
+  .sidebar-filter-property .filter-box-price,
+  .sidebar-filter-property .filter-box-area {
+    display: none;
+  }
+
+  .sidebar-filter-property .filter-box-interested {
+    display: block;
     width: 100%;
   }
 }
@@ -138,13 +151,15 @@ if (!function_exists('bds_build_filter_url')) {
         $base = strtok($_SERVER['REQUEST_URI'], '?');
         return $base . ($qs ? '?' . $qs : '');
     }
-}   
+}
+
+$related_posts = get_query_var('related_posts');
+$has_related   = $related_posts && $related_posts->have_posts();
 ?>
 
 <aside class="sidebar-filter-property">
 
-    <!-- Lọc giá -->
-    <div class="filter-box">
+    <div class="filter-box filter-box-price">
         <h3 class="filter-title">Lọc theo khoảng giá</h3>
         <ul class="filter-list">
             <?php foreach ($price_ranges as $value => $label):
@@ -158,8 +173,7 @@ if (!function_exists('bds_build_filter_url')) {
         </ul>
     </div>
 
-    <!-- Lọc diện tích -->
-    <div class="filter-box">
+    <div class="filter-box filter-box-area">
         <h3 class="filter-title">Lọc theo diện tích</h3>
         <ul class="filter-list">
             <?php foreach ($area_ranges as $value => $label):
@@ -173,28 +187,25 @@ if (!function_exists('bds_build_filter_url')) {
         </ul>
     </div>
 
-    <?php
-        $related_posts = get_query_var('related_posts');?>
-        <div class="filter-box">
-            <h3 class="filter-title"> Bài viết được quan tâm</h3>
-            <?php if ($related_posts && $related_posts->have_posts()): ?>
-                <ul class="interested-list">
-                    <?php
-                    $rank = 1;
-                    while ($related_posts->have_posts()):
-                        $related_posts->the_post();
-                    ?>
-                        <li class="interested-item">
-                            <span class="interested-number"> <?php echo $rank++; ?> </span>
-                            <a href="<?php the_permalink(); ?>" class="interested-link">
-                                <?php the_title(); ?>
-                            </a>
-                        </li>
-                    <?php endwhile; ?>
-                </ul>
-                <?php wp_reset_postdata(); ?>
-            <?php else: ?>
-                <p style="font-size:14px;color:#999">Chưa có bài viết liên quan.</p>
-            <?php endif; ?>
-        </div>
+    <?php if ($has_related): ?>
+    <div class="filter-box filter-box-interested">
+        <h3 class="filter-title">Bài viết được quan tâm</h3>
+        <ul class="interested-list">
+            <?php
+            $rank = 1;
+            while ($related_posts->have_posts()):
+                $related_posts->the_post();
+            ?>
+                <li class="interested-item">
+                    <span class="interested-number"><?php echo $rank++; ?></span>
+                    <a href="<?php the_permalink(); ?>" class="interested-link">
+                        <?php the_title(); ?>
+                    </a>
+                </li>
+            <?php endwhile; ?>
+            <?php wp_reset_postdata(); ?>
+        </ul>
+    </div>
+    <?php endif; ?>
+
 </aside>

@@ -1172,6 +1172,19 @@ function get_current_custom_avatar() {
     $lastName = end($parts);
     return mb_strtoupper(mb_substr($lastName, 0, 1, "UTF-8"),"UTF-8");
 }
+function get_author_name_avatar($author_name) {
+    if (empty($author_name)) {
+        return '?';
+    }
+    $author_name = trim($author_name);
+    $parts = preg_split('/\s+/', $author_name);
+    $last_name = end($parts);
+
+    return mb_strtoupper(
+        mb_substr($last_name, 0, 1, 'UTF-8'),
+        'UTF-8'
+    );
+}
 
 function custom_save_profile( int $user_id, array $data, array $addr ) {
     global $wpdb;

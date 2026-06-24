@@ -238,14 +238,15 @@
     .mobile-floating-bar .avatar-btn{
         width:60px;
         height:60px;
-        min-width:60px;
         border-radius:50%;
-        overflow:hidden;
-        border:2px solid #0e9aa7;
+        border:2px solid #a6aab1;
+        background:#fff4f1;
+        color:#b91c1c;
         display:flex;
         align-items:center;
         justify-content:center;
-        background:#fff;
+        font-size:28px;
+        font-weight:700;
     }
 
     .mobile-floating-bar .avatar-btn img{
@@ -334,595 +335,428 @@
 <?php get_header(); ?>
 
 <section class="container detail-page">
-    <main role="main">
-        <?php 
-        if (have_posts()): while (have_posts()) : the_post(); 
-        $price = rwmb_meta( 'prefix-price' );
-        $unit = rwmb_meta( 'prefix-unit' );
-        $area = rwmb_meta( 'prefix-area' );
-        $address = rwmb_meta( 'prefix-address' );
-        $bathroom = rwmb_meta('prefix-bathroom');
-        $bedroom = rwmb_meta('prefix-bedroom');
-        $phap_ly = rwmb_meta('prefix-phap-ly');
-        $noi_that = rwmb_meta('prefix-noi-that');
-        $video = rwmb_meta( 'prefix-video' );
-        $id_video = explode('?v=', $video);
-        $name_custom = rwmb_meta('prefix-name-custom');
-        $phone_custom = rwmb_meta('prefix-phone-custom');
-        $email_custom = rwmb_meta('prefix-email-custom');
-        $image_360 = rwmb_meta( 'image360', ['size' => 'thumbnail'] );
-        $gallerys = rwmb_meta( 'prefix-image_property', ['size' => 'thumbnail'] );
-        $has_gallery = !empty($gallerys);
-        $maps = rwmb_meta( 'prefix-maps');
+<main role="main">
+<?php
+if (have_posts()) : while (have_posts()) : the_post();
 
-        $room_type_ids = array(8, 9, 11);
-        $property_type_terms = get_the_terms(get_the_ID(), "property_type");
-        $has_rooms = false;
-        if (!empty($property_type_terms) && !is_wp_error($property_type_terms)) {
-            foreach ($property_type_terms as $term) {
-                if (in_array($term->term_id, $room_type_ids)) {
-                    $has_rooms = true;
-                    break;
-                }
+    $price       = rwmb_meta('prefix-price');
+    $unit        = rwmb_meta('prefix-unit');
+    $area        = rwmb_meta('prefix-area');
+    $address     = rwmb_meta('prefix-address');
+    $phap_ly     = rwmb_meta('prefix-phap-ly');
+    $noi_that    = rwmb_meta('prefix-noi-that');
+    $video       = rwmb_meta('prefix-video');
+    $id_video    = explode('?v=', $video);
+    $name_custom = rwmb_meta('prefix-name-custom');
+    $phone_custom= rwmb_meta('prefix-phone-custom');
+    $image_360   = rwmb_meta('image360', ['size' => 'thumbnail']);
+    $gallerys    = rwmb_meta('prefix-image_property', ['size' => 'thumbnail']);
+    $has_gallery = !empty($gallerys);
+    $maps        = rwmb_meta('prefix-maps');
+    $room_type_ids = [8, 9, 11];
+    $property_type_terms = get_the_terms(get_the_ID(), 'property_type');
+    $has_rooms = false;
+    if (!empty($property_type_terms) && !is_wp_error($property_type_terms)) {
+        foreach ($property_type_terms as $term) {
+            if (in_array($term->term_id, $room_type_ids)) {
+                $has_rooms = true;
+                break;
             }
         }
-    ?>
+    }
 
-        <article <?php post_class(); ?> class="detail-content">
-        <?php
-            if ($has_gallery || has_post_thumbnail() || $video || $maps) :
-        ?>
-            <div class="header-wrap-tab">
-                <?php if($has_gallery || has_post_thumbnail()) : ?>
-                <button id="btn-gallerys" class="item-tab" onclick="openTab('gallerys')">Hình ảnh</button>
-                <?php endif; ?>
-                <?php if($image_360) : ?>
-                <button class="item-tab" onclick="openTab('image_360')">Ảnh 360</button>
-                <?php endif; ?>
-                <?php if($video) : ?>
-                <button class="item-tab" onclick="openTab('tab-video')">Video</button>
-                <?php endif; ?>
-                <?php if($maps) : ?>
-                <button class="item-tab" onclick="openTab('tab-maps')">Bản đồ</button>
-                <?php endif; ?>
-            </div>
-        <?php
-            endif;
-        ?>
-            <?php if($image_360){ ?>
-            <div id="image_360" class="content-tab" style="position: absolute;opacity: 0;visibility: hidden;">
-                <div id="panorama" style="width: 100%; height: 500px;"></div>
-            </div>
-            <script type='text/javascript' src="<?php echo get_template_directory_uri() ?>/js/pannellum.js"
-                id='html5blank-js'></script>
-            <script>
-            /* pannellum */
-            pannellum.viewer('panorama', {
-                "type": "equirectangular",
-                "panorama": "<?php echo $image_360['full_url']; ?>",
-                "autoLoad": true,
-                "autoRotate": -2,
-                "isOrientationActive": true,
-                "startOrientation": true,
-                "compass": true,
-            });
-            /* /pannellum */
-            </script>
-            <?php } ?>
+    $author_email   = get_the_author_meta('user_email');
+    $author_name    = $name_custom ?: get_the_author_meta('nickname');
+    $author_phone   = $phone_custom ?: get_the_author_meta('phone');
+    $author_id      = get_the_author_meta('ID');
+    $author_post_ct = count_user_posts($author_id, 'property');
+    $phone_clean    = preg_replace('/[^0-9]/', '', $author_phone);
+?>
 
-                <!-- Gallery-- -->
-            <div id="gallerys" class="content-tab" style="position: absolute; opacity: 0;">
-                <div class="swiper mySwiper2">
-                    <div class="swiper-wrapper">
-                        <?php if (has_post_thumbnail()) : ?>
-                            <div class="swiper-slide">
-                                <img src="<?php echo esc_url(get_the_post_thumbnail_url(get_the_ID(), 'full')); ?>"
-                                    alt="<?php the_title_attribute(); ?>">
-                            </div>
-                        <?php endif; ?>
+<article <?php post_class(); ?> class="detail-content">
+<div class="detail-layout">
+<div class="detail-main">
 
-                        <?php if ($has_gallery) : ?>
-                            <?php foreach ($gallerys as $gallery) : ?>
-                                <div class="swiper-slide">
-                                    <img src="<?= esc_url($gallery['full_url']); ?>" alt="">
-                                </div>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
+    <?php if ($has_gallery || has_post_thumbnail() || $video || $maps) : ?>
+    <div class="header-wrap-tab">
+        <?php if ($has_gallery || has_post_thumbnail()) : ?>
+            <button class="item-tab" onclick="openTab('gallerys')">Hình ảnh</button>
+        <?php endif; ?>
+        <?php if ($image_360) : ?>
+            <button class="item-tab" onclick="openTab('image_360')">Ảnh 360</button>
+        <?php endif; ?>
+        <?php if ($video) : ?>
+            <button class="item-tab" onclick="openTab('tab-video')">Video</button>
+        <?php endif; ?>
+        <?php if ($maps) : ?>
+            <button class="item-tab" onclick="openTab('tab-maps')">Bản đồ</button>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
 
-                    </div>
-                </div>
+    <?php if ($image_360) : ?>
+    <div id="image_360" class="content-tab" style="position:absolute;opacity:0;visibility:hidden;">
+        <div id="panorama" style="width:100%;height:500px;"></div>
+    </div>
+    <script src="<?php echo get_template_directory_uri(); ?>/js/pannellum.js"></script>
+    <script>
+    pannellum.viewer('panorama', {
+        type: "equirectangular",
+        panorama: "<?php echo $image_360['full_url']; ?>",
+        autoLoad: true,
+        autoRotate: -2,
+        compass: true,
+    });
+    </script>
+    <?php endif; ?>
 
-                <?php if ($has_gallery) : ?>
-                    <div thumbsSlider="" class="swiper mySwiper">
-                        <div class="swiper-wrapper">
-
-                            <?php if (has_post_thumbnail()) : ?>
-                                <div class="swiper-slide">
-                                    <img src="<?php echo esc_url(get_the_post_thumbnail_url(get_the_ID(), 'thumbnail')); ?>"
-                                        alt="<?php the_title_attribute(); ?>">
-                                </div>
-                            <?php endif; ?>
-
-                            <?php foreach ($gallerys as $gallery) : ?>
-                                <div class="swiper-slide">
-                                    <img src="<?= esc_url($gallery['url']); ?>" alt="">
-                                </div>
-                            <?php endforeach; ?>
-
-                        </div>
+    <!-- Gallery -->
+    <div id="gallerys" class="content-tab" style="position:absolute;opacity:0;">
+        <div class="swiper mySwiper2">
+            <div class="swiper-wrapper">
+                <?php if (has_post_thumbnail()) : ?>
+                    <div class="swiper-slide">
+                        <img src="<?php echo esc_url(get_the_post_thumbnail_url(get_the_ID(), 'full')); ?>"
+                             alt="<?php the_title_attribute(); ?>">
                     </div>
                 <?php endif; ?>
-            </div>
-            <!-- end Gallery-- -->
-
-            <?php if ( $video ) : ?>
-                <!-- Video -->
-            <div id="tab-video" class="content-tab" style="display: none;">
-                <div class="wrap-video">
-                    <iframe width="560" height="315" src="https://www.youtube.com/embed/<?php echo $id_video[1]; ?>"
-                        frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
-                        allowfullscreen></iframe>
-                </div>
-            </div>
-            <!-- end Video -->
-            <?php endif; ?>
-            
-            <?php if ( $maps ) : ?>
-                <!-- Maps -->
-            <div id="tab-maps" class="content-tab" style="position: absolute;opacity: 0;visibility: hidden; margin-bottom: 10px;">
-                <div class="wrap-maps">
-                    <?php echo $maps; ?>
-                </div>
-            </div>
-            <!-- end Maps -->
-            <?php endif; ?>
-
-            <?php if ($has_gallery) : ?>
-                <script>
-                var swiper = new Swiper(".mySwiper", {
-                    spaceBetween: 10,
-                    slidesPerView: 5,
-                    freeMode: true,
-                    watchSlidesProgress: true,
-                });
-
-                var swiper2 = new Swiper(".mySwiper2", {
-                    spaceBetween: 10,
-                    thumbs: {
-                        swiper: swiper,
-                    },
-                });
-                </script>
-
-                <?php else : ?>
-
-                <script>
-                new Swiper(".mySwiper2", {
-                    spaceBetween: 10,
-                });
-                </script>
-            <?php endif; ?>
-
-            <script>
-            function openTab(tabName) {
-                var i;
-                var x = document.getElementsByClassName("content-tab");
-                for (i = 0; i < x.length; i++) {
-                    x[i].style.display = "none";
-                }
-                document.getElementById(tabName).style.display = "block";
-                document.getElementById(tabName).style.position = "static";
-                document.getElementById(tabName).style.visibility = "visible";
-                document.getElementById(tabName).style.opacity = "1";
-
-                const element = document.getElementById("breadcrumbs");
-                element.scrollIntoView();
-            }
-            document.addEventListener("DOMContentLoaded", function () {
-                <?php if ($has_gallery || has_post_thumbnail()) : ?>
-                openTab('gallerys');
-                <?php endif; ?>
-            });
-            </script>
-
-            <?php
-                $delete_post_link = get_delete_post_link( $post->ID, '' );
-                if ( ! empty( $delete_post_link ) ) { ?>
-            <a style="color: red;" class="master-del" href="<?php echo esc_url( $delete_post_link ); ?>"><i
-                    class="ti-trash"></i></a> |
-            <?php edit_post_link('<i class="ti-pencil"></i>'); }// Always handy to have Edit Post Links available ?>
-
-            <h1 ><?php the_title(); ?></h1>
-            
-            <div class="all-location">
-                <span class="icon-location">
-                    <span class="ti-location-pin"></span>
-                </span>
-
-                <span class="address-inline">
-                    <?php echo esc_html($address); ?>
-                    <?php
-                        $terms = get_the_terms(get_the_ID(), "property_location");
-                        if (!empty($terms) && !is_wp_error($terms)) {
-                            echo implode(', ', wp_list_pluck($terms, 'name'));
-                        }
-                    ?>
-                </span>
-            </div>
-
-             <h2 class="title-box-detail">Thông tin Bất động sản</h2>
-                <ul class="list-detail-real">
-                    
-                    <li>
-                        <div class="item-left">
-                            <span class="icon">
-                                <span class="ti-tag"></span>
-                            </span>
-
-                            <span class="label">Giá</span>
-                        </div>
-
-                        <div class="item-right">
-                            <div class="detail-price" style="color: var(--menu-text-selected);">
-                                <span class="num">
-                                    <?php
-                                        if ($price) {
-                                            if ($price >= 1000000000) {
-                                                $value = $price / 1000000000;
-                                                echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
-                                            } elseif ($price >= 1000000) {
-                                                $value = $price / 1000000;
-                                                echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
-                                            } else {
-                                                if ($unit == 'trieu' && $price > 1000) {
-                                                    $value = $price / 1000;
-                                                    echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
-                                                } else {
-                                                    echo number_format($price, 0, ',', '.');
-                                                }
-                                            }
-                                        }
-                                        ?>
-                                        </span>
-                                        <?php
-                                        if ($price) {
-                                            if ($price >= 1000000000) {
-                                                echo ' tỷ';
-                                            } elseif ($price >= 1000000) {
-                                                echo ' triệu';
-                                            } else {
-                                                if ($unit == 'trieu') {
-                                                    if ($price > 1000) {
-                                                        echo 'tỷ';
-                                                    } else {
-                                                        echo ' triệu';
-                                                    }
-                                                } elseif ($unit == 'ty') {
-                                                    echo ' tỷ';
-                                                } else {
-                                                    echo ' đ';
-                                                }
-                                            }
-                                        }
-                                    ?>
-                                </span>
-                            </div>
-                        </div>
-                    </li>
-
-                    <li>
-                        <div class="item-left">
-                            <span class="icon">
-                                <span class="ti-ruler"></span>
-                            </span>
-
-                            <span class="label">Diện tích</span>
-                        </div>
-                            <div class="item-right">
-                                <div class="detail-area" style="color: var(--menu-text-selected);">
-                                <?php echo !empty($area) ? $area : '0'; ?> m<sup>2</sup>
-                            </div>
-                        </div>
-                    </li>
-                    <?php if ($has_rooms): ?>
-                    <li>
-                        <div class="item-left">
-                            <span class="icon">
-                                <img src="<?php echo get_template_directory_uri(); ?>/img/bedroom.png"
-                                    alt="Bedroom Icon"
-                                    class="white-icon">
-                            </span>
-
-                            <span class="label">Phòng ngủ</span>
-                        </div>
-
-                        <div class="item-right">
-                            <?php
-                            $bedroom = get_post_meta($post->ID, 'prefix-bedroom', true);
-                            if (!empty($bedroom)) {
-                                if ($bedroom == 6) {
-                                    echo 'Studio';
-                                } elseif ($bedroom == 7) {
-                                    echo '1+';
-                                } elseif ($bedroom == 8) {
-                                    echo '2+';
-                                } else {
-                                    echo $bedroom ;
-                                }
-                            } else {
-                                echo '---';
-                            }
-                            ?>
-                        </div>
-                    </li>
-
-                    <li>
-                        <div class="item-left">
-                            <span class="icon">
-                                <img src="<?php echo get_template_directory_uri(); ?>/img/bathroom.png"
-                                    alt="Bathroom Icon"
-                                    class="white-icon">
-                            </span>
-
-                            <span class="label">Nhà vệ sinh, nhà tắm</span>
-                        </div>
-
-                        <div class="item-right">
-                            <?php
-                            $bathroom = get_post_meta($post->ID, 'prefix-bathroom', true);
-
-                            if (!empty($bathroom)) {
-                                echo $bathroom;
-                            } else {
-                                echo '---';
-                            }
-                            ?>
-                        </div>
-                    </li>
-                    <?php endif; ?>
-                    <li>
-                        <div class="item-left">
-                            <span class="icon">
-                                <span class="ti-direction-alt"></span>
-                            </span>
-                            <span class="label">Hướng</span>
-                        </div>
-                        <div class="item-right">
-                            <?php
-                            $terms = get_the_terms(get_the_ID(), "property_direction");
-
-                            echo (!empty($terms) && !is_wp_error($terms))
-                                ? implode(', ', wp_list_pluck($terms, 'name'))
-                                : '---';
-                            ?>
-                        </div>
-                    </li>
-
-                    <li>
-                        <div class="item-left">
-                            <span class="icon">
-                                <span class="ti-layout-grid2"></span>
-                            </span>
-                            <span class="label">Loại BĐS</span>
-                        </div>
-                        <div class="item-right">
-                            <?php
-                            $terms = get_the_terms(get_the_ID(), "property_type");
-                            echo (!empty($terms) && !is_wp_error($terms))
-                                ? implode(', ', wp_list_pluck($terms, 'name'))
-                                : '---';
-                            ?>
-                        </div>
-                    </li>
-
-                    <li>
-                        <div class="item-left">
-                            <span class="icon">
-                                <span class="ti-files"></span>
-                            </span>
-                            <span class="label">Giấy tờ pháp lý</span>
-                        </div>
-
-                        <div class="item-right">
-                            <?php echo !empty($phap_ly) ? esc_html($phap_ly) : '---'; ?>
-                        </div>
-                    </li>
-
-                    <li>
-                        <div class="item-left">
-                            <span class="icon">
-                                <img src="<?php echo get_template_directory_uri(); ?>/img/interior-design.png"
-                                    alt="Bedroom Icon"
-                                    class="white-icon">
-                            </span>
-                            <span class="label">Nội thất</span>
-                        </div>
-
-                        <div class="item-right">
-                            <?php echo !empty($noi_that) ? esc_html($noi_that) : '---'; ?>
-                        </div>
-                    </li>
-                </ul>
-
-            <h2 class="title-box-detail">Mô tả</h2>
-            <div class="description block-detail">
-                <?php the_content(); ?>
-            </div>
-            <div class="infor-bds">
-
-            <?php if ( $video ) : ?>
-            <h2 class="title-box-detail">Video</h2>
-            <div class="list-detail-real box-media">
-                <div class="wrap-video">
-                    <iframe width="560" height="315" src="https://www.youtube.com/embed/<?php echo $id_video[1]; ?>"
-                        frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                        allowfullscreen></iframe>
-                </div>
+                <?php foreach ((array)$gallerys as $gallery) : ?>
+                    <div class="swiper-slide">
+                        <img src="<?php echo esc_url($gallery['full_url']); ?>" alt="">
+                    </div>
+                <?php endforeach; ?>
             </div>
         </div>
-            <?php endif; ?>
-            <h2 class="title-breadcrumb">
-                Mục:
-                <!-- <div class="breadcrumb-all"> -->
+
+        <?php if ($has_gallery) : ?>
+        <div thumbsSlider="" class="swiper mySwiper">
+            <div class="swiper-wrapper">
+                <?php if (has_post_thumbnail()) : ?>
+                    <div class="swiper-slide">
+                        <img src="<?php echo esc_url(get_the_post_thumbnail_url(get_the_ID(), 'thumbnail')); ?>"
+                             alt="<?php the_title_attribute(); ?>">
+                    </div>
+                <?php endif; ?>
+                <?php foreach ((array)$gallerys as $gallery) : ?>
+                    <div class="swiper-slide">
+                        <img src="<?php echo esc_url($gallery['url']); ?>" alt="">
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <?php endif; ?>
+    </div>
+
+    <?php if ($video) : ?>
+    <div id="tab-video" class="content-tab" style="display:none;">
+        <div class="wrap-video">
+            <iframe width="560" height="315"
+                src="https://www.youtube.com/embed/<?php echo esc_attr($id_video[1] ?? ''); ?>"
+                frameborder="0" allowfullscreen></iframe>
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <?php if ($maps) : ?>
+    <div id="tab-maps" class="content-tab" style="position:absolute;opacity:0;visibility:hidden;margin-bottom:10px;">
+        <div class="wrap-maps"><?php echo $maps; ?></div>
+    </div>
+    <?php endif; ?>
+
+    <script>
+    <?php if ($has_gallery) : ?>
+    var swiper = new Swiper(".mySwiper", {
+        spaceBetween: 10,
+        slidesPerView: 5,
+        freeMode: true,
+        watchSlidesProgress: true,
+    });
+    var swiper2 = new Swiper(".mySwiper2", {
+        spaceBetween: 10,
+        thumbs: { swiper: swiper },
+    });
+    <?php else : ?>
+    new Swiper(".mySwiper2", { spaceBetween: 10 });
+    <?php endif; ?>
+
+    function openTab(tabName) {
+        document.querySelectorAll('.content-tab').forEach(function(el) {
+            el.style.display = 'none';
+        });
+        var t = document.getElementById(tabName);
+        t.style.display   = 'block';
+        t.style.position  = 'static';
+        t.style.visibility= 'visible';
+        t.style.opacity   = '1';
+        document.getElementById('breadcrumbs') &&
+            document.getElementById('breadcrumbs').scrollIntoView();
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        <?php if ($has_gallery || has_post_thumbnail()) : ?>
+        openTab('gallerys');
+        <?php endif; ?>
+    });
+    </script>
+
+    <?php
+    $delete_post_link = get_delete_post_link($post->ID);
+    if (!empty($delete_post_link)) :
+    ?>
+        <a style="color:red;" class="master-del" href="<?php echo esc_url($delete_post_link); ?>">
+            <i class="ti-trash"></i>
+        </a> |
+        <?php edit_post_link('<i class="ti-pencil"></i>');
+    endif; ?>
+
+    <h1><?php the_title(); ?></h1>
+
+    <div class="all-location">
+        <span class="ti-location-pin"></span>
+        <?php echo esc_html($address); ?>
+        <?php
+        $loc_terms = get_the_terms(get_the_ID(), 'property_location');
+        if (!empty($loc_terms) && !is_wp_error($loc_terms)) {
+            echo ' ' . implode(', ', wp_list_pluck($loc_terms, 'name'));
+        }
+        ?>
+    </div>
+
+    <h2 class="title-box-detail">Thông tin Bất động sản</h2>
+    <ul class="list-detail-real">
+
+        <li>
+            <div class="item-left">
+                <span class="icon"><span class="ti-tag"></span></span>
+                <span class="label">Giá</span>
+            </div>
+            <div class="item-right">
+                <div class="detail-price" style="color:var(--menu-text-selected);">
+                    <?php
+                    if ($price) {
+                        if ($price >= 1000000000) {
+                            $v = $price / 1000000000;
+                            echo rtrim(rtrim(sprintf('%.10f', $v), '0'), '.') . ' tỷ';
+                        } elseif ($price >= 1000000) {
+                            $v = $price / 1000000;
+                            echo rtrim(rtrim(sprintf('%.10f', $v), '0'), '.') . ' triệu';
+                        } else {
+                            if ($unit === 'trieu' && $price > 1000) {
+                                echo rtrim(rtrim(sprintf('%.10f', $price / 1000), '0'), '.') . ' tỷ';
+                            } elseif ($unit === 'ty') {
+                                echo number_format($price, 0, ',', '.') . ' tỷ';
+                            } else {
+                                echo number_format($price, 0, ',', '.') . ' đ';
+                            }
+                        }
+                    } else {
+                        echo 'Thỏa thuận';
+                    }
+                    ?>
+                </div>
+            </div>
+        </li>
+
+        <li>
+            <div class="item-left">
+                <span class="icon"><span class="ti-ruler"></span></span>
+                <span class="label">Diện tích</span>
+            </div>
+            <div class="item-right">
+                <div class="detail-area" style="color:var(--menu-text-selected);">
+                    <?php echo !empty($area) ? esc_html($area) : '0'; ?> m<sup>2</sup>
+                </div>
+            </div>
+        </li>
+
+        <?php if ($has_rooms) : ?>
+        <li>
+            <div class="item-left">
+                <span class="icon">
+                    <img src="<?php echo get_template_directory_uri(); ?>/img/bedroom.png"
+                         alt="Phòng ngủ" class="white-icon">
+                </span>
+                <span class="label">Phòng ngủ</span>
+            </div>
+            <div class="item-right">
                 <?php
-                $location = get_the_terms(get_the_ID(), 'property_location');
-                $status   = get_the_terms(get_the_ID(), 'property_status');
-                $type     = get_the_terms(get_the_ID(), 'property_type');
-                $location_custom_links = array(
-                    'tp-ho-chi-minh'  => 'tp-ho-chi-minh',
-                    'binh-duong'      => 'binh-duong',
-                    'dong-nai'        => 'dong-nai',
-                    'ba-ria-vung-tau' => 'vung-tau',
-                );
-                $location_url = '';
-
-                if (!empty($location) && !is_wp_error($location)) {
-                    $location_slug = $location[0]->slug;
-                    $location_url = $location_custom_links[$location_slug] ?? $location_slug;
-                    echo '<a href="'.home_url('/'.$location_url).'">'.$location[0]->name.'</a>';
-                }
-
-                if (!empty($status) && !is_wp_error($status)) {
-                    echo ' <a href="'.home_url('/'.$status[0]->slug.'-'.$location_url).'">'.
-                            mb_strtolower($status[0]->name, 'UTF-8').
-                        '</a>';
-                }
-
-                if (!empty($type) && !is_wp_error($type)) {
-                    echo ' <a href="'.home_url('/'.$status[0]->slug.'-'.$type[0]->slug.'-'.$location_url).'">'.
-                            mb_strtolower($type[0]->name, 'UTF-8').
-                        '</a>';
+                $bedroom = get_post_meta($post->ID, 'prefix-bedroom', true);
+                if (!empty($bedroom)) {
+                    $map = [6 => 'Studio', 7 => '1+', 8 => '2+'];
+                    echo $map[$bedroom] ?? $bedroom;
+                } else {
+                    echo '---';
                 }
                 ?>
-                <!-- </div> -->
-            </h2>
-
-            <?php $gavatar = get_the_author_meta('user_email');?>
-            <div class="infor-con">
-            <h2 class="title-box-detail">Thông tin liên hệ</h2>
-            <div class="info-contact width-common flexbox">
-                <div class="avata-user">
-                    <a href="" class="thumb thumb-1x1"><?php echo get_avatar($gavatar, 300); ?></a>
-                </div>
-                <div class="info-user">
-                    <p><span class="name"><?php if($name_custom){echo $name_custom; }else{echo get_the_author_meta('nickname');} ?></span></p>
-                    <p><span class="ti-email"></span>:&nbsp;<a target="_blank"
-                            href="https://mail.google.com/mail/?view=cm&fs=1&to=<?php if($email_custom){echo $email_custom;}else{echo get_the_author_meta('user_email');} ?>"
-                            title="<?php if($email_custom){echo $email_custom;}else{echo get_the_author_meta('user_email');} ?>"><?php if($email_custom){echo $email_custom;}else{echo get_the_author_meta('user_email');} ?></a>
-                    </p>
-                    <p><span class="ti-mobile"></span>:&nbsp;
-                        <?php if($phone_custom){echo $phone_custom;}else{echo get_the_author_meta('phone');} ?> </p>
-
-                    <p><span class="ti-location-pin"></span>:&nbsp;
-                        <?php echo get_the_author_meta('address'); ?> </p>
-                </div>
             </div>
+        </li>
+
+        <li>
+            <div class="item-left">
+                <span class="icon">
+                    <img src="<?php echo get_template_directory_uri(); ?>/img/bathroom.png"
+                         alt="Nhà vệ sinh" class="white-icon">
+                </span>
+                <span class="label">Nhà vệ sinh, nhà tắm</span>
             </div>
-            
-             <!-- <div class="info-contact-fixed width-common flexbox">
-                <div class="avata-user">
-                    <a href="" class="thumb thumb-1x1"><?php echo get_avatar($gavatar, 300); ?></a>
-                </div>
-                <div class="info-user">
-                    <p><strong>Họ tên: <span
-                                class="name"><?php if ($name_custom) {
-                                                    echo $name_custom;
-                                                } else {
-                                                    echo get_the_author_meta('nickname');
-                                                } ?></span>
-                        </strong></p>
-                    <p><strong><span class="ti-email"></span>:&nbsp;</strong> <a target="_blank"
-                            href="https://mail.google.com/mail/?view=cm&fs=1&to=<?php if ($email_custom) {
-                                                                                    echo $email_custom;
-                                                                                } else {
-                                                                                    echo get_the_author_meta('user_email');
-                                                                                } ?>"
-                            title="<?php if ($email_custom) {
-                                        echo $email_custom;
-                                    } else {
-                                        echo get_the_author_meta('user_email');
-                                    } ?>"><?php if ($email_custom) {
-                                                                                                                                        echo $email_custom;
-                                                                                                                                    } else {
-                                                                                                                                        echo get_the_author_meta('user_email');
-                        } ?></a>
-                    </p>
-                    <p><strong><span class="ti-mobile"></span>:&nbsp;</strong>
-                        <?php if ($phone_custom) {
-                            echo $phone_custom;
-                        } else {
-                            echo get_the_author_meta('phone');
-                        } ?> </p>
-                </div>        
-            <p class="date">
-                <span class="ti-calendar"></span> <?php the_time('d/m/Y'); ?> | <?php the_time('G:i'); ?>
-                <span class="count-view"><span class="ti-eye"></span>
-                    <?php echo count_post_views(get_the_ID()); ?></span>
-            </p> -->
-            <!--<span class="author"><?php// _e( 'Bởi', 'html5blank' ); ?> <?php// the_author_posts_link(); ?></span>-->
-            <!--<button class="view-pic">Xem hình</button>-->
-            <?php 
-        $p = get_adjacent_post(false, '', true);
-        if(!empty($p)) echo '<a class="btn-next-prev-detail prev" href="' . get_permalink($p->ID) . '" title="' . $p->post_title . '"><span class="title">' . $p->post_title . '<span></a>';
-
-        $n = get_adjacent_post(false, '', false);
-        if(!empty($n)) echo '<a class="btn-next-prev-detail next" href="' . get_permalink($n->ID) . '" title="' . $n->post_title . '"><span class="title">' . $n->post_title . '</span></a></div>'; 
-    ?>
-        </article>
-        <!-- /article -->
-        <?php
-                //$delete_post_link = get_delete_post_link( $post->ID, '' );
-                //if ( ! empty( $delete_post_link ) ) { ?>
-        <!-- <a style="color: red;" class="master-del" href="<?php echo esc_url( $delete_post_link ); ?>"><i
-                class="ti-trash"></i></a>  -->
-        <?php //edit_post_link('<i class="ti-pencil"></i>'); }// Always handy to have Edit Post Links available ?>
-        <?php endwhile; ?>
-
-        <?php else: ?>
-
-        <!-- article -->
-        <article>
-
-            <h1><?php _e( 'Chưa có nội dung.', 'html5blank' ); ?></h1>
-
-        </article>
-        <!-- /article -->
-
+            <div class="item-right">
+                <?php
+                $bathroom = get_post_meta($post->ID, 'prefix-bathroom', true);
+                echo !empty($bathroom) ? esc_html($bathroom) : '---';
+                ?>
+            </div>
+        </li>
         <?php endif; ?>
 
-    </main>
-    <!-- /section container-->
-</section>
+        <li>
+            <div class="item-left">
+                <span class="icon"><span class="ti-direction-alt"></span></span>
+                <span class="label">Hướng</span>
+            </div>
+            <div class="item-right">
+                <?php
+                $dir = get_the_terms(get_the_ID(), 'property_direction');
+                echo (!empty($dir) && !is_wp_error($dir))
+                    ? implode(', ', wp_list_pluck($dir, 'name')) : '---';
+                ?>
+            </div>
+        </li>
 
+        <li>
+            <div class="item-left">
+                <span class="icon"><span class="ti-layout-grid2"></span></span>
+                <span class="label">Loại BĐS</span>
+            </div>
+            <div class="item-right">
+                <?php
+                $type = get_the_terms(get_the_ID(), 'property_type');
+                echo (!empty($type) && !is_wp_error($type))
+                    ? implode(', ', wp_list_pluck($type, 'name')) : '---';
+                ?>
+            </div>
+        </li>
+
+        <li>
+            <div class="item-left">
+                <span class="icon"><span class="ti-files"></span></span>
+                <span class="label">Giấy tờ pháp lý</span>
+            </div>
+            <div class="item-right">
+                <?php echo !empty($phap_ly) ? esc_html($phap_ly) : '---'; ?>
+            </div>
+        </li>
+
+        <li>
+            <div class="item-left">
+                <span class="icon">
+                    <img src="<?php echo get_template_directory_uri(); ?>/img/interior-design.png"
+                         alt="Nội thất" class="white-icon">
+                </span>
+                <span class="label">Nội thất</span>
+            </div>
+            <div class="item-right">
+                <?php echo !empty($noi_that) ? esc_html($noi_that) : '---'; ?>
+            </div>
+        </li>
+
+    </ul>
+
+    <h2 class="title-box-detail">Mô tả</h2>
+    <div class="description block-detail">
+        <?php the_content(); ?>
+    </div>
+
+    <div class="infor-bds">
+        <?php if ($video) : ?>
+        <h2 class="title-box-detail">Video</h2>
+        <div class="wrap-video">
+            <iframe width="560" height="315"
+                src="https://www.youtube.com/embed/<?php echo esc_attr($id_video[1] ?? ''); ?>"
+                frameborder="0" allowfullscreen></iframe>
+        </div>
+        <?php endif; ?>
+    </div>
+
+    <h2 class="title-breadcrumb">
+        Mục:
+        <?php
+        $location = get_the_terms(get_the_ID(), 'property_location');
+        $status   = get_the_terms(get_the_ID(), 'property_status');
+        $type     = get_the_terms(get_the_ID(), 'property_type');
+
+        $location_custom_links = [
+            'tp-ho-chi-minh'  => 'tp-ho-chi-minh',
+            'binh-duong'      => 'binh-duong',
+            'dong-nai'        => 'dong-nai',
+            'ba-ria-vung-tau' => 'vung-tau',
+        ];
+        $location_url = '';
+
+        if (!empty($location) && !is_wp_error($location)) {
+            $location_url = $location_custom_links[$location[0]->slug] ?? $location[0]->slug;
+            echo '<a href="' . home_url('/' . $location_url) . '">' . esc_html($location[0]->name) . '</a>';
+        }
+        if (!empty($status) && !is_wp_error($status)) {
+            echo ' <a href="' . home_url('/' . $status[0]->slug . '-' . $location_url) . '">'
+               . mb_strtolower($status[0]->name, 'UTF-8') . '</a>';
+        }
+        if (!empty($type) && !is_wp_error($type) && !empty($status) && !is_wp_error($status)) {
+            echo ' <a href="' . home_url('/' . $status[0]->slug . '-' . $type[0]->slug . '-' . $location_url) . '">'
+               . mb_strtolower($type[0]->name, 'UTF-8') . '</a>';
+        }
+        ?>
+    </h2>
+
+    <?php
+    $p = get_adjacent_post(false, '', true);
+    if (!empty($p)) {
+        echo '<a class="btn-next-prev-detail prev" href="' . get_permalink($p->ID) . '">'
+           . '<span class="title">' . esc_html($p->post_title) . '</span></a>';
+    }
+    $n = get_adjacent_post(false, '', false);
+    if (!empty($n)) {
+        echo '<a class="btn-next-prev-detail next" href="' . get_permalink($n->ID) . '">'
+           . '<span class="title">' . esc_html($n->post_title) . '</span></a>';
+    }
+    ?>
+
+</div><!-- /.detail-main -->
+</div><!-- /.detail-layout -->
+</article>
+
+<?php endwhile; ?>
+<?php else : ?>
+<article><h1><?php _e('Chưa có nội dung.', 'html5blank'); ?></h1></article>
+<?php endif; ?>
+
+</main>
+
+<?php
+set_query_var('author_email',   $author_email);
+set_query_var('author_name',    $author_name);
+set_query_var('author_phone',   $author_phone);
+set_query_var('author_id',      $author_id);
+set_query_var('author_post_ct', $author_post_ct);
+get_template_part('detail-sidebar');
+?>
+
+</section>
 
 <?php get_template_part('related-area'); ?>
 <?php get_template_part('related-type'); ?>
-<?php get_footer(); ?>
-<?php
-        $phone = get_the_author_meta('phone');
-        $phone_clean = preg_replace('/[^0-9]/', '', $phone);
-        ?>
 
-        <div class="mobile-floating-bar">
-
-        <a href="javascript:void(0)" class="avatar-btn">
-            <?php echo get_avatar(get_the_author_meta('user_email'), 80); ?>
-        </a>
-
-        <a href="https://zalo.me/<?php echo $phone_clean; ?>"
-            class="zalo-btn"
-            target="_blank">
-
-            <img src="<?php echo get_template_directory_uri(); ?>/img/zalo.jpg" alt="Zalo">
-
-            <span>Zalo</span>
-        </a>
-
-        <a href="tel:<?php echo $phone_clean; ?>" class="call-btn">
-
-            <span class="phone-icon">📞</span>
-
-            <span><?php echo $phone; ?></span>
-
-        </a>
+<div class="mobile-floating-bar">
+    <a href="javascript:void(0)" class="avatar-btn">
+        <?php echo esc_html(get_author_name_avatar($author_name)); ?>
+    </a>
+    <a href="https://zalo.me/<?php echo esc_attr($phone_clean); ?>"
+       class="zalo-btn" target="_blank">
+        <img src="<?php echo get_template_directory_uri(); ?>/img/zalo.jpg" alt="Zalo">
+        <span>Zalo</span>
+    </a>
+    <a href="tel:<?php echo esc_attr($phone_clean); ?>" class="call-btn">
+        <img src="<?php echo get_template_directory_uri(); ?>/img/phone.png" class="icon-call" alt="Gọi điện" width="18" height="18">
+        <span><?php echo esc_html($author_phone); ?></span>
+    </a>
 </div>
+
+<?php get_footer(); ?>
