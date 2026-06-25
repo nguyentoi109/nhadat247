@@ -44,8 +44,8 @@
     flex-shrink:0;
 }
 .sd-author-name {
-    font-size: 16px;
-    font-weight: 700;
+    font-size: 17px;
+    font-weight: 500;
     color: #1a1a1a;
 }
 .sd-author-badge {
@@ -159,6 +159,7 @@
     background:#fff;
     border:1px solid #d9d9d9;
     color:#222;
+    font-weight:normal;
 }
 
 .sd-btn-zalo:hover{
@@ -168,6 +169,7 @@
     background:var(--btn);
     color:#fff;
     border:none;
+    font-weight:normal;
 }
 
 .sd-btn-call:hover{
@@ -210,12 +212,12 @@ $phone_clean    = preg_replace('/[^0-9+]/', '', $author_phone);
             <a href="https://zalo.me/<?php echo esc_attr($phone_clean); ?>" target="_blank" class="sd-btn sd-btn-zalo">
                 <img src="<?php echo get_template_directory_uri(); ?>/img/zalo.jpg"
                     alt="Zalo">
-                <span>Chat qua Zalo</span>
+                <span>Chat Zalo</span>
             </a>
 
             <a href="tel:<?php echo esc_attr($phone_clean); ?>" class="sd-btn sd-btn-call">
                 <img src="<?php echo get_template_directory_uri(); ?>/img/phone.png" class="icon-call" alt="Gọi điện">
-                <span><?php echo esc_html($author_phone); ?></span>
+                <span>Gọi điện</span>
             </a>
         <?php endif; ?>
 

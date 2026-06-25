@@ -1932,6 +1932,7 @@ add_filter('query_vars', function ($vars) {
     return $vars;
 });
 
+//filter property sidebar 
 function bds_filter_price_area_meta_query() {
     $meta_query = array();
      if (!empty($_GET['price_range']) && $_GET['price_range'] !== '0') {
@@ -1992,7 +1993,83 @@ function bds_filter_price_area_meta_query() {
     }
     return $meta_query;
 }
+
+function bds_filter_url(string $key, string $value): string {
+    $params = $_GET;
+    unset($params['paged'], $params['page']);
  
+    if ($value === '' || $value === '0') {
+        unset($params[$key]);
+    } else {
+        $params[$key] = $value;
+    }
+ 
+    $base = strtok($_SERVER['REQUEST_URI'], '?');
+    $qs   = http_build_query($params);
+    return $base . ($qs ? '?' . $qs : '');
+}
+
+function bds_enqueue_filter_script() {
+    if (!is_front_page()) {
+        return;
+    }
+    wp_enqueue_script(
+        'bds-filter-property',
+        get_template_directory_uri() . '/js/filter-property.js',
+        ['jquery'],
+        null,
+        true
+    );
+    wp_localize_script('bds-filter-property', 'bdsFilterAjax', [
+        'ajax_url' => admin_url('admin-ajax.php'),
+        'nonce'    => wp_create_nonce('bds_filter_nonce'),
+    ]);
+}
+add_action('wp_enqueue_scripts', 'bds_enqueue_filter_script');
+
+function bds_filter_properties_callback() {
+    check_ajax_referer('bds_filter_nonce', 'nonce');
+
+    $price_range = isset($_POST['price_range']) ? sanitize_text_field($_POST['price_range']) : '0';
+    $area_range  = isset($_POST['area_range'])  ? sanitize_text_field($_POST['area_range'])  : '0';
+    $paged = isset($_POST['paged']) ? max(1, intval($_POST['paged'])) : 1;
+    $_GET['price_range'] = $price_range;
+    $_GET['area_range']  = $area_range;
+    $meta_query = bds_filter_price_area_meta_query();
+    $query_args = [
+        'post_type' => 'property',
+        'post_status' => 'publish',
+        'orderby' => 'modified',
+        'order' => 'DESC',
+        'paged' => $paged,
+        'posts_per_page' => 20,
+    ];
+
+    if (!empty($meta_query)) {
+        $query_args['meta_query'] = $meta_query;
+    }
+    $query = new WP_Query($query_args);
+    ob_start();
+    if ($query->have_posts()) :
+        while ($query->have_posts()) : $query->the_post();
+            set_query_var('is_ngop', true);
+            get_template_part('loop-property/item-property');
+        endwhile;
+    else :
+        echo '<p>Không có bất động sản nào.</p>';
+    endif;
+    wp_reset_postdata();
+    $html = ob_get_clean();
+
+    wp_send_json_success([
+        'html'        => $html,
+        'max_pages'   => $query->max_num_pages,
+        'found_posts' => $query->found_posts,
+    ]);
+}
+add_action('wp_ajax_bds_filter_properties', 'bds_filter_properties_callback');
+add_action('wp_ajax_nopriv_bds_filter_properties', 'bds_filter_properties_callback');
+
 function get_related_posts_by_location($location_id, $limit = 5){
     global $wpdb;
     $location = get_term($location_id, 'property_location');

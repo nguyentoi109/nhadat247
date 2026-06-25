@@ -112,7 +112,7 @@
 
 <?php
 $price_ranges = [
-    '0'           => 'Tất cả',
+    '0'           => 'Tất cả mức giá',
     '0-500'       => 'Dưới 500 triệu',
     '500-800'     => '500 - 800 triệu',
     '800-1000'    => '800 triệu - 1 tỷ',
@@ -127,7 +127,7 @@ $price_ranges = [
     '40000-60000' => '40 - 60 tỷ',
     '60000-max'   => 'Trên 60 tỷ',
 ];
-
+ 
 $area_ranges = [
     '0'       => 'Tất cả diện tích',
     '0-30'    => 'Dưới 30 m²',
@@ -138,55 +138,46 @@ $area_ranges = [
     '150-200' => '150 - 200 m²',
     '200-max' => 'Trên 200 m²',
 ];
-
+ 
 $current_price = isset($_GET['price_range']) ? sanitize_text_field($_GET['price_range']) : '0';
 $current_area  = isset($_GET['area_range'])  ? sanitize_text_field($_GET['area_range'])  : '0';
-
-if (!function_exists('bds_build_filter_url')) {
-    function bds_build_filter_url($key, $value) {
-        $params = $_GET;
-        if ($value === '') unset($params[$key]);
-        else $params[$key] = $value;
-        $qs = http_build_query($params);
-        $base = strtok($_SERVER['REQUEST_URI'], '?');
-        return $base . ($qs ? '?' . $qs : '');
-    }
-}
-
+ 
 $related_posts = get_query_var('related_posts');
 $has_related   = $related_posts && $related_posts->have_posts();
 ?>
-
+ 
 <aside class="sidebar-filter-property">
-
+ 
     <div class="filter-box filter-box-price">
         <h3 class="filter-title">Lọc theo khoảng giá</h3>
         <ul class="filter-list">
             <?php foreach ($price_ranges as $value => $label):
-                $is_active = ($current_price === (string)$value); ?>
+                $is_active = ((string)$current_price === (string)$value);
+            ?>
             <li class="filter-item <?php echo $is_active ? 'active' : ''; ?>">
-                <a href="<?php echo esc_url(bds_build_filter_url('price_range', $value)); ?>">
+                <a href="<?php echo esc_url(bds_filter_url('price_range', (string)$value)); ?>" data-value="<?php echo esc_attr($value); ?>">
                     <?php echo esc_html($label); ?>
                 </a>
             </li>
             <?php endforeach; ?>
         </ul>
     </div>
-
+ 
     <div class="filter-box filter-box-area">
         <h3 class="filter-title">Lọc theo diện tích</h3>
         <ul class="filter-list">
             <?php foreach ($area_ranges as $value => $label):
-                $is_active = ($current_area === (string)$value); ?>
+                $is_active = ((string)$current_area === (string)$value);
+            ?>
             <li class="filter-item <?php echo $is_active ? 'active' : ''; ?>">
-                <a href="<?php echo esc_url(bds_build_filter_url('area_range', $value)); ?>">
+                <a href="<?php echo esc_url(bds_filter_url('area_range', (string)$value)); ?>" data-value="<?php echo esc_attr($value); ?>">
                     <?php echo esc_html($label); ?>
                 </a>
             </li>
             <?php endforeach; ?>
         </ul>
     </div>
-
+ 
     <?php if ($has_related): ?>
     <div class="filter-box filter-box-interested">
         <h3 class="filter-title">Bài viết được quan tâm</h3>
@@ -196,16 +187,14 @@ $has_related   = $related_posts && $related_posts->have_posts();
             while ($related_posts->have_posts()):
                 $related_posts->the_post();
             ?>
-                <li class="interested-item">
-                    <span class="interested-number"><?php echo $rank++; ?></span>
-                    <a href="<?php the_permalink(); ?>" class="interested-link">
-                        <?php the_title(); ?>
-                    </a>
-                </li>
-            <?php endwhile; ?>
-            <?php wp_reset_postdata(); ?>
+            <li class="interested-item">
+                <span class="interested-number"><?php echo $rank++; ?></span>
+                <a href="<?php the_permalink(); ?>" class="interested-link">
+                    <?php the_title(); ?>
+                </a>
+            </li>
+            <?php endwhile; wp_reset_postdata(); ?>
         </ul>
     </div>
     <?php endif; ?>
-
 </aside>

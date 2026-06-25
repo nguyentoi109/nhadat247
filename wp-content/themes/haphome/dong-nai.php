@@ -25,33 +25,37 @@ get_header();
         <div class="list-style-wrap container">
             <div class="list-style list-all">
 			<?php
-			$paged = max(1, get_query_var('paged'));
-            $price_area_meta_query = bds_filter_price_area_meta_query();
+                $paged = max(1, get_query_var('paged'));
+                $price_area_meta_query = bds_filter_price_area_meta_query();
 
-			$query = new WP_Query(array(
-				'post_type'      => 'property',
-                'post_status'    => 'publish',
-                'orderby'        => 'ID',
-                'order'          => 'DESC',
-                'paged'          => $paged,
-                'posts_per_page' => 20,
+                $query_args = array(
+                    'post_type'      => 'property',
+                    'post_status'    => 'publish',
+                    'orderby'        => 'ID',
+                    'order'          => 'DESC',
+                    'paged'          => $paged,
+                    'posts_per_page' => 20,
 
-                'tax_query' => array(
-                    array(
-                        'taxonomy' => 'property_location',
-                        'field'    => 'term_id',
-                        'terms'    => 136 
+                    'tax_query' => array(
+                        array(
+                            'taxonomy' => 'property_location',
+                            'field'    => 'term_id',
+                            'terms'    => 136 
+                        )
                     )
-                )
-			));
-			?>
+                );
+
+                if (!empty($price_area_meta_query)) {
+                    $query_args['meta_query'] = $price_area_meta_query;
+                }
+
+                $query = new WP_Query($query_args);
+            ?>
 
 			<?php if ($query->have_posts()) : ?>
-                
                 <?php while ($query->have_posts()) : $query->the_post(); ?>
                     <?php set_query_var('is_ngop', true);?>
                     <?php get_template_part('loop-property/item-property'); ?>
-
                 <?php endwhile; ?>
 
                 <!-- PAGINATION -->
@@ -73,8 +77,8 @@ get_header();
             <?php endif; ?>
 
             <?php wp_reset_postdata(); ?>
-        </div>
-            <?php get_template_part('sidebar-filter-property') ?>
+            </div>
+           <?php get_template_part('sidebar-filter-property') ?>
         </div>
     </main>
 </section>

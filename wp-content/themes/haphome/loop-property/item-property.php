@@ -410,8 +410,8 @@ if (!empty($property_type_terms) && !is_wp_error($property_type_terms)) {
 				</div> -->
 			</div>
 		</div>
-		<!-- <div class="side-content"> -->
-			<!-- <span class="price">
+		<!-- <div class="side-content">
+			<span class="price">
 			<strong>
 			<strong><span class="ti-tag"></span> Giá:</strong>
 				<span class="num">
