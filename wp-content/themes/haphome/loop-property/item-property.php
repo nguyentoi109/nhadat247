@@ -12,11 +12,12 @@
 
 	.alt-icon{
 		width: 20px; 
-		height: 17px; 
+		height: 14px; 
 		vertical-align: middle;
 	}
 	.bedroom .alt-icon{
 		height: 20px;
+		margin-left: 4px;
 	}
 	.user-name{
 		color: var(--name);
@@ -117,7 +118,6 @@
 
 <?php
 $post_id = get_the_ID();
-
 $price = rwmb_meta('prefix-price');
 $unit = rwmb_meta('prefix-unit');
 $area = rwmb_meta('prefix-area');
@@ -284,88 +284,84 @@ if (!empty($property_type_terms) && !is_wp_error($property_type_terms)) {
 								}
 							?>
 						</strong>
-					</span> |
+					</span> 
 					<?php endif; ?>
 				<span class="area">
 					<?php echo $area; ?> m<sup>2<sup>
-				</span> |
+				</span> 
 				<?php if ($has_rooms): ?>
 				<span class="bedroom">
-					<img src="<?php echo get_template_directory_uri(); ?>/img/bedroom.png"
-						alt="Bedroom Icon"
-						class="alt-icon">
 					<?php
 						$bedroom = get_post_meta($post->ID, 'prefix-bedroom', true);
 						if(!empty($bedroom)){
 							if($bedroom == 6){
 								echo 'Studio';
 							}elseif($bedroom == 7){
-								echo '1 phòng ngủ +';
+								echo '1+ phòng';
 							}elseif($bedroom == 8){
-								echo '2 phòng ngủ +';
+								echo '2+ phòng';
 							}else{
-								echo $bedroom . ' phòng ngủ';
+								echo $bedroom . ' phòng';
 							}
 						}else{
 							echo '&nbsp;';
 						}
 					?>
-				</span> |
+					<img src="<?php echo get_template_directory_uri(); ?>/img/bedroom.png" alt="Bedroom Icon" class="alt-icon">
+				</span> 
 				<span class="bathroom">
-					<img src="<?php echo get_template_directory_uri(); ?>/img/bathroom.png"
-						alt="Bathroom Icon"
-						class="alt-icon">
 					<?php
 						$bathroom = get_post_meta($post->ID, 'prefix-bathroom', true);
 						if(!empty($bathroom)){
-							echo $bathroom  ." phòng";
+							echo $bathroom . ' phòng';
 						}else{
 							echo '&nbsp;';
 						}
 					?>
-				</span>|
+					<img src="<?php echo get_template_directory_uri(); ?>/img/bathroom.png" alt="Bathroom Icon" class="alt-icon">
+				</span>
 				<?php endif; ?> 
-				<span class="location">
-					<!-- <strong><span class="ti-location-pin"></span>:</strong> -->
+				<span class="direction">
+					<img src="<?php echo get_template_directory_uri(); ?>/img/icons/direction.png"
+						alt="Direction Icon"
+						style="width: 15px; height: 15px; vertical-align: middle;">
 					<?php
-					$direction_terms = get_the_terms($post->ID, "property_location");
-
+					$direction_terms = get_the_terms($post->ID, "property_direction");
 					if (!empty($direction_terms)) {
 						$direction_count = 0;
-
 						foreach ($direction_terms as $term) {
-
 							if ($direction_count > 0) {
 								echo ', ';
 							}
 							echo $term->name;
-							$direction_count++; 
 						}
-
 					} else {
 						echo '&nbsp;';
 					}
 					?>
-				</span> | 
-				<span class="direction">
-					<img src="<?php echo get_template_directory_uri(); ?>/img/icons/direction.png" 
-							alt="Direction Icon" 
-							style="width: 15px; height: 15px; vertical-align: middle;">
+				</span>
+
+				<div class="meta-location">
+					<img src="<?php echo get_template_directory_uri(); ?>/img/location.png" alt="Location Icon" class="alt-icon">
+					<span class="location">
 						<?php
-						$direction_terms = get_the_terms( $post->ID,"property_direction" );
-						if(!empty( $direction_terms )){
+						$direction_terms = get_the_terms($post->ID, "property_location");
+
+						if (!empty($direction_terms)) {
 							$direction_count = 0;
-							foreach( $direction_terms as $term ){
-								if( $direction_count > 0 ){
+							foreach ($direction_terms as $term) {
+								if ($direction_count > 0) {
 									echo ', ';
 								}
 								echo $term->name;
+								$direction_count++;
 							}
-						}else{
+						} else {
 							echo '&nbsp;';
 						}
-					?>	
-				</span>
+						?>
+					</span>
+				</div>
 
 			</div>
 			<div class="footer-content">

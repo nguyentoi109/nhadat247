@@ -333,7 +333,7 @@
 
         <div class="col-sidebar">
             <div class="sidebar-popular">
-                <h2 class="title-sidebar">Xem nhiều nhất</h2>
+                <h2 class="title-sidebar">Bài viết quan tâm nhiều</h2>
                 <?php if ($popular_query && $popular_query->have_posts()) : $rank = 1; ?>
                     <?php while ($popular_query->have_posts()) : $popular_query->the_post(); ?>
                         <div class="popular-item">

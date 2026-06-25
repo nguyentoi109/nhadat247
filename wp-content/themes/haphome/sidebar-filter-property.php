@@ -1,12 +1,13 @@
 <style>
 .list-style-wrap {
   display: flex;
-  gap: 24px;
+  gap: 15 px;
   align-items: flex-start;
 }
 .list-style-wrap .list-style.list-all {
   flex: 1;
   min-width: 0;
+  padding: 0 10px;
 }
 .sidebar-filter-property {
   width: 280px;
@@ -18,6 +19,10 @@
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 20px;
+}
+
+.filter-box-interested{
+  background: #f2f2f2;
 }
 .filter-title {
   font-size: 16px;
@@ -177,10 +182,10 @@ $has_related   = $related_posts && $related_posts->have_posts();
             <?php endforeach; ?>
         </ul>
     </div>
- 
+
     <?php if ($has_related): ?>
     <div class="filter-box filter-box-interested">
-        <h3 class="filter-title">Bài viết được quan tâm</h3>
+        <h3 class="filter-title">Bài viết quan tâm nhiều</h3>
         <ul class="interested-list">
             <?php
             $rank = 1;

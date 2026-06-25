@@ -17,9 +17,6 @@
 	.bedroom .alt-icon{
 		height: 20px;
 	}
-	.user-name{
-		color: var(--name);
-	}
 	.title-post{
 		color: #2c2c2c;
 	}
@@ -144,8 +141,25 @@ if (!empty($status_terms) && !is_wp_error($status_terms) &&
         $post_link = rwmb_meta('prefix-post');
         $phone_custom = rwmb_meta('prefix-phone-custom');
         $name_custom = rwmb_meta('prefix-name-custom');
+
         $status_terms = get_the_terms($post_id, "property_status");
         $price = (float)$price;
+        $custom_user = get_current_custom_user();
+        $custom_user_id = $custom_user ? (int)$custom_user->id : 0;
+        $is_saved = $custom_user_id ? is_favorited($custom_user_id, $post_id) : false;
+
+        //check bds
+        $room_type_ids = array(8, 9, 11);
+        $property_type_terms = get_the_terms($post_id, "property_type");
+        $has_rooms = false;
+        if (!empty($property_type_terms) && !is_wp_error($property_type_terms)) {
+            foreach ($property_type_terms as $term) {
+                if (in_array($term->term_id, $room_type_ids)) {
+                    $has_rooms = true;
+                    break;
+                }
+            }
+        }
         ?>
 
       <article id="post-<?php the_ID(); ?>" <?php post_class('list-news'); ?>>
@@ -164,147 +178,134 @@ if (!empty($status_terms) && !is_wp_error($status_terms) &&
         </div>
         <?php endif; ?>
 
-        <div class="content">
-            <h3 class="title-post">
-                <a href="<?php the_permalink(); ?>">
-                    <?php the_title(); ?>
-                </a>
-            </h3>
-
-            <div class="des">
-                <?php html5wp_excerpt('html5wp_index'); ?>
-            </div>
-
-            <div class="meta">
-                <span class="meta-price">
-                    <strong>
-                        <?php
-                            if ($price) {
-                                if ($price >= 1000000000) {
-                                    $value = $price / 1000000000;
-                                    echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
-                                } elseif ($price >= 1000000) {
-                                    $value = $price / 1000000;
-                                    echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
-                                } else {
-                                    if ($unit == 'trieu' && $price > 1000) {
-                                        $value = $price / 1000;
-                                        echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
-                                    } else {
-                                        echo number_format($price, 0, ',', '.');
-                                    }
-                                }
-                            }
-                        ?>
-                    </span>
-                        <?php
-                            if ($price) {
-                                if ($price >= 1000000000) {
-                                    echo ' tỷ';
-                                } elseif ($price >= 1000000) {
-                                    echo ' triệu';
-                                } else {
-                                    if ($unit == 'trieu') {
-                                        if ($price > 1000) {
-                                            echo 'tỷ';
-                                        } else {
-                                            echo ' triệu';
-                                        }
-                                    } elseif ($unit == 'ty') {
-                                        echo ' tỷ';
-                                    } else {
-                                        echo ' đ';
-                                    }
-                                }
-                            }
-                        ?>
-                    </strong>
-                </span> |
-
-                <span class="area">
-                    <?php echo $area; ?> m²
-                </span> |
-
-                <span class="bedroom">
-					<img src="<?php echo get_template_directory_uri(); ?>/img/bedroom.png"
-						alt="Bedroom Icon"
-						class="alt-icon">
+       <div class="content">
+			<h3 class="title-post">
+				<a href="<?php the_permalink(); ?>" title="<?php the_title(); ?>"><?php the_title(); ?></a>
+			</h3>
+				<?php //html5wp_excerpt('html5wp_index');?>
+			<div class="meta">
+					<span class="meta-price">
+						<strong>
+							<?php
+								if ($price) {
+									if ($price >= 1000000000) {
+										$value = $price / 1000000000;
+										echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
+									} elseif ($price >= 1000000) {
+										$value = $price / 1000000;
+										echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
+									} else {
+										if ($unit == 'trieu' && $price > 1000) {
+											$value = $price / 1000;
+											echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
+										} else {
+											echo number_format($price, 0, ',', '.');
+										}
+									}
+								}
+								?>
+								</span>
+								<?php
+								if ($price) {
+									if ($price >= 1000000000) {
+										echo ' tỷ';
+									} elseif ($price >= 1000000) {
+										echo ' triệu';
+									} else {
+										if ($unit == 'trieu') {
+											if ($price > 1000) {
+												echo 'tỷ';
+											} else {
+												echo ' triệu';
+											}
+										} elseif ($unit == 'ty') {
+											echo ' tỷ';
+										} else {
+											echo ' đ';
+										}
+									}
+								}
+							?>
+						</strong>
+					</span> 
+				<span class="area">
+					<?php echo $area; ?> m<sup>2<sup>
+				</span> 
+				<?php if ($has_rooms): ?>
+				<span class="bedroom">
 					<?php
 						$bedroom = get_post_meta($post->ID, 'prefix-bedroom', true);
 						if(!empty($bedroom)){
 							if($bedroom == 6){
 								echo 'Studio';
 							}elseif($bedroom == 7){
-								echo '1 phòng ngủ +';
+								echo '1+ phòng';
 							}elseif($bedroom == 8){
-								echo '2 phòng ngủ +';
+								echo '2+ phòng';
 							}else{
-								echo $bedroom . ' phòng ngủ';
+								echo $bedroom . ' phòng';
 							}
 						}else{
 							echo '&nbsp;';
 						}
 					?>
-				</span> |
-
-                <span class="bathroom">
-					<img src="<?php echo get_template_directory_uri(); ?>/img/bathroom.png"
-						alt="Bathroom Icon"
-						class="alt-icon">
+					<img src="<?php echo get_template_directory_uri(); ?>/img/bedroom.png" alt="Bedroom Icon" class="alt-icon">
+				</span> 
+				<span class="bathroom">
 					<?php
 						$bathroom = get_post_meta($post->ID, 'prefix-bathroom', true);
 						if(!empty($bathroom)){
-							echo $bathroom  ." phòng";
+							echo $bathroom . ' phòng';
 						}else{
 							echo '&nbsp;';
 						}
 					?>
-				</span> |
-
-               <span class="location">
-					<!-- <strong><span class="ti-location-pin"></span>:</strong> -->
+					<img src="<?php echo get_template_directory_uri(); ?>/img/bathroom.png" alt="Bathroom Icon" class="alt-icon">
+				</span>
+				<?php endif; ?> 
+				<span class="direction">
+					<img src="<?php echo get_template_directory_uri(); ?>/img/icons/direction.png"
+						alt="Direction Icon"
+						style="width: 15px; height: 15px; vertical-align: middle;">
 					<?php
-					$direction_terms = get_the_terms($post->ID, "property_location");
-
+					$direction_terms = get_the_terms($post->ID, "property_direction");
 					if (!empty($direction_terms)) {
 						$direction_count = 0;
-
 						foreach ($direction_terms as $term) {
-
 							if ($direction_count > 0) {
 								echo ', ';
 							}
 							echo $term->name;
-							$direction_count++; 
 						}
-
 					} else {
 						echo '&nbsp;';
 					}
 					?>
-				</span> | 
-                
-                <span class="direction">
-					<img src="<?php echo get_template_directory_uri(); ?>/img/icons/direction.png" 
-							alt="Direction Icon" 
-							style="width: 15px; height: 15px; vertical-align: middle;">
+				</span>
+
+				<div class="meta-location">
+					<img src="<?php echo get_template_directory_uri(); ?>/img/location.png" alt="Location Icon" class="alt-icon">
+					<span class="location">
 						<?php
-						$direction_terms = get_the_terms( $post->ID,"property_direction" );
-						if(!empty( $direction_terms )){
+						$direction_terms = get_the_terms($post->ID, "property_location");
+
+						if (!empty($direction_terms)) {
 							$direction_count = 0;
-							foreach( $direction_terms as $term ){
-								if( $direction_count > 0 ){
+							foreach ($direction_terms as $term) {
+								if ($direction_count > 0) {
 									echo ', ';
 								}
 								echo $term->name;
+								$direction_count++;
 							}
-						}else{
+						} else {
 							echo '&nbsp;';
 						}
-					?>	
-				</span>
+						?>
+					</span>
+				</div>
 
-            </div>
+			</div>
 
             <div class="footer-content">
                 <div class="user-name">
@@ -327,55 +328,55 @@ if (!empty($status_terms) && !is_wp_error($status_terms) &&
 
         </div>
 
-        <div class="side-content">
+        <!-- <div class="side-content">
             <span class="price">
                 <strong><span class="ti-tag"></span> Giá: </strong>
                     <span class="num">
                         <?php
-                            if ($price) {
-                                if ($price >= 1000000000) {
-                                    $value = $price / 1000000000;
-                                    echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
-                                } elseif ($price >= 1000000) {
-                                    $value = $price / 1000000;
-                                    echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
-                                } else {
-                                    if ($unit == 'trieu' && $price > 1000) {
-                                        $value = $price / 1000;
-                                        echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
-                                    } else {
-                                        echo number_format($price, 0, ',', '.');
-                                    }
-                                }
-                            }
+                            // if ($price) {
+                            //     if ($price >= 1000000000) {
+                            //         $value = $price / 1000000000;
+                            //         echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
+                            //     } elseif ($price >= 1000000) {
+                            //         $value = $price / 1000000;
+                            //         echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
+                            //     } else {
+                            //         if ($unit == 'trieu' && $price > 1000) {
+                            //             $value = $price / 1000;
+                            //             echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
+                            //         } else {
+                            //             echo number_format($price, 0, ',', '.');
+                            //         }
+                            //     }
+                            // }
                         ?>
                     </span>
 
                     <?php
-                        if ($price) {
-                            if ($price >= 1000000000) {
-                                echo ' tỷ';
-                            } elseif ($price >= 1000000) {
-                                echo ' triệu';
-                            } else {
-                                if ($unit == 'trieu') {
-                                    if ($price > 1000) {
-                                        echo 'tỷ';
-                                    } else {
-                                        echo ' triệu';
-                                    }
-                                } elseif ($unit == 'ty') {
-                                    echo ' tỷ';
-                                } else {
-                                    echo ' đ';
-                                }
-                            }
-                        }
+                        // if ($price) {
+                        //     if ($price >= 1000000000) {
+                        //         echo ' tỷ';
+                        //     } elseif ($price >= 1000000) {
+                        //         echo ' triệu';
+                        //     } else {
+                        //         if ($unit == 'trieu') {
+                        //             if ($price > 1000) {
+                        //                 echo 'tỷ';
+                        //             } else {
+                        //                 echo ' triệu';
+                        //             }
+                        //         } elseif ($unit == 'ty') {
+                        //             echo ' tỷ';
+                        //         } else {
+                        //             echo ' đ';
+                        //         }
+                        //     }
+                        // }
                     ?>
                 </span>
             </span>
             <a href="<?php the_permalink(); ?>" class="btn"> Xem chi tiết </a>
-        </div>
+        </div> -->
       </article>
     <?php endforeach; wp_reset_postdata(); ?>
   </div>

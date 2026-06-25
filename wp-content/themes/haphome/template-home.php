@@ -32,6 +32,29 @@
         transform: rotate(360deg);
     }
 }
+
+.read-more-mobile {
+    display: none;
+}
+
+.read-more-desktop{
+    text-align: center;
+}
+
+.read-more-desktop a{
+    display: inline-block;
+}
+
+@media (max-width: 768px) {
+    .read-more-desktop {
+        display: none;
+    }
+
+    .read-more-mobile {
+        display: block;
+        padding: 0 !important;
+    }
+}
 </style>
 <?php
 /*
@@ -78,12 +101,15 @@ set_query_var('related_posts', $all_related);
 <section class="list-style-wrap container">
     <div class="list-style list-all" id="home-property-list" data-ajax-filter="1">
         <?php get_template_part('loop-property/all-property-list-style'); ?>
+
+        <p class="read-more read-more-desktop">
+            <a href="<?php echo home_url('tat-ca'); ?>">Xem tất cả</a>
+        </p>
     </div>
+    <p class="read-more read-more-mobile">
+        <a href="<?php echo home_url('tat-ca'); ?>">Xem tất cả</a>
+    </p>
     <?php get_template_part('sidebar-filter-property'); ?>
 </section>
-
-<p class="read-more">
-    <a href="<?php echo home_url('tat-ca'); ?>">Xem tất cả</a>
-</p>
 
 <?php get_footer(); ?>

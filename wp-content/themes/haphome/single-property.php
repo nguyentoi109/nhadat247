@@ -331,6 +331,17 @@
         font-size:14px;
     }
 }
+
+.popular-mobile {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .popular-mobile {
+        display: block;
+        padding: 0 10px 10px;
+    }
+}
 </style>
 <?php get_header(); ?>
 
@@ -740,7 +751,9 @@ get_template_part('detail-sidebar');
 ?>
 
 </section>
-
+<div class="popular-mobile">
+    <?php get_template_part('popular-property'); ?>
+</div>
 <?php get_template_part('related-area'); ?>
 <?php get_template_part('related-type'); ?>
 
@@ -758,5 +771,4 @@ get_template_part('detail-sidebar');
         <span><?php echo esc_html($author_phone); ?></span>
     </a>
 </div>
-
 <?php get_footer(); ?>

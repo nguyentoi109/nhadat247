@@ -6528,10 +6528,10 @@ nav a {
 }
 
 .list-style .content .meta {
-  font-size: 18px;
+  font-size: 16px;
   color: var(--meta);
-  line-height: 26px;
-  font-family: "Roboto Regular", Roboto, Arial;
+  line-height: 20px;
+  font-family: "Roboto Regular";
   margin-top: 8px;
 }
 
@@ -8349,7 +8349,7 @@ border-radius .read-more a:hover {
   flex-wrap: nowrap;
   line-height: 1.6;
   margin-bottom: 30px;
-  justify-content: center;
+  /* justify-content: center; */
 }
 .detail-page .featured-image {
   width: 100%;
@@ -8383,7 +8383,7 @@ border-radius .read-more a:hover {
 .detail-page main {
   width: 100%;
   max-width: 790px;
-  padding: 0 20px;
+  padding: 0 15px;
 }
 .detail-page main .breadcrumbs {
   padding: 5px 0;
@@ -9461,6 +9461,7 @@ select.form-control option {
     flex-wrap:wrap;
     gap:5px;
     margin-bottom:20px;
+    padding-left: 10px;
     font-size:18px;
     color:#999;
 }
@@ -9804,5 +9805,46 @@ select.form-control option {
   .related .container{
     padding: 0 10px;
   }
+}
+
+.meta > span:not(.direction)::after {
+    content: "•";
+    font-size: 13px;
+    padding: 0 10px;
+    color: #adb5bd;
+}
+
+.meta-location {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    font-size: 16px;
+    color: #6c757d;
+}
+
+.meta-location .location {
+	font-family: "Roboto-Regular";
+	font-size: 16px;
+	line-height: 20px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.user-name {
+    color: #374151;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.footer-content .author .phone{
+    color: #14b8a6;
+    font-weight: 700;
+    font-size: 15px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 /*# sourceMappingURL=main.css.map */
