@@ -11,14 +11,25 @@
 
 	.alt-icon{
 		width: 20px; 
-		height: 17px; 
+		height: 14px; 
 		vertical-align: middle;
+		margin-bottom: 5px;
 	}
+	.ti-location-pin{
+		margin-bottom: 5px;
+	}
+
 	.bedroom .alt-icon{
 		height: 20px;
 	}
 	.title-post{
 		color: #2c2c2c;
+	}
+
+	.user-name {
+		color: #14b8a6;
+		font-weight: 600;
+		font-size: 15px;
 	}
 </style>
 <?php
@@ -164,9 +175,11 @@ if ($query->have_posts()) :
 							?>
 						</strong>
 					</span> 
+                <span class="dot">•</span>
 				<span class="area">
 					<?php echo $area; ?> m<sup>2<sup>
 				</span> 
+                <span class="dot">•</span>
 				<?php if ($has_rooms): ?>
 				<span class="bedroom">
 					<?php
@@ -175,11 +188,11 @@ if ($query->have_posts()) :
 							if($bedroom == 6){
 								echo 'Studio';
 							}elseif($bedroom == 7){
-								echo '1+ phòng';
+								echo '1+ ';
 							}elseif($bedroom == 8){
-								echo '2+ phòng';
+								echo '2+ ';
 							}else{
-								echo $bedroom . ' phòng';
+								echo $bedroom ;
 							}
 						}else{
 							echo '&nbsp;';
@@ -187,17 +200,19 @@ if ($query->have_posts()) :
 					?>
 					<img src="<?php echo get_template_directory_uri(); ?>/img/bedroom.png" alt="Bedroom Icon" class="alt-icon">
 				</span> 
+                <span class="dot">•</span>
 				<span class="bathroom">
 					<?php
 						$bathroom = get_post_meta($post->ID, 'prefix-bathroom', true);
 						if(!empty($bathroom)){
-							echo $bathroom . ' phòng';
+							echo $bathroom ;
 						}else{
 							echo '&nbsp;';
 						}
 					?>
 					<img src="<?php echo get_template_directory_uri(); ?>/img/bathroom.png" alt="Bathroom Icon" class="alt-icon">
 				</span>
+                <span class="dot">•</span>
 				<?php endif; ?> 
 				<span class="direction">
 					<img src="<?php echo get_template_directory_uri(); ?>/img/icons/direction.png"
@@ -218,9 +233,9 @@ if ($query->have_posts()) :
 					}
 					?>
 				</span>
-
+                <span class="dot">•</span>
 				<div class="meta-location">
-					<img src="<?php echo get_template_directory_uri(); ?>/img/location.png" alt="Location Icon" class="alt-icon">
+					<span class="ti-location-pin"></span>
 					<span class="location">
 						<?php
 						$direction_terms = get_the_terms($post->ID, "property_location");
@@ -242,6 +257,7 @@ if ($query->have_posts()) :
 				</div>
 
 			</div>
+
 
             <div class="footer-content">
                 <div class="user-name">

@@ -14,13 +14,19 @@
 		width: 20px; 
 		height: 14px; 
 		vertical-align: middle;
+		margin-bottom: 5px;
+	}
+	.ti-location-pin{
+		margin-bottom: 5px;
 	}
 	.bedroom .alt-icon{
 		height: 20px;
 		margin-left: 4px;
 	}
-	.user-name{
-		color: var(--name);
+	.user-name {
+		color: #14b8a6;
+		font-weight: 600;
+		font-size: 15px;
 	}
 	.title-post{
 		color: #2c2c2c;
@@ -112,6 +118,11 @@
 .bds-toast.show {
 	opacity: 1;
 	transform: translateX(-50%) translateY(0);
+}
+.dot{
+	margin: 0 6px;
+	color: #adb5bd;
+	font-weight: 400;
 }
 </style>
 <article id="post-<?php the_ID(); ?>" class="list-news swiper-slide">
@@ -285,10 +296,12 @@ if (!empty($property_type_terms) && !is_wp_error($property_type_terms)) {
 							?>
 						</strong>
 					</span> 
+				<span class="dot">•</span>
 					<?php endif; ?>
 				<span class="area">
 					<?php echo $area; ?> m<sup>2<sup>
 				</span> 
+				<span class="dot">•</span>
 				<?php if ($has_rooms): ?>
 				<span class="bedroom">
 					<?php
@@ -297,11 +310,11 @@ if (!empty($property_type_terms) && !is_wp_error($property_type_terms)) {
 							if($bedroom == 6){
 								echo 'Studio';
 							}elseif($bedroom == 7){
-								echo '1+ phòng';
+								echo '1+ ';
 							}elseif($bedroom == 8){
-								echo '2+ phòng';
+								echo '2+ ';
 							}else{
-								echo $bedroom . ' phòng';
+								echo $bedroom . ' ';
 							}
 						}else{
 							echo '&nbsp;';
@@ -309,22 +322,24 @@ if (!empty($property_type_terms) && !is_wp_error($property_type_terms)) {
 					?>
 					<img src="<?php echo get_template_directory_uri(); ?>/img/bedroom.png" alt="Bedroom Icon" class="alt-icon">
 				</span> 
+				<span class="dot">•</span>
 				<span class="bathroom">
 					<?php
 						$bathroom = get_post_meta($post->ID, 'prefix-bathroom', true);
 						if(!empty($bathroom)){
-							echo $bathroom . ' phòng';
+							echo $bathroom . ' ';
 						}else{
 							echo '&nbsp;';
 						}
 					?>
 					<img src="<?php echo get_template_directory_uri(); ?>/img/bathroom.png" alt="Bathroom Icon" class="alt-icon">
 				</span>
+				<span class="dot">•</span>
 				<?php endif; ?> 
 				<span class="direction">
 					<img src="<?php echo get_template_directory_uri(); ?>/img/icons/direction.png"
 						alt="Direction Icon"
-						style="width: 15px; height: 15px; vertical-align: middle;">
+						style="width: 15px; height: 15px; vertical-align: middle;" class="alt-icon">
 					<?php
 					$direction_terms = get_the_terms($post->ID, "property_direction");
 					if (!empty($direction_terms)) {
@@ -340,9 +355,8 @@ if (!empty($property_type_terms) && !is_wp_error($property_type_terms)) {
 					}
 					?>
 				</span>
-
 				<div class="meta-location">
-					<img src="<?php echo get_template_directory_uri(); ?>/img/location.png" alt="Location Icon" class="alt-icon">
+					<span class="ti-location-pin"></span>
 					<span class="location">
 						<?php
 						$direction_terms = get_the_terms($post->ID, "property_location");

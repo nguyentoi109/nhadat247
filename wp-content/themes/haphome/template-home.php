@@ -53,6 +53,7 @@
     .read-more-mobile {
         display: block;
         padding: 0 !important;
+        margin-bottom: 20px;
     }
 }
 </style>
