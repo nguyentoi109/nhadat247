@@ -363,9 +363,42 @@ if (have_posts()) : while (have_posts()) : the_post();
     $image_360   = rwmb_meta('image360', ['size' => 'thumbnail']);
     $gallerys    = rwmb_meta('prefix-image_property', ['size' => 'thumbnail']);
     $has_gallery = !empty($gallerys);
-    $maps        = rwmb_meta('prefix-maps');
-    $room_type_ids = [8, 9, 11];
-    $property_type_terms = get_the_terms(get_the_ID(), 'property_type');
+    $dt_lat = get_post_meta(get_the_ID(), 'prefix-lat', true);
+    $dt_lng = get_post_meta(get_the_ID(), 'prefix-lng', true);
+
+    if ($dt_lat === '' || $dt_lng === '') {
+        $dt_lat = get_post_meta(get_the_ID(), '_dt_lat', true);
+        $dt_lng = get_post_meta(get_the_ID(), '_dt_lng', true);
+    }
+
+    if ($dt_lat === '' || $dt_lng === '') {
+        $old_osm = get_post_meta(get_the_ID(), 'prefix-maps', true);
+
+        if (!empty($old_osm)) {
+            $maybe_array = maybe_unserialize($old_osm);
+
+            if (is_array($maybe_array) && isset($maybe_array['lat'], $maybe_array['lng'])) {
+                $dt_lat = $maybe_array['lat'];
+                $dt_lng = $maybe_array['lng'];
+            } elseif (is_string($old_osm)) {
+                $parts = array_map('trim', explode(',', $old_osm));
+                if (isset($parts[0], $parts[1]) && is_numeric($parts[0]) && is_numeric($parts[1])) {
+                    $dt_lat = $parts[0];
+                    $dt_lng = $parts[1];
+                }
+            }
+        }
+    }
+
+    $has_map = ($dt_lat !== '' && $dt_lng !== '' && is_numeric($dt_lat) && is_numeric($dt_lng));
+    $author_email   = get_the_author_meta('user_email');
+    $author_name    = $name_custom ?: get_the_author_meta('nickname');
+    $author_phone   = $phone_custom ?: get_the_author_meta('phone');
+    $author_id      = get_the_author_meta('ID');
+    $author_post_ct = count_user_posts($author_id, 'property');
+    $phone_clean    = preg_replace('/[^0-9]/', '', $author_phone);
+    $room_type_ids = array(8, 9, 11);
+    $property_type_terms = get_the_terms(get_the_ID(), "property_type");
     $has_rooms = false;
     if (!empty($property_type_terms) && !is_wp_error($property_type_terms)) {
         foreach ($property_type_terms as $term) {
@@ -375,20 +408,13 @@ if (have_posts()) : while (have_posts()) : the_post();
             }
         }
     }
-
-    $author_email   = get_the_author_meta('user_email');
-    $author_name    = $name_custom ?: get_the_author_meta('nickname');
-    $author_phone   = $phone_custom ?: get_the_author_meta('phone');
-    $author_id      = get_the_author_meta('ID');
-    $author_post_ct = count_user_posts($author_id, 'property');
-    $phone_clean    = preg_replace('/[^0-9]/', '', $author_phone);
 ?>
 
 <article <?php post_class(); ?> class="detail-content">
 <div class="detail-layout">
 <div class="detail-main">
 
-    <?php if ($has_gallery || has_post_thumbnail() || $video || $maps) : ?>
+    <?php if ($has_gallery || has_post_thumbnail() || $video || $has_map) : ?>
     <div class="header-wrap-tab">
         <?php if ($has_gallery || has_post_thumbnail()) : ?>
             <button class="item-tab" onclick="openTab('gallerys')">Hình ảnh</button>
@@ -399,7 +425,7 @@ if (have_posts()) : while (have_posts()) : the_post();
         <?php if ($video) : ?>
             <button class="item-tab" onclick="openTab('tab-video')">Video</button>
         <?php endif; ?>
-        <?php if ($maps) : ?>
+        <?php if ($has_map) : ?>
             <button class="item-tab" onclick="openTab('tab-maps')">Bản đồ</button>
         <?php endif; ?>
     </div>
@@ -468,11 +494,88 @@ if (have_posts()) : while (have_posts()) : the_post();
     </div>
     <?php endif; ?>
 
-    <?php if ($maps) : ?>
-    <div id="tab-maps" class="content-tab" style="position:absolute;opacity:0;visibility:hidden;margin-bottom:10px;">
-        <div class="wrap-maps"><?php echo $maps; ?></div>
-    </div>
-    <?php endif; ?>
+    <?php if ($has_map) : ?>
+        <div id="tab-maps" class="content-tab" style="position:absolute;opacity:0;visibility:hidden;margin-bottom:10px;">
+            <div class="wrap-maps">
+                <div id="detail-map" style="width:100%;height:360px;border-radius:4px;border:1px solid #e0e0e0;overflow:hidden;background:#f5f5f5;"></div>
+            </div>
+        </div>
+        <script>
+        (function () {
+            var DETAIL_LAT       = <?php echo json_encode((float) $dt_lat); ?>;
+            var DETAIL_LNG       = <?php echo json_encode((float) $dt_lng); ?>;
+            var DETAIL_ICON_URL  = <?php echo json_encode(HERE_ICON_URL); ?>;
+            var MAPBOX_TOKEN     = <?php echo json_encode(MAPBOX_ACCESS_TOKEN); ?>;
+            var MAPBOX_STYLE     = <?php echo json_encode(MAPBOX_STYLE); ?>;
+
+            var _detailMap = null;
+            var _detailLoading = false;
+            var _detailInited = false;
+
+            function _loadMapboxSdk(cb) {
+                if (typeof mapboxgl !== 'undefined') { cb(); return; }
+                if (_detailLoading) { setTimeout(function () { _loadMapboxSdk(cb); }, 300); return; }
+                _detailLoading = true;
+
+                var link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = 'https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css';
+                document.head.appendChild(link);
+
+                var s = document.createElement('script');
+                s.src = 'https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js';
+                s.defer = false;
+                s.onload = cb;
+                s.onerror = function () { console.error('[Mapbox] Load SDK thất bại'); };
+                document.head.appendChild(s);
+            }
+
+            function _initDetailMap() {
+                if (_detailInited) return;
+                var el = document.getElementById('detail-map');
+                if (!el) return;
+                if (el.offsetWidth === 0) {
+                    setTimeout(_initDetailMap, 60);
+                    return;
+                }
+                _detailInited = true;
+
+                mapboxgl.accessToken = MAPBOX_TOKEN;
+
+                _detailMap = new mapboxgl.Map({
+                    container: el,
+                    style: MAPBOX_STYLE,
+                    center: [DETAIL_LNG, DETAIL_LAT],
+                    zoom: 17
+                });
+
+                _detailMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
+                _detailMap.scrollZoom.disable(); 
+
+                var markerEl = document.createElement('div');
+                markerEl.style.width = '32px';
+                markerEl.style.height = '32px';
+                markerEl.style.backgroundImage = 'url(' + DETAIL_ICON_URL + ')';
+                markerEl.style.backgroundSize = 'contain';
+                markerEl.style.backgroundRepeat = 'no-repeat';
+
+                new mapboxgl.Marker({ element: markerEl, anchor: 'bottom' })
+                    .setLngLat([DETAIL_LNG, DETAIL_LAT])
+                    .addTo(_detailMap);
+
+                setTimeout(function () { _detailMap.resize(); }, 50);
+            }
+
+            window.__dtTryInitMap = function () {
+                if (!_detailInited) {
+                    _loadMapboxSdk(function () { setTimeout(_initDetailMap, 30); });
+                } else if (_detailMap) {
+                    setTimeout(function () { _detailMap.resize(); }, 50);
+                }
+            };
+        })();
+        </script>
+        <?php endif; ?>
 
     <script>
     <?php if ($has_gallery) : ?>
@@ -500,7 +603,11 @@ if (have_posts()) : while (have_posts()) : the_post();
         t.style.visibility= 'visible';
         t.style.opacity   = '1';
         document.getElementById('breadcrumbs') &&
-            document.getElementById('breadcrumbs').scrollIntoView();
+        document.getElementById('breadcrumbs').scrollIntoView();
+
+        if (tabName === 'tab-maps' && typeof window.__dtTryInitMap === 'function') {
+            window.__dtTryInitMap();
+        }
     }
     document.addEventListener('DOMContentLoaded', function() {
         <?php if ($has_gallery || has_post_thumbnail()) : ?>
@@ -508,6 +615,7 @@ if (have_posts()) : while (have_posts()) : the_post();
         <?php endif; ?>
     });
     </script>
+
 
     <?php
     $delete_post_link = get_delete_post_link($post->ID);

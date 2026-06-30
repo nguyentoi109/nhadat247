@@ -13,6 +13,7 @@
     flex-shrink: 0;
     position: sticky;
     top: 20px;
+    padding-left: 10px;
 }
 
 .sd-contact-card {

@@ -2125,6 +2125,7 @@ function get_related_posts_by_location($location_id, $limit = 5){
 }
 //PAYMENT
 require_once get_template_directory() . '/payment/ajax-handler.php';
+require_once get_template_directory() . '/config.php';
 ///////////////////
 function html5blank_conditional_scripts() {}
 function html5_blank_view_article() {}
