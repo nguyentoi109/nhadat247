@@ -1172,6 +1172,17 @@ function get_current_custom_avatar() {
     $lastName = end($parts);
     return mb_strtoupper(mb_substr($lastName, 0, 1, "UTF-8"),"UTF-8");
 }
+
+function custom_get_avatar_html( $user, $size = 'thumbnail' ) {
+    if ( ! empty( $user->avatar ) ) {
+        $url = wp_get_attachment_image_url( (int) $user->avatar, $size );
+        if ( $url ) {
+            return '<img src="' . esc_url( $url ) . '" alt="' . esc_attr( $user->full_name ?? '' ) . '" class="cs-avatar-img">';
+        }
+    }
+    return '<span class="cs-avatar-letter">' . esc_html( get_author_name_avatar( $user->full_name ?? '' ) ) . '</span>';
+}
+
 function get_author_name_avatar($author_name) {
     if (empty($author_name)) {
         return '?';
@@ -1789,7 +1800,7 @@ function handle_dang_tin_form(): void {
     $uid     = (int) $custom_user->id;  
     $uid_key = 'dang_tin_uid_' . md5($uid);
     $errors  = [];
-     $title     = sanitize_text_field($_POST['post_title']  ?? '');
+    $title     = sanitize_text_field($_POST['post_title']  ?? '');
     $content   = wp_kses_post($_POST['post_content']       ?? '');
     $mode      = sanitize_key($_POST['dt_mode']            ?? 'bds'); 
     $price_raw = preg_replace('/[^0-9]/', '', $_POST['prefix-price'] ?? '');
@@ -1867,7 +1878,6 @@ function handle_dang_tin_form(): void {
         'prefix-name-custom'  => 'prefix-name-custom',
         'prefix-phone-custom' => 'prefix-phone-custom',
         'prefix-email-custom' => 'prefix-email-custom',
-        'prefix-address-bds'  => 'prefix-address-bds',
         'prefix-phap-ly'      => 'prefix-phap-ly',
         'prefix-noi-that'     => 'prefix-noi-that',
         'prefix-unit'         => 'prefix-unit',

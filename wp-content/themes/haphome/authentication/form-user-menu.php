@@ -123,7 +123,7 @@
     <?php $user = get_current_custom_user(); ?>
     <div class="user-header">
         <div class="user-avatar-big">
-            <?php echo esc_html(get_current_custom_avatar()); ?>
+            <?php echo custom_get_avatar_html( $user ); ?>
         </div>
         <div class="user-info">
         <div class="user-name">

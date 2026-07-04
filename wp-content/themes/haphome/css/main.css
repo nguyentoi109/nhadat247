@@ -9697,19 +9697,36 @@ select.form-control option {
     gap:12px;
 }
 
-.custom-avatar{
-    width:42px;
-    height:42px;
-    border-radius:50%;
-    background:#f5e8e6;
-    color:#7a2323;
+.custom-avatar {
+    width: 42px;  
+    height: 42px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--ql-red);
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+}
 
-    display:flex;
-    align-items:center;
-    justify-content:center;
+.custom-avatar .cs-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+}
 
-    font-weight:600;
-    font-size:18px;
+.custom-avatar .cs-avatar-letter {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .success-popup{

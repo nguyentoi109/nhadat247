@@ -45,8 +45,8 @@
 }
 
 .ql-avatar-circle {
-	width: 40px;
-	height: 40px;
+	width: 48px;
+	height: 48px;
 	border-radius: 50%;
 	background: var(--ql-red);
 	color: #fff;
@@ -572,7 +572,7 @@ function ql_fmt_money($n) {
     <div class="ql-acc-card">
 		<div class="ql-acc-row">
 			<div class="ql-avatar-circle">
-			<?php echo esc_html( get_current_custom_avatar() ); ?>
+			<?php echo custom_get_avatar_html( $user ); ?>
 			</div>
 			<div style="min-width:0;">
 			<div class="ql-acc-name">

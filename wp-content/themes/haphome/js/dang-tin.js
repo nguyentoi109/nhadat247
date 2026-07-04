@@ -95,7 +95,7 @@ function _initDtMap() {
 		suggestEl: 'map-suggest',
 		latEl: 'map-lat',
 		lngEl: 'map-lng',
-		addressEl: 'map-addr',
+		addressEl: 'map-search',
 		iconUrl: window.dtLocationIconUrl || '',
 		hereKey: window.dtHereKey || '',
 		mapboxToken: window.dtMapboxToken || '',
@@ -196,43 +196,131 @@ function dtDev1(el) {
 	document.getElementById('sum-1').textContent = devName;
 }
 
-function dtLoadL2(tinhId) {
-	var s2 = document.getElementById('sel-quan');
-	var s3 = document.getElementById('sel-phuong');
-	s2.innerHTML = '<option value="">-- Chọn --</option>';
-	s3.innerHTML = '<option value="">-- Chọn --</option>';
-	(window.dtLocL2[tinhId] || []).forEach(function(q) {
-		var o = document.createElement('option');
-		o.value = q.id;
-		o.textContent = q.name;
-		s2.appendChild(o);
-	});
-	dtUpdateLoc();
+var dtVnData = [];
+
+function dtLoadVnJson() {
+    var jsonPath = window.dtApivnJsonUrl || '';
+    fetch(jsonPath)
+        .then(function (r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        })
+        .then(function (json) {
+            dtVnData = Array.isArray(json) ? json : [];
+            dtFillProvinces();
+        })
+        .catch(function (err) {
+            console.error('Lỗi tải apivn.json:', err);
+        });
 }
 
-function dtLoadL3(quanId) {
-	var s3 = document.getElementById('sel-phuong');
-	s3.innerHTML = '<option value="">-- Chọn --</option>';
-	(window.dtLocL3[quanId] || []).forEach(function(p) {
-		var o = document.createElement('option');
-		o.value = p.id;
-		o.textContent = p.name;
-		s3.appendChild(o);
-	});
-	dtUpdateLoc();
+function dtFillProvinces() {
+    var sel = document.getElementById('sel-tinh');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">-- Chọn --</option>';
+    dtVnData.forEach(function (p) {
+        var o = document.createElement('option');
+        o.value = p.code;
+        o.textContent = p.name;
+        sel.appendChild(o);
+    });
+}
+
+function dtLoadL2(provinceCode) {
+    var s2 = document.getElementById('sel-quan');
+    var s3 = document.getElementById('sel-phuong');
+    s2.innerHTML = '<option value="">-- Chọn --</option>';
+    s3.innerHTML = '<option value="">-- Chọn --</option>';
+    s3.disabled  = true;
+
+    if (!provinceCode) {
+        s2.disabled = true;
+        dtUpdateLoc();
+        return;
+    }
+
+    var province = dtVnData.find(function (p) { return String(p.code) === String(provinceCode); });
+    if (!province || !province.districts || !province.districts.length) {
+        s2.disabled = true;
+        dtUpdateLoc();
+        return;
+    }
+
+    province.districts.forEach(function (d) {
+        var o = document.createElement('option');
+        o.value = d.code;
+        o.textContent = d.name;
+        s2.appendChild(o);
+    });
+    s2.disabled = false;
+    dtUpdateLoc();
+}
+
+function dtLoadL3(districtCode) {
+    var s1 = document.getElementById('sel-tinh');
+    var s3 = document.getElementById('sel-phuong');
+    s3.innerHTML = '<option value="">-- Chọn --</option>';
+
+    if (!districtCode) {
+        s3.disabled = true;
+        dtUpdateLoc();
+        return;
+    }
+
+    var province = dtVnData.find(function (p) { return String(p.code) === String(s1.value); });
+    var district = province && province.districts.find(function (d) { return String(d.code) === String(districtCode); });
+
+    if (!district || !district.wards || !district.wards.length) {
+        s3.disabled = true;
+        dtUpdateLoc();
+        return;
+    }
+
+    district.wards.forEach(function (w) {
+        var o = document.createElement('option');
+        o.value = w.code;   
+        o.textContent = w.name;
+        s3.appendChild(o);
+    });
+    s3.disabled = false;
+    dtUpdateLoc();
+}
+
+function dtBuildSearchAddress() {
+    var detail = document.getElementById('addr-detail').value.trim();
+    var tinh   = document.getElementById('loc-tinh-name').value;
+    var quan   = document.getElementById('loc-quan-name').value;
+    var phuong = document.getElementById('loc-phuong-name').value;
+    return [detail, phuong, quan, tinh].filter(Boolean).join(', ');
+}
+
+function dtSearchOnMap() {
+    var full = dtBuildSearchAddress();
+    var searchInput = document.getElementById('map-search');
+    
+    if (searchInput) {
+        searchInput.value = full;
+    }
+        var tinh = document.getElementById('loc-tinh-name').value;
+    if (_dtMap && typeof _dtMap.search === 'function' && full && tinh) {
+        _dtMap.search(full);
+    }
 }
 
 function dtUpdateLoc() {
-	var s1 = document.getElementById('sel-tinh');
-	var s2 = document.getElementById('sel-quan');
-	var s3 = document.getElementById('sel-phuong');
-	document.getElementById('loc-val').value = s3.value || s2.value || s1.value;
-	var parts = [
-		s3.selectedIndex > 0 ? s3.options[s3.selectedIndex].text : '',
-		s2.selectedIndex > 0 ? s2.options[s2.selectedIndex].text : '',
-		s1.selectedIndex > 0 ? s1.options[s1.selectedIndex].text : '',
-	].filter(Boolean);
-	document.getElementById('sum-2').textContent = parts.join(', ');
+    var s1 = document.getElementById('sel-tinh');
+    var s2 = document.getElementById('sel-quan');
+    var s3 = document.getElementById('sel-phuong');
+    var tinhName   = s1.selectedIndex > 0 ? s1.options[s1.selectedIndex].text : '';
+    var quanName   = s2.selectedIndex > 0 ? s2.options[s2.selectedIndex].text : '';
+    var phuongName = s3.selectedIndex > 0 ? s3.options[s3.selectedIndex].text : '';
+    var parts = [phuongName, quanName, tinhName].filter(Boolean);
+    document.getElementById('sum-2').textContent = parts.join(', ');
+    document.getElementById('loc-tinh-name').value   = tinhName;
+    document.getElementById('loc-quan-name').value   = quanName;
+    document.getElementById('loc-phuong-name').value = phuongName;
+
+    dtSearchOnMap(); 
 }
 
 function dtChip(el, group) {
@@ -322,8 +410,18 @@ function dtPreviewSubs(inp) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+	dtLoadVnJson();
 	var form = document.getElementById('dt-form');
 	if (!form) return;
+
+	var detailInp = document.getElementById('addr-detail');
+	var _addrDebounce = null;
+	if (detailInp) {
+		detailInp.addEventListener('input', function() {
+			clearTimeout(_addrDebounce);
+			_addrDebounce = setTimeout(dtSearchOnMap, 1200);
+		});
+	}
 
 	form.addEventListener('submit', function(e) {
 		var mode = document.getElementById('dt-mode-val').value;
@@ -343,6 +441,18 @@ document.addEventListener('DOMContentLoaded', function() {
 			alert('Vui lòng nhập tiêu đề.');
 			return;
 		}
+
+		var detailInp = document.getElementById('addr-detail');
+		var tinh   = document.getElementById('loc-tinh-name').value;
+		var quan   = document.getElementById('loc-quan-name').value;
+		var phuong = document.getElementById('loc-phuong-name').value;
+
+		if (!tinh) {
+			e.preventDefault();
+			alert('Vui lòng chọn Tỉnh/Thành phố.');
+			return;
+		}
+
 		var mainInp = document.getElementById('main-file-input');
 		if (!dtMainImg && !(mainInp && mainInp.files && mainInp.files.length)) {
 			e.preventDefault();

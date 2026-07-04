@@ -65,8 +65,6 @@
 		var suggestEl = document.getElementById(opts.suggestEl);
 		var latEl = document.getElementById(opts.latEl);
 		var lngEl = document.getElementById(opts.lngEl);
-
-		/* addressEl có thể là 1 id hoặc mảng id */
 		var addrEls = (function() {
 			var ids = Array.isArray(opts.addressEl) ? opts.addressEl : [opts.addressEl];
 			return ids.map(function(id) {
@@ -238,6 +236,23 @@
 		return {
 			flyTo: function(lat, lng, label) {
 				_goTo(lat, lng, label || '');
+			},
+			search: function(query) {
+				if (!query) return;
+				fetch(
+					'https://geocode.search.hereapi.com/v1/geocode' +
+					'?q=' + encodeURIComponent(query) +
+					'&in=countryCode:VNM&lang=vi&limit=1' +
+					'&apikey=' + opts.hereKey
+				)
+				.then(function(r) { return r.json(); })
+				.then(function(res) {
+					if (res.items && res.items.length) {
+						var item = res.items[0];
+						_goTo(item.position.lat, item.position.lng, item.address.label);
+					}
+				})
+				.catch(function() {});
 			}
 		};
 	}

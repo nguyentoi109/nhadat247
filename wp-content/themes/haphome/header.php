@@ -475,7 +475,7 @@ window.addEventListener("load", function(){
                     <?php if (!empty($_SESSION['custom_user_id'])): ?>
                     <div class="custom-user-box">
                         <div class="custom-avatar user-avatar-btn">
-                            <?php echo esc_html(get_current_custom_avatar()); ?>
+                            <?php echo custom_get_avatar_html( $custom_user ); ?>
                         </div>
                     </div>
 

@@ -121,34 +121,30 @@
 	flex-shrink: 0;
 	position: relative;
 	box-shadow: 0 2px 8px rgba(238, 0, 51, .25);
+	overflow: hidden; 
 }
 
-.cs-avatar-edit {
-	position: absolute;
-	bottom: 1px;
-	right: 1px;
-	width: 22px;
-	height: 22px;
+.cs-avatar-img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center;
 	border-radius: 50%;
-	background: #fff;
-	border: 1.5px solid var(--ql-border);
+	display: block;
+}
+
+.cs-avatar-letter {
+	width: 100%;
+	height: 100%;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	cursor: pointer;
-	color: var(--ql-muted);
-	transition: color .15s;
-}
-
-.cs-avatar-edit:hover {
-	color: var(--ql-red);
 }
 
 .cs-avatar-name {
-	font-size: 15px;
+	font-size: 18px;
 	font-weight: 700;
 	color: var(--ql-text);
-	margin-bottom: 2px;
 }
 
 .cs-avatar-email {
@@ -157,7 +153,7 @@
 }
 
 .cs-avatar-edit-btn {
-	margin-top: 5px;
+    height: 22px;
 	font-size: 12px;
 	font-weight: 600;
 	color: var(--ql-red);
@@ -731,18 +727,38 @@ textarea.cs-form-input {
     $error_msg = '';
 
     //UPDATE PROFILE
-    if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['ql_save_profile_nonce'] )&& wp_verify_nonce( $_POST['ql_save_profile_nonce'], 'ql_save_profile' )) {
+    if ( $_SERVER['REQUEST_METHOD'] === 'POST' && isset( $_POST['ql_save_profile_nonce'] ) && wp_verify_nonce( $_POST['ql_save_profile_nonce'], 'ql_save_profile' ) ) {
         $result = custom_validate_profile_data( $_POST );
+
         if ( ! empty( $result['errors'] ) ) {
             $error_msg = implode( '<br>', $result['errors'] );
         } else {
-            $save = custom_save_profile( $user_id, $result['data'], $result['address'] );
-            if ( is_wp_error( $save ) ) {
-                $error_msg = $save->get_error_message();
-            } else {
-                $saved_msg    = 'Cập nhật thông tin thành công.';
-                $user         = custom_get_user( $user_id );
-                $default_addr = custom_get_default_address( $user_id );
+            $new_avatar_id = null;
+            if ( ! empty( $_FILES['avatar_file'] ) && $_FILES['avatar_file']['error'] !== UPLOAD_ERR_NO_FILE ) {
+                $attach_id = dt_upload_image( $_FILES['avatar_file'], $user_id );
+                if ( is_wp_error( $attach_id ) ) {
+                    $error_msg = $attach_id->get_error_message();
+                } else {
+                    $new_avatar_id = $attach_id;
+                    $result['data']['avatar'] = $attach_id; 
+                }
+            }
+            if ( empty( $error_msg ) ) {
+                $old_avatar = $user->avatar ?? 0;
+                $save = custom_save_profile( $user_id, $result['data'], $result['address'] );
+                if ( is_wp_error( $save ) ) {
+                    $error_msg = $save->get_error_message();
+                    if ( $new_avatar_id ) {
+                        wp_delete_attachment( $new_avatar_id, true ); 
+                    }
+                } else {
+                    if ( $new_avatar_id && ! empty( $old_avatar ) ) {
+                        wp_delete_attachment( (int) $old_avatar, true );
+                    }
+                    $saved_msg = 'Cập nhật thông tin thành công.';
+                    $user = custom_get_user( $user_id );
+                    $default_addr = custom_get_default_address( $user_id );
+                }
             }
         }
         $subtab = 'thong-tin';
@@ -836,30 +852,26 @@ textarea.cs-form-input {
     <?php endif; ?>
     
     <?php if ( $subtab === 'thong-tin' ): ?>
-    <form method="post" action="<?php echo esc_url( add_query_arg( [ 'tab' => 'cai-dat', 'subtab' => 'thong-tin' ], get_permalink() ) ); ?>">
+    <form method="post" enctype="multipart/form-data" action="<?php echo esc_url( add_query_arg( [ 'tab' => 'cai-dat', 'subtab' => 'thong-tin' ], get_permalink() ) ); ?>">
         <?php wp_nonce_field( 'ql_save_profile', 'ql_save_profile_nonce' ); ?>
     
         <div class="cs-section">
             <div class="cs-avatar-wrap">
-                <div class="cs-avatar-circle">
-                    <?php echo esc_html( get_current_custom_avatar() ); ?>
-                    <div class="cs-avatar-edit" title="Đổi ảnh">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-                            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                        </svg>
-                    </div>
+                <div class="cs-avatar-circle" id="cs-avatar-circle">
+                    <?php echo custom_get_avatar_html( $user ); ?>
                 </div>
                 <div>
                     <div class="cs-avatar-name"><?php echo esc_html( $user->full_name ); ?></div>
-                    <div class="cs-avatar-email"><?php echo esc_html( $user->email ); ?></div>
-                    <button type="button" class="cs-avatar-edit-btn">
+                    <label for="cs-avatar-input" class="cs-avatar-edit-btn" style="cursor:pointer;">
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
                             <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
                         </svg>
                         Đổi ảnh đại diện
-                    </button>
+                    </label>
+                    <input type="file" name="avatar_file" id="cs-avatar-input"
+                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                        style="display:none;">
                 </div>
             </div>
     
@@ -1516,5 +1528,42 @@ function csCheckMatch() {
             console.error('Lỗi load địa chỉ:', err);
             setLoading('Lỗi tải địa chỉ — thử lại sau');
         });
+})();
+</script>
+<script>
+(function () {
+    var input  = document.getElementById('cs-avatar-input');
+    var circle = document.getElementById('cs-avatar-circle');
+    if (!input || !circle) return;
+
+    var ALLOWED  = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    var MAX_SIZE = 10 * 1024 * 1024;
+
+    input.addEventListener('change', function () {
+        var file = input.files && input.files[0];
+        if (!file) return;
+
+        if (ALLOWED.indexOf(file.type) === -1) {
+            alert('Định dạng ảnh không hợp lệ. Chỉ chấp nhận JPG, PNG, GIF, WEBP.');
+            input.value = '';
+            return;
+        }
+        if (file.size > MAX_SIZE) {
+            alert('Ảnh vượt quá 10MB.');
+            input.value = '';
+            return;
+        }
+
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            var old = circle.querySelector('img, span');
+            if (old) old.remove();
+            var img = document.createElement('img');
+            img.src = e.target.result;
+            img.className = 'cs-avatar-img';
+            circle.insertBefore(img, circle.firstChild);
+        };
+        reader.readAsDataURL(file);
+    });
 })();
 </script>

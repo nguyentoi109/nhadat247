@@ -872,12 +872,13 @@ window.dtMapboxToken = '<?php echo esc_js(MAPBOX_ACCESS_TOKEN); ?>';
 window.dtMapboxStyle = '<?php echo esc_js(MAPBOX_STYLE); ?>';
 window.dtLocationIconUrl= '<?php echo esc_js(HERE_ICON_URL); ?>';
 window.dtDevTree = <?php echo json_encode(array_values($developer_tree)); ?>;
-window.dtLocL2 = <?php echo json_encode($location_l2); ?>;
-window.dtLocL3 = <?php echo json_encode($location_l3); ?>;
 window.dtST = {}; 
 </script>
 <script src="<?php echo get_template_directory_uri(); ?>/js/map-here-mapbox.js"></script>
-<script src="<?php echo get_template_directory_uri(); ?>/js/dang-tin.js"></script>
+<script>
+    window.dtApivnJsonUrl = "<?php echo esc_js(get_template_directory_uri()); ?>/data/apivn.json";
+</script>
+<script src="<?php echo esc_url(get_template_directory_uri()); ?>/js/dang-tin.js"></script>
 
 <?php if (dang_tin_success()) : ?>
 <div style="max-width:860px;margin:40px auto;padding:0 16px;">
@@ -1027,36 +1028,32 @@ window.dtST = {};
             <div class="dt-card-body" id="body-2">
 
                 <div class="dt-grid3" style="margin-bottom:12px;">
-                    <div class="dt-field">
-                        <label class="dt-label">Tỉnh / Thành phố <span class="dt-req">*</span></label>
-                        <select class="dt-select" id="sel-tinh" onchange="dtLoadL2(this.value)">
-                            <option value="">-- Chọn --</option>
-                            <?php if (!is_wp_error($property_location_terms)):
-                                foreach ($property_location_terms as $l): ?>
-                            <option value="<?php echo esc_attr($l->term_id);?>"><?php echo esc_html($l->name);?></option>
-                            <?php endforeach; endif; ?>
-                        </select>
-                    </div>
-                    <div class="dt-field">
-                        <label class="dt-label">Quận / Huyện</label>
-                        <select class="dt-select" id="sel-quan" onchange="dtLoadL3(this.value);dtUpdateLoc()">
-                            <option value="">-- Chọn --</option>
-                        </select>
-                    </div>
-                    <div class="dt-field">
-                        <label class="dt-label">Phường / Xã</label>
-                        <select class="dt-select" id="sel-phuong" onchange="dtUpdateLoc()">
-                            <option value="">-- Chọn --</option>
-                        </select>
-                    </div>
-                </div>
+					<div class="dt-field">
+						<label class="dt-label">Tỉnh / Thành phố <span class="dt-req">*</span></label>
+						<select class="dt-select" id="sel-tinh" onchange="dtLoadL2(this.value)">
+							<option value="">-- Chọn --</option>
+						</select>
+					</div>
+					<div class="dt-field">
+						<label class="dt-label">Quận / Huyện</label>
+						<select class="dt-select" id="sel-quan" onchange="dtLoadL3(this.value)" disabled>
+							<option value="">-- Chọn --</option>
+						</select>
+					</div>
+					<div class="dt-field">
+						<label class="dt-label">Phường / Xã</label>
+						<select class="dt-select" id="sel-phuong" onchange="dtUpdateLoc()" disabled>
+							<option value="">-- Chọn --</option>
+						</select>
+					</div>
+				</div>
 
-                <div class="dt-field dt-full" style="margin-bottom:14px;">
-                    <label class="dt-label">Địa chỉ chi tiết <span class="dt-req">*</span></label>
-                    <input class="dt-input" type="text" name="prefix-address" id="addr-detail"
-                           placeholder="Số nhà, tên đường..."
-                           value="<?php echo esc_attr($_POST['prefix-address'] ?? ''); ?>">
-                </div>
+				<div class="dt-field dt-full" style="margin-bottom:14px;">
+					<label class="dt-label">Địa chỉ chi tiết <span class="dt-req">*</span></label>
+					<input class="dt-input" type="text" name="prefix-address" id="addr-detail"
+						placeholder="Số nhà, tên đường..."
+						value="<?php echo esc_attr($_POST['prefix-address'] ?? ''); ?>">
+				</div>
 
                 <div class="dt-section-label">Xác định trên bản đồ</div>
 
@@ -1080,12 +1077,14 @@ window.dtST = {};
                             overflow:hidden;background:#f5f5f5;margin-bottom:10px;"></div>
 
                 <div style="font-size:12px;color:#888;margin-bottom:14px;">
-                    💡 Nhấp vào bản đồ hoặc kéo icon 📍 để điều chỉnh vị trí chính xác
+                    Nhấp vào bản đồ hoặc kéo iconđể điều chỉnh vị trí chính xác
                 </div>
 
-                <input type="hidden" name="prefix-address-bds" id="map-addr">
-                <input type="hidden" name="dt-lat"             id="map-lat">
-                <input type="hidden" name="dt-lng"             id="map-lng">
+				<input type="hidden" id="loc-tinh-name">
+				<input type="hidden" id="loc-quan-name">
+				<input type="hidden" id="loc-phuong-name">
+				<input type="hidden" name="dt-lat" id="map-lat">
+				<input type="hidden" name="dt-lng" id="map-lng">
 
                 <div class="btn-next"><button type="button" onclick="dtNext(2)">Tiếp tục →</button></div>
             </div>
