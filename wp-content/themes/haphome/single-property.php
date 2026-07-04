@@ -497,83 +497,20 @@ if (have_posts()) : while (have_posts()) : the_post();
     <?php if ($has_map) : ?>
         <div id="tab-maps" class="content-tab" style="position:absolute;opacity:0;visibility:hidden;margin-bottom:10px;">
             <div class="wrap-maps">
-                <div id="detail-map" style="width:100%;height:360px;border-radius:4px;border:1px solid #e0e0e0;overflow:hidden;background:#f5f5f5;"></div>
+                <div id="detail-map" style="width:100%;height:360px;border-radius:10px;border:1px solid #e0e0e0;overflow:hidden;background:#f5f5f5;"></div>
             </div>
         </div>
         <script>
-        (function () {
-            var DETAIL_LAT       = <?php echo json_encode((float) $dt_lat); ?>;
-            var DETAIL_LNG       = <?php echo json_encode((float) $dt_lng); ?>;
-            var DETAIL_ICON_URL  = <?php echo json_encode(HERE_ICON_URL); ?>;
-            var MAPBOX_TOKEN     = <?php echo json_encode(MAPBOX_ACCESS_TOKEN); ?>;
-            var MAPBOX_STYLE     = <?php echo json_encode(MAPBOX_STYLE); ?>;
-
-            var _detailMap = null;
-            var _detailLoading = false;
-            var _detailInited = false;
-
-            function _loadMapboxSdk(cb) {
-                if (typeof mapboxgl !== 'undefined') { cb(); return; }
-                if (_detailLoading) { setTimeout(function () { _loadMapboxSdk(cb); }, 300); return; }
-                _detailLoading = true;
-
-                var link = document.createElement('link');
-                link.rel = 'stylesheet';
-                link.href = 'https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css';
-                document.head.appendChild(link);
-
-                var s = document.createElement('script');
-                s.src = 'https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js';
-                s.defer = false;
-                s.onload = cb;
-                s.onerror = function () { console.error('[Mapbox] Load SDK thất bại'); };
-                document.head.appendChild(s);
-            }
-
-            function _initDetailMap() {
-                if (_detailInited) return;
-                var el = document.getElementById('detail-map');
-                if (!el) return;
-                if (el.offsetWidth === 0) {
-                    setTimeout(_initDetailMap, 60);
-                    return;
-                }
-                _detailInited = true;
-
-                mapboxgl.accessToken = MAPBOX_TOKEN;
-
-                _detailMap = new mapboxgl.Map({
-                    container: el,
-                    style: MAPBOX_STYLE,
-                    center: [DETAIL_LNG, DETAIL_LAT],
-                    zoom: 17
-                });
-
-                _detailMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
-                _detailMap.scrollZoom.disable(); 
-
-                var markerEl = document.createElement('div');
-                markerEl.style.width = '32px';
-                markerEl.style.height = '32px';
-                markerEl.style.backgroundImage = 'url(' + DETAIL_ICON_URL + ')';
-                markerEl.style.backgroundSize = 'contain';
-                markerEl.style.backgroundRepeat = 'no-repeat';
-
-                new mapboxgl.Marker({ element: markerEl, anchor: 'bottom' })
-                    .setLngLat([DETAIL_LNG, DETAIL_LAT])
-                    .addTo(_detailMap);
-
-                setTimeout(function () { _detailMap.resize(); }, 50);
-            }
-
-            window.__dtTryInitMap = function () {
-                if (!_detailInited) {
-                    _loadMapboxSdk(function () { setTimeout(_initDetailMap, 30); });
-                } else if (_detailMap) {
-                    setTimeout(function () { _detailMap.resize(); }, 50);
-                }
-            };
-        })();
+        document.addEventListener('DOMContentLoaded', function () {
+            window.HereMapbox.initView({
+                mapEl: 'detail-map',
+                lat: <?php echo json_encode((float) $dt_lat); ?>,
+                lng: <?php echo json_encode((float) $dt_lng); ?>,
+                iconUrl: <?php echo json_encode(HERE_ICON_URL); ?>,
+                mapboxToken: <?php echo json_encode(MAPBOX_ACCESS_TOKEN); ?>,
+                mapboxStyle: <?php echo json_encode(MAPBOX_STYLE); ?>,
+            });
+        });
         </script>
         <?php endif; ?>
 
@@ -633,10 +570,10 @@ if (have_posts()) : while (have_posts()) : the_post();
         <span class="ti-location-pin"></span>
         <?php echo esc_html($address); ?>
         <?php
-        $loc_terms = get_the_terms(get_the_ID(), 'property_location');
-        if (!empty($loc_terms) && !is_wp_error($loc_terms)) {
-            echo ' ' . implode(', ', wp_list_pluck($loc_terms, 'name'));
-        }
+        // $loc_terms = get_the_terms(get_the_ID(), 'property_location');
+        // if (!empty($loc_terms) && !is_wp_error($loc_terms)) {
+        //     echo ' ' . implode(', ', wp_list_pluck($loc_terms, 'name'));
+        // }
         ?>
     </div>
 

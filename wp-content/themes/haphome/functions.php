@@ -2126,6 +2126,20 @@ function get_related_posts_by_location($location_id, $limit = 5){
 //PAYMENT
 require_once get_template_directory() . '/payment/ajax-handler.php';
 require_once get_template_directory() . '/config.php';
+add_action('wp_enqueue_scripts', function () {
+    if (is_singular('property') || is_page('dang-tin')) {
+        wp_enqueue_script('here-mapbox', get_template_directory_uri() . '/js/map-here-mapbox.js',[], null, true);
+    }
+});
+
+add_action('admin_enqueue_scripts', function ($hook) {
+    if (!in_array($hook, ['post.php', 'post-new.php'])) return;
+    global $post;
+    $is_property = (isset($post) && $post->post_type === 'property') || (isset($_GET['post_type']) && $_GET['post_type'] === 'property');
+    if (!$is_property) return;
+
+    wp_enqueue_script('here-mapbox', get_template_directory_uri() . '/js/map-here-mapbox.js',[], null, true);
+});
 ///////////////////
 function html5blank_conditional_scripts() {}
 function html5_blank_view_article() {}

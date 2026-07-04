@@ -498,17 +498,10 @@ add_action('admin_footer', function () {
             (isset($post) && $post instanceof WP_Post && $post->post_type === 'property')
             || (isset($_GET['post_type']) && $_GET['post_type'] === 'property')
         );
-
     if (!$is_property_edit) return;
-
-    $here_key    = HERE_API_KEY;
-    $mapbox_key  = MAPBOX_ACCESS_TOKEN;
-    $mapbox_style= MAPBOX_STYLE;
-    $icon_url    = HERE_ICON_URL;
 
     $existing_lat = 0;
     $existing_lng = 0;
-
     if (isset($post) && $post instanceof WP_Post && $post->ID) {
         $saved_lat = get_post_meta($post->ID, 'prefix-lat', true);
         $saved_lng = get_post_meta($post->ID, 'prefix-lng', true);
@@ -519,211 +512,23 @@ add_action('admin_footer', function () {
     }
     ?>
     <script>
-    (function () {
-        var HERE_KEY        = <?php echo json_encode($here_key); ?>;
-        var MAPBOX_TOKEN    = <?php echo json_encode($mapbox_key); ?>;
-        var MAPBOX_STYLE    = <?php echo json_encode($mapbox_style); ?>;
-        var ICON_URL        = <?php echo json_encode($icon_url); ?>;
-        var EXISTING_LAT    = <?php echo json_encode($existing_lat); ?>;
-        var EXISTING_LNG    = <?php echo json_encode($existing_lng); ?>;
-        var HAS_EXISTING    = (EXISTING_LAT !== 0 || EXISTING_LNG !== 0);
-        var DEFAULT_CENTER  = { lat: 10.7769, lng: 106.7009 };
-
-        var _map = null, _marker = null;
-        var _mapTimer = null;
-        var _sdkLoading = false;
-
-        function $id(id) { return document.getElementById(id); }
-
-        // ---- Load Mapbox GL JS (chỉ dùng để VẼ bản đồ) ----
-        function _loadMapboxSdk(cb) {
-            if (typeof mapboxgl !== 'undefined') { cb(); return; }
-            if (_sdkLoading) { setTimeout(function () { _loadMapboxSdk(cb); }, 300); return; }
-            _sdkLoading = true;
-
-            var link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = 'https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css';
-            document.head.appendChild(link);
-
-            var s = document.createElement('script');
-            s.src = 'https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js';
-            s.defer = false;
-            s.onload = cb;
-            s.onerror = function () { console.error('[Mapbox admin] Load SDK thất bại'); };
-            document.head.appendChild(s);
-        }
-
-        function _savePos(lat, lng) {
-            var latInp = $id('prefix-lat'), lngInp = $id('prefix-lng');
-            if (latInp) latInp.value = parseFloat(lat).toFixed(7);
-            if (lngInp) lngInp.value = parseFloat(lng).toFixed(7);
-        }
-
-        function _revGeo(lat, lng) {
-            fetch(
-                'https://revgeocode.search.hereapi.com/v1/revgeocode'
-                + '?at=' + parseFloat(lat).toFixed(6) + ',' + parseFloat(lng).toFixed(6)
-                + '&lang=vi&apikey=' + HERE_KEY
-            )
-            .then(function (r) { return r.json(); })
-            .then(function (d) {
-                if (!d.items || !d.items.length) return;
-                var addr = d.items[0].address.label;
-                var si  = $id('dt-admin-map-search');
-                var det = $id('prefix-address');
-                if (si)  si.value  = addr;
-                if (det) det.value = addr;
-            })
-            .catch(function () {});
-        }
-
-        function _goTo(lat, lng, label) {
-            if (!_map || !_marker) {
-                setTimeout(function () { _goTo(lat, lng, label); }, 400);
-                return;
-            }
-            var lngLat = [parseFloat(lng), parseFloat(lat)];
-            _map.flyTo({ center: lngLat, zoom: 17 });
-            _marker.setLngLat(lngLat);
-            _savePos(lat, lng);
-
-            var si  = $id('dt-admin-map-search');
-            var det = $id('prefix-address');
-            if (si)  si.value  = label;
-            if (det) det.value = label;
-
-            var sg = $id('dt-admin-map-suggest');
-            if (sg) sg.style.display = 'none';
-        }
-
-        function _createMap() {
-            var el = $id('dt-admin-map');
-            if (!el || _map) return;
-            if (typeof mapboxgl === 'undefined') { setTimeout(_createMap, 300); return; }
-
-            mapboxgl.accessToken = MAPBOX_TOKEN;
-
-            var center = HAS_EXISTING
-                ? [EXISTING_LNG, EXISTING_LAT]
-                : [DEFAULT_CENTER.lng, DEFAULT_CENTER.lat];
-
-            _map = new mapboxgl.Map({
-                container: el,
-                style: MAPBOX_STYLE,
-                center: center,
-                zoom: HAS_EXISTING ? 17 : 13
-            });
-
-            _map.addControl(new mapboxgl.NavigationControl(), 'top-right');
-            var markerEl = document.createElement('div');
-            markerEl.style.width = '32px';
-            markerEl.style.height = '32px';
-            markerEl.style.backgroundImage = 'url(' + ICON_URL + ')';
-            markerEl.style.backgroundSize = 'contain';
-            markerEl.style.backgroundRepeat = 'no-repeat';
-            markerEl.style.cursor = 'pointer';
-
-            _marker = new mapboxgl.Marker({ element: markerEl, draggable: true, anchor: 'bottom' })
-                .setLngLat(center)
-                .addTo(_map);
-
-            if (HAS_EXISTING) _savePos(EXISTING_LAT, EXISTING_LNG);
-
-            _marker.on('dragend', function () {
-                var pos = _marker.getLngLat();
-                _savePos(pos.lat, pos.lng);
-                _revGeo(pos.lat, pos.lng);
-            });
-
-            _map.on('click', function (e) {
-                var coord = e.lngLat;
-                _marker.setLngLat(coord);
-                _savePos(coord.lat, coord.lng);
-                _revGeo(coord.lat, coord.lng);
-            });
-
-            _map.resize();
-        }
-
-        function _initAutocomplete() {
-            var si = $id('dt-admin-map-search');
-            var sg = $id('dt-admin-map-suggest');
-            if (!si || !sg) return;
-
-            si.addEventListener('input', function () {
-                clearTimeout(_mapTimer);
-                var q = this.value.trim();
-                if (q.length < 2) { sg.style.display = 'none'; return; }
-
-                _mapTimer = setTimeout(function () {
-                    fetch(
-                        'https://autocomplete.search.hereapi.com/v1/autocomplete'
-                        + '?q=' + encodeURIComponent(q)
-                        + '&in=countryCode:VNM&lang=vi&limit=7'
-                        + '&apikey=' + HERE_KEY
-                    )
-                    .then(function (r) { return r.json(); })
-                    .then(function (res) {
-                        sg.innerHTML = '';
-                        if (!res.items || !res.items.length) { sg.style.display = 'none'; return; }
-
-                        res.items.forEach(function (item) {
-                            var d = document.createElement('div');
-                            d.textContent = item.address.label;
-                            d.style.cssText = 'padding:9px 12px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:13px;line-height:1.4;';
-                            d.addEventListener('mouseover', function () { d.style.background = '#f5f5f5'; });
-                            d.addEventListener('mouseout',  function () { d.style.background = ''; });
-
-                            d.addEventListener('mousedown', function (e) {
-                                e.preventDefault();
-                                si.value = item.address.label;
-                                sg.style.display = 'none';
-
-                                fetch(
-                                    'https://lookup.search.hereapi.com/v1/lookup'
-                                    + '?id=' + encodeURIComponent(item.id)
-                                    + '&lang=vi&apikey=' + HERE_KEY
-                                )
-                                .then(function (r) { return r.json(); })
-                                .then(function (detail) {
-                                    var pos = detail.position || (item.position || null);
-                                    if (pos) _goTo(pos.lat, pos.lng, item.address.label);
-                                })
-                                .catch(function () {
-                                    if (item.position) _goTo(item.position.lat, item.position.lng, item.address.label);
-                                });
-                            });
-
-                            sg.appendChild(d);
-                        });
-                        sg.style.display = 'block';
-                    })
-                    .catch(function () {});
-                }, 350);
-            });
-
-            si.addEventListener('blur', function () {
-                setTimeout(function () { sg.style.display = 'none'; }, 200);
-            });
-
-            si.addEventListener('keydown', function (e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    var first = sg.querySelector('div');
-                    if (first) first.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-                }
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', function () {
-            if (!$id('dt-admin-map')) return;
-            _loadMapboxSdk(function () {
-                _createMap();
-                _initAutocomplete();
-            });
+    document.addEventListener('DOMContentLoaded', function () {
+        if (!document.getElementById('dt-admin-map')) return;
+        window.HereMapbox.initEdit({
+            mapEl:       'dt-admin-map',
+            searchEl:    'dt-admin-map-search',
+            suggestEl:   'dt-admin-map-suggest',
+            latEl:       'prefix-lat',
+            lngEl:       'prefix-lng',
+            addressEl:   'prefix-address',
+            iconUrl:     <?php echo json_encode(HERE_ICON_URL); ?>,
+            hereKey:     <?php echo json_encode(HERE_API_KEY); ?>,
+            mapboxToken: <?php echo json_encode(MAPBOX_ACCESS_TOKEN); ?>,
+            mapboxStyle: <?php echo json_encode(MAPBOX_STYLE); ?>,
+            existingLat: <?php echo json_encode($existing_lat); ?>,
+            existingLng: <?php echo json_encode($existing_lng); ?>,
         });
-    })();
+    });
     </script>
     <?php
 });
