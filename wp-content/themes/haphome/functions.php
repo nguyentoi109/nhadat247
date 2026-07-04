@@ -2123,6 +2123,16 @@ function get_related_posts_by_location($location_id, $limit = 5){
         'orderby' => 'post__in'
     ]);
 }
+//VIDEO
+function get_youtube_id_from_url($url) {
+    if (empty($url)) return '';
+    $pattern = '#(?:youtube\.com/(?:watch\?v=|embed/|shorts/|live/)|youtu\.be/)([a-zA-Z0-9_-]{11})#';
+    if (preg_match($pattern, $url, $matches)) {
+        return $matches[1];
+    }
+    return '';
+}
+
 //PAYMENT
 require_once get_template_directory() . '/payment/ajax-handler.php';
 require_once get_template_directory() . '/config.php';

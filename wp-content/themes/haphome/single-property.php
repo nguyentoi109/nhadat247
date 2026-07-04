@@ -350,18 +350,18 @@
 <?php
 if (have_posts()) : while (have_posts()) : the_post();
 
-    $price       = rwmb_meta('prefix-price');
-    $unit        = rwmb_meta('prefix-unit');
-    $area        = rwmb_meta('prefix-area');
-    $address     = rwmb_meta('prefix-address');
-    $phap_ly     = rwmb_meta('prefix-phap-ly');
-    $noi_that    = rwmb_meta('prefix-noi-that');
-    $video       = rwmb_meta('prefix-video');
-    $id_video    = explode('?v=', $video);
+    $price = rwmb_meta('prefix-price');
+    $unit = rwmb_meta('prefix-unit');
+    $area = rwmb_meta('prefix-area');
+    $address = rwmb_meta('prefix-address');
+    $phap_ly = rwmb_meta('prefix-phap-ly');
+    $noi_that = rwmb_meta('prefix-noi-that');
+    $video = rwmb_meta('prefix-video');
+    $video_id = get_youtube_id_from_url($video);
     $name_custom = rwmb_meta('prefix-name-custom');
     $phone_custom= rwmb_meta('prefix-phone-custom');
-    $image_360   = rwmb_meta('image360', ['size' => 'thumbnail']);
-    $gallerys    = rwmb_meta('prefix-image_property', ['size' => 'thumbnail']);
+    $image_360 = rwmb_meta('image360', ['size' => 'thumbnail']);
+    $gallerys = rwmb_meta('prefix-image_property', ['size' => 'thumbnail']);
     $has_gallery = !empty($gallerys);
     $dt_lat = get_post_meta(get_the_ID(), 'prefix-lat', true);
     $dt_lng = get_post_meta(get_the_ID(), 'prefix-lng', true);
@@ -391,12 +391,12 @@ if (have_posts()) : while (have_posts()) : the_post();
     }
 
     $has_map = ($dt_lat !== '' && $dt_lng !== '' && is_numeric($dt_lat) && is_numeric($dt_lng));
-    $author_email   = get_the_author_meta('user_email');
-    $author_name    = $name_custom ?: get_the_author_meta('nickname');
-    $author_phone   = $phone_custom ?: get_the_author_meta('phone');
-    $author_id      = get_the_author_meta('ID');
+    $author_email = get_the_author_meta('user_email');
+    $author_name = $name_custom ?: get_the_author_meta('nickname');
+    $author_phone = $phone_custom ?: get_the_author_meta('phone');
+    $author_id  = get_the_author_meta('ID');
     $author_post_ct = count_user_posts($author_id, 'property');
-    $phone_clean    = preg_replace('/[^0-9]/', '', $author_phone);
+    $phone_clean  = preg_replace('/[^0-9]/', '', $author_phone);
     $room_type_ids = array(8, 9, 11);
     $property_type_terms = get_the_terms(get_the_ID(), "property_type");
     $has_rooms = false;
@@ -437,13 +437,19 @@ if (have_posts()) : while (have_posts()) : the_post();
     </div>
     <script src="<?php echo get_template_directory_uri(); ?>/js/pannellum.js"></script>
     <script>
-    pannellum.viewer('panorama', {
-        type: "equirectangular",
-        panorama: "<?php echo $image_360['full_url']; ?>",
-        autoLoad: true,
-        autoRotate: -2,
-        compass: true,
-    });
+        document.addEventListener('DOMContentLoaded', function () {
+            window.__dtPano = null;
+            window.__dtInitPanorama = function() {
+                if (window.__dtPano) return;
+                window.__dtPano = pannellum.viewer('panorama', {
+                    type: "equirectangular",
+                    panorama: "<?php echo esc_js($image_360['full_url'] ?? ''); ?>",
+                    autoLoad: true,
+                    autoRotate: -2,
+                    compass: true,
+                });
+            };
+        });
     </script>
     <?php endif; ?>
 
@@ -484,11 +490,11 @@ if (have_posts()) : while (have_posts()) : the_post();
         <?php endif; ?>
     </div>
 
-    <?php if ($video) : ?>
+    <?php if ($video_id) : ?>
     <div id="tab-video" class="content-tab" style="display:none;">
         <div class="wrap-video">
             <iframe width="560" height="315"
-                src="https://www.youtube.com/embed/<?php echo esc_attr($id_video[1] ?? ''); ?>"
+                src="https://www.youtube.com/embed/<?php echo esc_attr($video_id); ?>"
                 frameborder="0" allowfullscreen></iframe>
         </div>
     </div>
@@ -544,6 +550,9 @@ if (have_posts()) : while (have_posts()) : the_post();
 
         if (tabName === 'tab-maps' && typeof window.__dtTryInitMap === 'function') {
             window.__dtTryInitMap();
+        }
+        if (tabName === 'image_360' && typeof window.__dtInitPanorama === 'function') {
+            window.__dtInitPanorama();
         }
     }
     document.addEventListener('DOMContentLoaded', function() {
