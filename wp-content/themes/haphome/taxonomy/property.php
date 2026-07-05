@@ -315,13 +315,13 @@ function property_meta_box( $meta_boxes ) {
                     '5' => '&ge;5',
                 ),
             ),
-			// array(
-			// 	'id' => $prefix . 'address',
-			// 	'type' => 'text',
-			// 	'name' => esc_html__( 'Địa chỉ', 'html5blank' ),
-			// 	'desc' => esc_html__( 'Địa chỉ Bất Động Sản', 'html5blank' ),
-			// 	'placeholder' => esc_html__( 'Địa chỉ Bất Động Sản', 'html5blank' ),
-			// ),
+			array(
+				'id' => $prefix . 'address',
+				'type' => 'text',
+				'name' => esc_html__( 'Địa chỉ', 'html5blank' ),
+				'desc' => esc_html__( 'Địa chỉ Bất Động Sản', 'html5blank' ),
+				'placeholder' => esc_html__( 'Địa chỉ Bất Động Sản', 'html5blank' ),
+			),
             array(
                 'id' => $prefix . 'phap-ly',
                 'type' => 'text',
@@ -393,35 +393,30 @@ function property_meta_box( $meta_boxes ) {
             //     'address_field' => $prefix . 'map_property',
             // ),
             array(
-                'id' => $prefix . 'address',
+                'id' => $prefix . 'map-address',
                 'type' => 'text',
                 'name' => esc_html__( 'Địa chỉ BĐS', 'html5blank' ),
                 'desc' => esc_html__( 'Tự điền khi tìm/chọn vị trí trên bản đồ bên dưới, có thể sửa tay.', 'html5blank' ),
                 'placeholder' => esc_html__( 'Địa chỉ trên bản đồ', 'html5blank' ),
             ),
             array(
-                'id'   => $prefix . 'lat',
+                'id'   => $prefix . 'latlng',
                 'type' => 'text',
-                'name' => esc_html__( 'Vĩ độ (lat)', 'html5blank' ),
-                'desc' => esc_html__( 'Tự động điền khi chọn vị trí trên bản đồ', 'html5blank' ),
-            ),
-            array(
-                'id'   => $prefix . 'lng',
-                'type' => 'text',
-                'name' => esc_html__( 'Kinh độ (lng)', 'html5blank' ),
-                'desc' => esc_html__( 'Tự động điền khi chọn vị trí trên bản đồ', 'html5blank' ),
+                'name' => esc_html__( 'Toạ độ (Lat, Lng)', 'html5blank' ),
+                'desc' => esc_html__( 'Định dạng: vĩ độ, kinh độ — ví dụ: 21.028511, 105.804817', 'html5blank' ),
+                'placeholder' => '21.028511, 105.804817',
             ),
             array(
                 'id'      => $prefix . 'here_map_block',
                 'type'    => 'custom_html',
-                'name'    => esc_html__( 'Vị trí bản đồ (HERE Maps)', 'html5blank' ),
+                'name'    => esc_html__( 'Vị trí bản đồ', 'html5blank' ),
                 'std'     => '
                     <div style="position:relative;margin-bottom:10px;">
                         <input type="text" id="dt-admin-map-search" autocomplete="off"
-                               placeholder="Nhập địa chỉ để tìm..."
-                               style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:4px;font-size:13px;">
+                            placeholder="Nhập địa chỉ để tìm..."
+                            style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:4px;font-size:13px;">
                         <div id="dt-admin-map-suggest"
-                             style="display:none;position:absolute;z-index:9999;top:100%;left:0;width:100%;max-width:480px;
+                            style="display:none;position:absolute;z-index:9999;top:100%;left:0;width:100%;max-width:480px;
                                     background:#fff;border:1px solid #ddd;border-top:none;border-radius:0 0 4px 4px;
                                     box-shadow:0 6px 14px rgba(0,0,0,.12);max-height:260px;overflow-y:auto;"></div>
                     </div>
@@ -503,24 +498,28 @@ add_action('admin_footer', function () {
     $existing_lat = 0;
     $existing_lng = 0;
     if (isset($post) && $post instanceof WP_Post && $post->ID) {
-        $saved_lat = get_post_meta($post->ID, 'prefix-lat', true);
-        $saved_lng = get_post_meta($post->ID, 'prefix-lng', true);
-        if ($saved_lat !== '' && $saved_lng !== '') {
-            $existing_lat = (float) $saved_lat;
-            $existing_lng = (float) $saved_lng;
+        $saved_latlng = get_post_meta($post->ID, 'prefix-latlng', true);
+        if ($saved_latlng !== '') {
+            $parts = array_map('trim', explode(',', $saved_latlng));
+            if (isset($parts[0], $parts[1]) && is_numeric($parts[0]) && is_numeric($parts[1])) {
+                $existing_lat = (float) $parts[0];
+                $existing_lng = (float) $parts[1];
+            }
         }
     }
     ?>
     <script>
     document.addEventListener('DOMContentLoaded', function () {
         if (!document.getElementById('dt-admin-map')) return;
-        window.HereMapbox.initEdit({
+
+        var latlngInput = document.getElementById('prefix-latlng');
+        var _latlngDebounce = null;
+        var mapInstance = window.HereMapbox.initEdit({
             mapEl:       'dt-admin-map',
             searchEl:    'dt-admin-map-search',
             suggestEl:   'dt-admin-map-suggest',
-            latEl:       'prefix-lat',
-            lngEl:       'prefix-lng',
-            addressEl:   'prefix-address',
+            latlngEl:    'prefix-latlng',
+            addressEl:   'prefix-map-address',
             iconUrl:     <?php echo json_encode(HERE_ICON_URL); ?>,
             hereKey:     <?php echo json_encode(HERE_API_KEY); ?>,
             mapboxToken: <?php echo json_encode(MAPBOX_ACCESS_TOKEN); ?>,
@@ -528,6 +527,19 @@ add_action('admin_footer', function () {
             existingLat: <?php echo json_encode($existing_lat); ?>,
             existingLng: <?php echo json_encode($existing_lng); ?>,
         });
+
+        if (latlngInput) {
+            latlngInput.addEventListener('input', function () {
+                clearTimeout(_latlngDebounce);
+                _latlngDebounce = setTimeout(function () {
+                    var parsed = window.HereMapbox.parseLatLng(latlngInput.value);
+                    if (parsed) {
+                        mapInstance.flyTo(parsed.lat, parsed.lng);
+                        latlngInput.value = parsed.lat.toFixed(6) + ', ' + parsed.lng.toFixed(6);
+                    }
+                }, 600);
+            });
+        }
     });
     </script>
     <?php

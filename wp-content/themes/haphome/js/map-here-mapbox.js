@@ -39,9 +39,10 @@
 		return el;
 	}
 
-	function _savePos(latEl, lngEl, lat, lng) {
+	function _savePos(latEl, lngEl, latlngEl, lat, lng) {
 		if (latEl) latEl.value = parseFloat(lat).toFixed(7);
 		if (lngEl) lngEl.value = parseFloat(lng).toFixed(7);
+		if (latlngEl) latlngEl.value = parseFloat(lat).toFixed(7) + ', ' + parseFloat(lng).toFixed(7);
 	}
 
 	function _revGeo(hereKey, lat, lng, cb) {
@@ -59,12 +60,62 @@
 			.catch(function() {});
 	}
 
+	function _autoFormatLatLng(raw) {
+		var digits = raw.replace(/[^0-9]/g, '');
+		if (digits.length < 9) return null; 
+		var latDigits = digits.slice(0, 8);
+		var lngDigits = digits.slice(8);
+
+		if (latDigits.length < 8 || lngDigits.length < 4) return null;
+
+		var latInt = latDigits.slice(0, 2);
+		var latDec = latDigits.slice(2);
+		var lat = parseFloat(latInt + '.' + latDec);
+		var lngIntLen = lngDigits.length - 6;
+		if (lngIntLen < 1) return null;
+		var lngInt = lngDigits.slice(0, lngIntLen);
+		var lngDec = lngDigits.slice(lngIntLen);
+		var lng = parseFloat(lngInt + '.' + lngDec);
+
+		if (isNaN(lat) || isNaN(lng)) return null;
+		if (lat < 5 || lat > 25) return null;  
+		if (lng < 100 || lng > 112) return null;
+
+		return { lat: lat, lng: lng };
+	}
+
+	function _parseLatLng(str) {
+		if (!str) return null;
+		str = str.trim();
+
+		if (str.indexOf(',') === -1 && /^[0-9.]+$/.test(str)) {
+			var digitsOnly = str.replace(/\./g, '');
+			if (digitsOnly.length >= 9) {
+				return _autoFormatLatLng(digitsOnly);
+			}
+		}
+
+		var parts = str.split(',').map(function(s) { return parseFloat(s.trim()); });
+		if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) return null;
+		var a = parts[0], b = parts[1];
+		var aIsLat = (Math.abs(a) >= 10 && Math.abs(a) <= 100);
+		var bIsLat = (Math.abs(b) >= 10 && Math.abs(b) <= 100);
+		var aIsLng = Math.abs(a) > 100;
+		var bIsLng = Math.abs(b) > 100;
+
+		if (aIsLat && bIsLng) return { lat: a, lng: b };
+		if (aIsLng && bIsLat) return { lat: b, lng: a };
+
+		return { lat: a, lng: b };
+	}
+
 	function initEdit(opts) {
 		var mapEl = document.getElementById(opts.mapEl);
 		var searchEl = document.getElementById(opts.searchEl);
 		var suggestEl = document.getElementById(opts.suggestEl);
-		var latEl = document.getElementById(opts.latEl);
-		var lngEl = document.getElementById(opts.lngEl);
+		var latEl = opts.latEl ? document.getElementById(opts.latEl) : null;
+		var lngEl = opts.lngEl ? document.getElementById(opts.lngEl) : null;
+		var latlngEl = opts.latlngEl ? document.getElementById(opts.latlngEl) : null;
 		var addrEls = (function() {
 			var ids = Array.isArray(opts.addressEl) ? opts.addressEl : [opts.addressEl];
 			return ids.map(function(id) {
@@ -105,8 +156,14 @@
 				zoom: 17
 			});
 			_marker.setLngLat(ll);
-			_savePos(latEl, lngEl, lat, lng);
-			_setAddress(label);
+			_savePos(latEl, lngEl, latlngEl, lat, lng);
+
+			if (label) {
+				_setAddress(label);
+			} else {
+				_revGeo(opts.hereKey, lat, lng, _setAddress);
+			}
+
 			if (suggestEl) suggestEl.style.display = 'none';
 		}
 
@@ -128,18 +185,18 @@
 				anchor: 'bottom'
 			}).setLngLat(center).addTo(_map);
 
-			if (hasExisting) _savePos(latEl, lngEl, opts.existingLat, opts.existingLng);
+			if (hasExisting) _savePos(latEl, lngEl, latlngEl, opts.existingLat, opts.existingLng);
 
 			_marker.on('dragend', function() {
 				var pos = _marker.getLngLat();
-				_savePos(latEl, lngEl, pos.lat, pos.lng);
+				_savePos(latEl, lngEl, latlngEl, pos.lat, pos.lng);
 				_revGeo(opts.hereKey, pos.lat, pos.lng, _setAddress);
 			});
 
 			_map.on('click', function(e) {
 				var c = e.lngLat;
 				_marker.setLngLat(c);
-				_savePos(latEl, lngEl, c.lat, c.lng);
+				_savePos(latEl, lngEl, latlngEl, c.lat, c.lng);
 				_revGeo(opts.hereKey, c.lat, c.lng, _setAddress);
 			});
 
@@ -228,8 +285,8 @@
 			});
 		}
 
-		_loadMapbox(function() {
-			_createMap();
+		 _loadMapbox(function() {
+        	_createMap();
 			_initAutocomplete();
 		});
 
@@ -314,7 +371,9 @@
 	}
 	global.HereMapbox = {
 		initEdit: initEdit,
-		initView: initView
+		initView: initView,
+		parseLatLng: _parseLatLng,
+		autoFormatLatLng: _autoFormatLatLng
 	};
 
 })(window);

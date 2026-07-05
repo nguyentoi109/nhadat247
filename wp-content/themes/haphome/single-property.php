@@ -363,20 +363,29 @@ if (have_posts()) : while (have_posts()) : the_post();
     $image_360 = rwmb_meta('image360', ['size' => 'thumbnail']);
     $gallerys = rwmb_meta('prefix-image_property', ['size' => 'thumbnail']);
     $has_gallery = !empty($gallerys);
-    $dt_lat = get_post_meta(get_the_ID(), 'prefix-lat', true);
-    $dt_lng = get_post_meta(get_the_ID(), 'prefix-lng', true);
 
+    $latlng_raw = get_post_meta(get_the_ID(), 'prefix-latlng', true);
+    $dt_lat = '';
+    $dt_lng = '';
+    if ($latlng_raw !== '') {
+        $parts = array_map('trim', explode(',', $latlng_raw));
+        if (isset($parts[0], $parts[1]) && is_numeric($parts[0]) && is_numeric($parts[1])) {
+            $dt_lat = $parts[0];
+            $dt_lng = $parts[1];
+        }
+    }
+    if ($dt_lat === '' || $dt_lng === '') {
+        $dt_lat = get_post_meta(get_the_ID(), 'prefix-lat', true);
+        $dt_lng = get_post_meta(get_the_ID(), 'prefix-lng', true);
+    }
     if ($dt_lat === '' || $dt_lng === '') {
         $dt_lat = get_post_meta(get_the_ID(), '_dt_lat', true);
         $dt_lng = get_post_meta(get_the_ID(), '_dt_lng', true);
     }
-
     if ($dt_lat === '' || $dt_lng === '') {
         $old_osm = get_post_meta(get_the_ID(), 'prefix-maps', true);
-
         if (!empty($old_osm)) {
             $maybe_array = maybe_unserialize($old_osm);
-
             if (is_array($maybe_array) && isset($maybe_array['lat'], $maybe_array['lng'])) {
                 $dt_lat = $maybe_array['lat'];
                 $dt_lng = $maybe_array['lng'];
@@ -579,10 +588,10 @@ if (have_posts()) : while (have_posts()) : the_post();
         <span class="ti-location-pin"></span>
         <?php echo esc_html($address); ?>
         <?php
-        // $loc_terms = get_the_terms(get_the_ID(), 'property_location');
-        // if (!empty($loc_terms) && !is_wp_error($loc_terms)) {
-        //     echo ' ' . implode(', ', wp_list_pluck($loc_terms, 'name'));
-        // }
+        $loc_terms = get_the_terms(get_the_ID(), 'property_location');
+        if (!empty($loc_terms) && !is_wp_error($loc_terms)) {
+            echo ' ' . implode(', ', wp_list_pluck($loc_terms, 'name'));
+        }
         ?>
     </div>
 
@@ -730,16 +739,16 @@ if (have_posts()) : while (have_posts()) : the_post();
         <?php the_content(); ?>
     </div>
 
-    <div class="infor-bds">
-        <?php if ($video) : ?>
+    <!-- <div class="infor-bds">
+        <?php //if ($video) : ?>
         <h2 class="title-box-detail">Video</h2>
         <div class="wrap-video">
             <iframe width="560" height="315"
-                src="https://www.youtube.com/embed/<?php echo esc_attr($id_video[1] ?? ''); ?>"
+                src="https://www.youtube.com/embed/<?php //echo esc_attr($id_video[1] ?? ''); ?>"
                 frameborder="0" allowfullscreen></iframe>
         </div>
-        <?php endif; ?>
-    </div>
+        <?php //endif; ?>
+    </div> -->
 
     <h2 class="title-breadcrumb">
         Mục:
