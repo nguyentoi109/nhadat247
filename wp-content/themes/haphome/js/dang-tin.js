@@ -4,6 +4,7 @@ var unlocked = [1];
 var completed = [];
 var dtMainImg = null;
 var _dtMap = null;
+var dt360Img = null;
 
 function isUnlocked(n) {
 	return unlocked.indexOf(n) !== -1;
@@ -392,10 +393,10 @@ function dtPreviewMain(inp) {
 function dtPreviewSubs(inp) {
 	if (!inp.files || !inp.files.length) return;
 	var files = Array.from(inp.files);
-	if (files.length > 5) alert('Tối đa 5 ảnh phụ. ' + (files.length - 5) + ' ảnh bị bỏ qua.');
+	if (files.length > 9) alert('Tối đa 9 ảnh phụ. ' + (files.length - 9) + ' ảnh bị bỏ qua.');
 	var grid = document.getElementById('sub-previews');
 	grid.innerHTML = '';
-	files.slice(0, 5).forEach(function(file, i) {
+	files.slice(0, 9).forEach(function(file, i) {
 		var reader = new FileReader();
 		reader.onload = function(e) {
 			var slot = document.createElement('div');
@@ -406,7 +407,43 @@ function dtPreviewSubs(inp) {
 		reader.readAsDataURL(file);
 	});
 	var mainTxt = document.getElementById('main-preview').style.display !== 'none' ? '1 ảnh chính, ' : '';
-	document.getElementById('sum-4').textContent = mainTxt + Math.min(files.length, 5) + ' ảnh phụ';
+	document.getElementById('sum-4').textContent = mainTxt + Math.min(files.length, 9) + ' ảnh phụ';
+}
+
+function dtPreview360(inp) {
+	if (!inp.files || !inp.files[0]) return;
+	var file = inp.files[0];
+	if (file.size > 10 * 1024 * 1024) {
+		alert('Ảnh 360 quá 10MB.');
+		inp.value = '';
+		dt360Img = null;
+		return;
+	}
+	dt360Img = file;
+	var reader = new FileReader();
+	reader.onload = function(e) {
+		document.getElementById('image360-preview-img').src = e.target.result;
+		document.getElementById('image360-preview').style.display = 'block';
+	};
+	reader.readAsDataURL(file);
+}
+
+function dtPreviewLegal(inp) {
+	if (!inp.files || !inp.files.length) return;
+	var files = Array.from(inp.files);
+	if (files.length > 5) alert('Tối đa 5 ảnh giấy tờ. ' + (files.length - 5) + ' ảnh bị bỏ qua.');
+	var grid = document.getElementById('legal-previews');
+	grid.innerHTML = '';
+	files.slice(0, 5).forEach(function(file, i) {
+		var reader = new FileReader();
+		reader.onload = function(e) {
+			var slot = document.createElement('div');
+			slot.className = 'dt-sub-slot';
+			slot.innerHTML = '<img src="' + e.target.result + '" alt="Giấy tờ ' + (i + 1) + '">';
+			grid.appendChild(slot);
+		};
+		reader.readAsDataURL(file);
+	});
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -454,7 +491,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 
 		var mainInp = document.getElementById('main-file-input');
-		if (!dtMainImg && !(mainInp && mainInp.files && mainInp.files.length)) {
+		var hasNewMain = dtMainImg || (mainInp && mainInp.files && mainInp.files.length);
+		var hasExistingMain = window.__dtHasExistingMainImage === true;
+		if (!hasNewMain && !hasExistingMain) {
 			e.preventDefault();
 			alert('Vui lòng chọn ảnh chính.');
 			return;

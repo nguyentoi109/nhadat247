@@ -89,7 +89,7 @@
 	align-items: center;
 	gap: 6px;
 	padding: 8px 18px;
-	background: #ee0033;
+	background: #00A86B;
 	color: #fff;
 	border-radius: 6px;
 	font-size: 13px;
@@ -102,7 +102,8 @@
 }
 
 .qlt-new-btn:hover {
-	background: #cc0022;
+	background: #008a5a;
+    color: #fff;
 }
 
 .qlt-card {
@@ -111,6 +112,10 @@
 	margin-bottom: 12px;
 	background: #fff;
 	transition: box-shadow .2s;
+    overflow: hidden; 
+}
+.qlt-card {
+	margin-bottom: 16px;   
 }
 
 .qlt-card:hover {
@@ -120,10 +125,6 @@
 .qlt-card-top {
 	border-radius: 10px 10px 0 0;
 	overflow: hidden;
-}
-
-.qlt-card-bottom {
-	border-radius: 0 0 10px 10px;
 }
 
 .qlt-card-top {
@@ -443,12 +444,49 @@
 .qlt-card-bottom {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
 	padding: 10px 16px;
 	border-top: 1px solid #f3f4f6;
 	background: #fafafa;
+}
+
+.qlt-card-bottom-left {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	flex: 1;
+	min-width: 220px;
+}
+
+.qlt-card-bottom-right {
+	flex-shrink: 0;
+	align-self: center;       
+}
+
+.qlt-legal-docs {
+	width: 100%;
+}
+
+.qlt-meta-inline {
+	display: flex;
 	gap: 16px;
+	font-size: 12px;
+	color: #6b7280;
 	flex-wrap: wrap;
+	margin-top: 8px;
+	padding-top: 8px;
+	border-top: 1px dashed #f0f0f0;
+}
+
+.qlt-meta-inline span {
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+}
+
+.qlt-meta-inline strong {
+	font-size: 11px;
+	font-weight: 700;
+	color: #374151;
 }
 
 .qlt-meta-bottom {
@@ -568,6 +606,35 @@
 	background: #cc0022;
 }
 
+.qlt-legal-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+.qlt-legal-toggle:hover {
+    text-decoration: underline;
+}
+.qlt-legal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+}
+.qlt-legal-grid img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+}
+
 @media(max-width:860px) {
 	.qlt-card-top {
 		grid-template-columns: 1fr;
@@ -618,11 +685,12 @@ $status_map = [
     'expired' => ['draft'],
 ];
 
-$listings      = ql_get_listings($custom_uid, $status_map[$sub] ?? ['publish','pending','draft'], 20);
-$count_all     = count(ql_get_listings($custom_uid, ['publish','pending','draft']));
-$count_active  = count(ql_get_listings($custom_uid, ['publish']));
-$count_pending = count(ql_get_listings($custom_uid, ['pending']));
-$count_expired = count(ql_get_listings($custom_uid, ['draft']));
+$categorized   = ql_get_listings_categorized($custom_uid);
+$listings      = array_slice($categorized[$sub] ?? $categorized['all'], 0, 20);
+$count_all     = count($categorized['all']);
+$count_active  = count($categorized['active']);
+$count_pending = count($categorized['pending']);
+$count_expired = count($categorized['expired']);
 $count_map     = [
     'all'     => $count_all,
     'active'  => $count_active,
@@ -695,9 +763,9 @@ function ql_format_price($price): string {
         $date_post = get_the_date('d/m/Y', $post_id);
         $expired_raw  = ql_get_expired_at($post_id);
         $exp          = ql_format_expired($expired_raw);
-        $date_exp     = $exp['text'];       
-        $exp_warning  = $exp['warning'];   
-        $exp_overdue  = $exp['overdue'];    
+        $date_exp     = $exp['text'];
+        $exp_warning  = $exp['warning'];
+        $exp_overdue  = $exp['overdue'];   
         $exp_days     = $exp['days_left'] ?? null;
         $loc_terms  = get_the_terms($post_id, 'property_location');
         $location   = (!empty($loc_terms) && !is_wp_error($loc_terms)) ? implode(', ', array_slice(wp_list_pluck($loc_terms, 'name'), 0, 2)) : '';
@@ -706,14 +774,19 @@ function ql_format_price($price): string {
         $thumb_url  = get_the_post_thumbnail_url($post_id, 'medium') ?: '';
         $post_url   = get_permalink($post_id);
         $edit_url   = home_url('/chinh-sua-tin/?id=' . $post_id);
-        if ($status === 'publish') {
-            $dot = 'green'; $status_lbl = 'Đang hiển thị';
-            $is_active = true; $is_pending = false; $is_expired = false;
-            $has_stats = ($views > 0 || $khach > 0);
-        } elseif ($status === 'pending') {
+
+        if ($status === 'pending') {
             $dot = 'yellow'; $status_lbl = 'Chờ duyệt';
             $is_active = false; $is_pending = true; $is_expired = false;
             $has_stats = false;
+        } elseif ($exp_overdue) {
+            $dot = 'red'; $status_lbl = 'Hết hạn';
+            $is_active = false; $is_pending = false; $is_expired = true;
+            $has_stats = ($views > 0);
+        } elseif ($status === 'publish') {
+            $dot = 'green'; $status_lbl = 'Đang hiển thị';
+            $is_active = true; $is_pending = false; $is_expired = false;
+            $has_stats = ($views > 0 || $khach > 0);
         } else {
             $dot = 'red'; $status_lbl = 'Hết hạn';
             $is_active = false; $is_pending = false; $is_expired = true;
@@ -733,7 +806,7 @@ function ql_format_price($price): string {
                     🏠
                     <?php endif; ?>
                     <?php if ($vip): ?>
-                    <span class="qlt-thumb-badge yellow">VIP <?php echo esc_html($vip); ?></span>
+                    <span class="qlt-thumb-badge yellow">VIP</span>
                     <?php elseif ($is_expired): ?>
                     <span class="qlt-thumb-badge">Hết hạn</span>
                     <?php endif; ?>
@@ -744,7 +817,7 @@ function ql_format_price($price): string {
                         <span class="qlt-status-dot <?php echo $dot; ?>"></span>
                         <span class="qlt-status-text <?php echo $dot; ?>"><?php echo esc_html($status_lbl); ?></span>
                         <?php if ($vip): ?>
-                        <span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:4px;">VIP <?php echo esc_html($vip); ?></span>
+                        <span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:4px;">VIP</span>
                         <?php else: ?>
                         <span style="background:#f3f4f6;color:#6b7280;font-size:10px;font-weight:600;padding:1px 7px;border-radius:4px;">Tin thường</span>
                         <?php endif; ?>
@@ -769,6 +842,25 @@ function ql_format_price($price): string {
                         <?php if ($location): ?>
                         <span class="qlt-meta-sep">•</span>
                         <span><?php echo esc_html($location); ?></span>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="qlt-meta-inline">
+                        <span><strong>Mã tin</strong><?php echo $post_id; ?></span>
+                        <span><strong>Ngày đăng</strong><?php echo esc_html($date_post); ?></span>
+                        <?php if ($date_exp): ?>
+                        <span>
+                            <strong>Ngày hết hạn</strong>
+                            <?php if ($exp_overdue): ?>
+                                <span style="color:#dc2626;font-weight:700;">
+                                    <?php echo esc_html($date_exp); ?>
+                                </span>
+                            <?php elseif ($exp_warning): ?>
+                                <span style="color:#d97706;font-weight:700;"><?php echo esc_html($date_exp); ?></span>
+                            <?php else: ?>
+                                <span style="color:#374151;"><?php echo esc_html($date_exp); ?></span>
+                            <?php endif; ?>
+                        </span>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -869,50 +961,55 @@ function ql_format_price($price): string {
             </div><!-- /.qlt-card-right -->
         </div><!-- /.qlt-card-top -->
 
-        <div class="qlt-card-bottom">
-            <div class="qlt-meta-bottom">
-                <span><strong>Mã tin</strong><?php echo $post_id; ?></span>
-                <span><strong>Ngày đăng</strong><?php echo esc_html($date_post); ?></span>
-
-                <?php if ($date_exp): ?>
-                <span>
-                    <strong>Ngày hết hạn</strong>
-                    <?php if ($exp_overdue): ?>
-                        <span style="color:#dc2626;font-weight:700;">
-                            <?php echo esc_html($date_exp); ?>
-                            <span style="font-size:10px;background:#fee2e2;color:#dc2626;padding:1px 6px;border-radius:3px;margin-left:4px;font-weight:600;">
-                                Đã hết hạn
-                            </span>
-                        </span>
-                    <?php elseif ($exp_warning): ?>
-                        <span style="color:#d97706;font-weight:700;">
-                            <?php echo esc_html($date_exp); ?>
-                        </span>
-                    <?php else: ?>
-                        <span style="color:#374151;">
-                            <?php echo esc_html($date_exp); ?>
-                            <?php if ($exp_days !== null && $exp_days <= 30): ?>
-                            <?php endif; ?>
-                        </span>
-                    <?php endif; ?>
+       <div class="qlt-card-bottom">
+            <?php
+                $legal_images = dt_get_legal_images($post_id);
+                if (!empty($legal_images)):
+            ?>
+           <div class="qlt-legal-docs">
+                <span class="qlt-legal-toggle" role="button" tabindex="0"
+                    onclick="qltToggleLegal(<?php echo $post_id; ?>)"
+                    onkeydown="if(event.key==='Enter'||event.key===' '){qltToggleLegal(<?php echo $post_id; ?>)}">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/>
+                        <path d="M19 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09A1.65 1.65 0 0015.4 4.6a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.36.14.66.38.86.7"/>
+                    </svg>
+                    Giấy tờ pháp lý (<?php echo count($legal_images); ?>) — chỉ mình bạn xem được
                 </span>
-                <?php endif; ?>
+                <div class="qlt-legal-grid" id="qlt-legal-<?php echo $post_id; ?>" style="display:none;">
+                    <?php foreach ($legal_images as $img): ?>
+                    <a href="<?php echo esc_url($img['url']); ?>" target="_blank" rel="noopener">
+                        <img src="<?php echo esc_url($img['url']); ?>" alt="Giấy tờ pháp lý" loading="lazy">
+                    </a>
+                    <?php endforeach; ?>
+                </div>
             </div>
-
-            <?php if ($is_active && !$vip): ?>
-            <a href="<?php echo esc_url(home_url('/quan-ly-tai-khoan/goi-vip/?post='.$post_id)); ?>"
-               style="font-size:12px;font-weight:600;color:#ee0033;text-decoration:none;display:flex;align-items:center;gap:4px;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                </svg>
-                Nâng cấp VIP
-            </a>
+            <?php else: ?>
+            <div style="font-size:12px;color:#9ca3af;">Không có giấy tờ pháp lý đính kèm</div>
             <?php endif; ?>
-        </div>
-    </div><!-- /.qlt-card -->
+        </div><!-- /.qlt-card-bottom -->
+    </div><!-- /.qlt-card --> 
     <?php endforeach; ?>
     <?php endif; ?>
 </div><!-- /.ql-panel-body -->
+
+<div class="vip-popup">
+    <?php get_template_part('authentication/popup-vip'); ?>
+</div>
+ 
+<div class="delete-popup">
+    <?php get_template_part('authentication/popup-delete'); ?>
+</div>
+ 
+<div class="push-popup">
+    <?php get_template_part('authentication/popup-push'); ?>
+</div>
+<script>
+    var qlt_ajax = {
+        ajax_url: '<?php echo esc_js(admin_url("admin-ajax.php")); ?>',
+        nonce: '<?php echo wp_create_nonce("ql_listing_nonce"); ?>'
+    };
+</script>
 
 <script>
 function qltSearch(q) {
@@ -958,7 +1055,7 @@ function qltSearch(q) {
       html += `<button onclick="qltShare('${d.postUrl}','${d.postTitle.replace(/'/g,"\\'")}');document.getElementById('qlt-portal').classList.remove('open')">${ico.share} Chia sẻ</button>`;
       if (st === 'publish' || st === 'pending') html += `<a href="${d.editUrl}">${ico.edit} Chỉnh sửa</a>`;
       if (st === 'draft') html += `<button onclick="qltRepost(${d.postId});close()">${ico.repost} Đăng lại</button>`;
-      if (!vp) html += `<a href="${d.vipUrl}">${ico.vip} Nâng cấp VIP</a>`;
+      if (!vp) html += `<button onclick="qltUpgradeVip(${d.postId});document.getElementById('qlt-portal').classList.remove('open')">${ico.vip} Nâng cấp VIP</button>`;
       html += `<button class="danger" onclick="qltDelete(${d.postId})">${ico.del} Xoá tin</button>`;
 
       portal.innerHTML = html;
@@ -980,35 +1077,91 @@ function qltSearch(q) {
 })();
 
 function qltDelete(postId) {
-   if (!confirm('Bạn có chắc muốn xoá tin đăng này?')) return;
-   document.getElementById('qlt-portal').classList.remove('open');
-   fetch('<?php echo esc_js(admin_url("admin-ajax.php")); ?>', {
-         method: 'POST',
-         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-         },
-         body: 'action=ql_delete_listing&post_id=' + postId + '&_nonce=<?php echo wp_create_nonce("ql_listing_nonce"); ?>'
-      })
-      .then(r => r.json())
-      .then(data => {
-         if (data.success) {
-            const card = document.getElementById('qlt-card-' + postId);
-            if (card) {
-               card.style.opacity = '0';
-               setTimeout(() => card.remove(), 300);
-            }
-         } else {
-            alert(data.data?.message || 'Có lỗi xảy ra.');
-         }
-      });
+    document.getElementById('qlt-portal').classList.remove('open');
+    qltConfirm(
+        'Xoá tin đăng',
+        'Bạn có chắc muốn xoá tin đăng này? Hành động này không thể hoàn tác.',
+        function () {
+            fetch('<?php echo esc_js(admin_url("admin-ajax.php")); ?>', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'action=ql_delete_listing&post_id=' + postId + '&_nonce=<?php echo wp_create_nonce("ql_listing_nonce"); ?>'
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const card = document.getElementById('qlt-card-' + postId);
+                    if (card) {
+                        card.style.opacity = '0';
+                        setTimeout(() => card.remove(), 300);
+                    }
+                } else {
+                    qltAlert('Không thể xoá', data.data?.message || 'Có lỗi xảy ra.', 'error');
+                }
+            });
+        }
+    );
 }
 
 function qltRepost(id) {
    window.location.href = '<?php echo esc_js(home_url("/dang-tin/")); ?>?repost=' + id;
 }
 
-function qltPush(id) {
-   window.location.href = '<?php echo esc_js(home_url("/quan-ly-tai-khoan/goi-vip/")); ?>?push=' + id;
+function qltUpgradeVip(postId) {
+    if (!confirm('Nâng cấp tin này lên VIP với giá 150.000đ (hoặc dùng 1 lượt nâng cấp VIP nếu có)?\nThời hạn VIP: 30 ngày kể từ hôm nay.\n\nBạn có đồng ý không?')) {
+        return;
+    }
+ 
+    const card = document.getElementById('qlt-card-' + postId);
+    const btn = card ? card.querySelector('.qlt-more-btn') : null;
+    if (btn) btn.disabled = true;
+    fetch('<?php echo esc_js(admin_url("admin-ajax.php")); ?>', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'action=ql_upgrade_vip&post_id=' + postId +
+              '&_nonce=<?php echo wp_create_nonce("ql_listing_nonce"); ?>'
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (btn) btn.disabled = false;
+        if (data.success) {
+            qltToast('✓ ' + data.data.message);
+            qltApplyVipBadge(postId, data.data.vip_level, data.data.expired_at_formatted);
+        } else {
+            alert(data.data?.message || 'Có lỗi xảy ra khi nâng cấp VIP.');
+        }
+    })
+    .catch(() => {
+        if (btn) btn.disabled = false;
+        alert('Không thể kết nối máy chủ, vui lòng thử lại.');
+    });
+}
+ 
+function qltApplyVipBadge(postId, vipLevel, expiredAtText) {
+    const card = document.getElementById('qlt-card-' + postId);
+    if (!card) return;
+     const thumb = card.querySelector('.qlt-thumb');
+    if (thumb) {
+        let badge = thumb.querySelector('.qlt-thumb-badge');
+        if (!badge) {
+            badge = document.createElement('span');
+            thumb.appendChild(badge);
+        }
+        badge.className = 'qlt-thumb-badge yellow';
+        badge.textContent = 'VIP ' + vipLevel.replace('vip', '');
+    }
+     const statusRow = card.querySelector('.qlt-status-row');
+    if (statusRow) {
+        const oldTag = statusRow.querySelector('span:last-child');
+        if (oldTag) {
+            oldTag.outerHTML = '<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:4px;">VIP ' + vipLevel.replace('vip', '') + '</span>';
+        }
+    }
+ 
+    const verifyBanner = card.querySelector('.qlt-banner-verify');
+    if (verifyBanner) verifyBanner.remove();
+     const moreBtn = card.querySelector('.qlt-more-btn');
+    if (moreBtn) moreBtn.dataset.vip = vipLevel;
 }
 
 async function qltShare(url, title) {
@@ -1045,5 +1198,12 @@ function qltToast(msg) {
       t.style.opacity = '0';
       t.style.transform = 'translateX(-50%) translateY(20px)';
    }, 2500);
+}
+</script>
+<script>
+function qltToggleLegal(postId) {
+    var el = document.getElementById('qlt-legal-' + postId);
+    if (!el) return;
+    el.style.display = el.style.display === 'none' ? 'grid' : 'none';
 }
 </script>

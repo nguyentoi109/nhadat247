@@ -47,6 +47,24 @@
     font-size:22px;
     font-weight:600;
     flex-shrink:0;
+    overflow:hidden;
+}
+
+.user-avatar-big .cs-avatar-img {
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    object-position:center;
+    display:block;
+    border-radius:50%;
+}
+
+.user-avatar-big .cs-avatar-letter {
+    width:100%;
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
 }
 
 .user-info{

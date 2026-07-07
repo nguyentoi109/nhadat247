@@ -1,10 +1,9 @@
 <?php
 /*
-Template Name: Đăng tin bds
+Template Name: Chỉnh sửa tin BĐS
 */
 get_header();
-?>
-
+?> 
 <style>
 *,
 *::before,
@@ -820,7 +819,58 @@ if (!$custom_user) {
     exit;
 }
 $uid = (int) $custom_user->id;
+$edit_post_id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+$edit_post    = $edit_post_id ? get_post($edit_post_id) : null;
+if (!$edit_post || $edit_post->post_type !== 'property') {
+    wp_die('Tin đăng không tồn tại hoặc đã bị xoá.');
+}
 
+$owner_uid = (int) get_post_meta($edit_post_id, '_custom_user_id', true);
+if ($owner_uid !== $uid) {
+    wp_die('Bạn không có quyền chỉnh sửa tin đăng này.');
+}
+
+$old_mode = get_post_meta($edit_post_id, '_dt_mode', true) ?: 'bds';
+$old_loai_tin_terms = get_the_terms($edit_post_id, 'property_status');
+$old_loai_tin = (!empty($old_loai_tin_terms) && !is_wp_error($old_loai_tin_terms)) ? $old_loai_tin_terms[0]->slug : 'ban';
+$old_pt_terms = get_the_terms($edit_post_id, 'property_type');
+$old_pt_val = (!empty($old_pt_terms) && !is_wp_error($old_pt_terms)) ? $old_pt_terms[0]->term_id : '';
+$old_dev_terms = get_the_terms($edit_post_id, 'property_developer');
+$old_dev_val = (!empty($old_dev_terms) && !is_wp_error($old_dev_terms)) ? $old_dev_terms[0]->term_id : '';
+$old_huong_terms_post = get_the_terms($edit_post_id, 'property_direction');
+$old_huong_val = (!empty($old_huong_terms_post) && !is_wp_error($old_huong_terms_post)) ? $old_huong_terms_post[0]->term_id : '';
+$old_title       = get_the_title($edit_post_id);
+$old_content     = $edit_post->post_content;
+$old_price       = get_post_meta($edit_post_id, 'prefix-price', true);
+$old_area        = get_post_meta($edit_post_id, 'prefix-area', true);
+$old_bedroom     = get_post_meta($edit_post_id, 'prefix-bedroom', true);
+$old_bathroom    = get_post_meta($edit_post_id, 'prefix-bathroom', true);
+$old_address     = get_post_meta($edit_post_id, 'prefix-address', true);
+$old_video       = get_post_meta($edit_post_id, 'prefix-video', true);
+$old_phap_ly     = get_post_meta($edit_post_id, 'prefix-phap-ly', true);
+$old_noi_that    = get_post_meta($edit_post_id, 'prefix-noi-that', true);
+$old_name_custom = get_post_meta($edit_post_id, 'prefix-name-custom', true);
+$old_phone_custom= get_post_meta($edit_post_id, 'prefix-phone-custom', true);
+$old_email_custom= get_post_meta($edit_post_id, 'prefix-email-custom', true);
+$old_latlng = get_post_meta($edit_post_id, 'prefix-latlng', true);
+$old_lat = '';
+$old_lng = '';
+if ($old_latlng !== '') {
+    $parts = array_map('trim', explode(',', $old_latlng));
+    if (isset($parts[0], $parts[1]) && is_numeric($parts[0]) && is_numeric($parts[1])) {
+        $old_lat = (float) $parts[0];
+        $old_lng = (float) $parts[1];
+    }
+}
+if ($old_lat === '' || $old_lng === '') {
+    $old_lat = (float) get_post_meta($edit_post_id, '_dt_lat', true);
+    $old_lng = (float) get_post_meta($edit_post_id, '_dt_lng', true);
+}
+$existing_main_thumb = get_the_post_thumbnail_url($edit_post_id, 'medium') ?: '';
+$existing_subs = get_post_meta($edit_post_id, 'prefix-image_property', false); // list attachment IDs
+$existing_image360_id = get_post_meta($edit_post_id, 'image360', true);
+$existing_image360_url = $existing_image360_id ? wp_get_attachment_image_url($existing_image360_id, 'medium') : '';
+$existing_legal_images = dt_get_legal_images($edit_post_id);
 $property_type_terms    = get_terms(['taxonomy' => 'property_type',    'hide_empty' => false, 'parent' => 0]);
 $property_type_children = [];
 if (!is_wp_error($property_type_terms)) {
@@ -829,7 +879,6 @@ if (!is_wp_error($property_type_terms)) {
         $property_type_children[$pt->term_id] = (!is_wp_error($ch) && !empty($ch)) ? $ch : [];
     }
 }
-
 $property_developer_terms = get_terms(['taxonomy' => 'property_developer', 'hide_empty' => false, 'parent' => 0]);
 $developer_tree = [];
 if (!is_wp_error($property_developer_terms)) {
@@ -844,25 +893,6 @@ if (!is_wp_error($property_developer_terms)) {
         $developer_tree[] = ['id' => $dev->term_id, 'name' => $dev->name, 'children' => $lvl2_data];
     }
 }
-
-$property_location_terms = get_terms(['taxonomy' => 'property_location', 'hide_empty' => false, 'parent' => 0]);
-$location_l2 = [];
-$location_l3 = [];
-if (!is_wp_error($property_location_terms)) {
-    foreach ($property_location_terms as $loc) {
-        $ch2 = get_terms(['taxonomy' => 'property_location', 'hide_empty' => false, 'parent' => $loc->term_id]);
-        if (!is_wp_error($ch2) && !empty($ch2)) {
-            $location_l2[$loc->term_id] = array_map(fn($c) => ['id' => $c->term_id, 'name' => $c->name], $ch2);
-            foreach ($ch2 as $q) {
-                $ch3 = get_terms(['taxonomy' => 'property_location', 'hide_empty' => false, 'parent' => $q->term_id]);
-                if (!is_wp_error($ch3) && !empty($ch3)) {
-                    $location_l3[$q->term_id] = array_map(fn($p) => ['id' => $p->term_id, 'name' => $p->name], $ch3);
-                }
-            }
-        }
-    }
-}
-
 $huong_terms = get_terms(['taxonomy' => 'property_direction', 'hide_empty' => false]);
 $dt_location_icon_url = get_template_directory_uri() . '/img/location.png';
 ?>
@@ -872,7 +902,7 @@ window.dtMapboxToken = '<?php echo esc_js(MAPBOX_ACCESS_TOKEN); ?>';
 window.dtMapboxStyle = '<?php echo esc_js(MAPBOX_STYLE); ?>';
 window.dtLocationIconUrl= '<?php echo esc_js(HERE_ICON_URL); ?>';
 window.dtDevTree = <?php echo json_encode(array_values($developer_tree)); ?>;
-window.dtST = {}; 
+window.dtST = {};
 </script>
 <script src="<?php echo get_template_directory_uri(); ?>/js/map-here-mapbox.js"></script>
 <script>
@@ -887,11 +917,10 @@ window.dtST = {};
             <polyline points="20 6 9 17 4 12" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         <div>
-            <div style="font-weight:700;font-size:15px;margin-bottom:4px;">Đăng tin thành công!</div>
-            <div style="font-size:13px;color:#2e7d32;">Tin đang chờ kiểm duyệt. Chúng tôi sẽ phản hồi trong vòng 24 giờ.</div>
+            <div style="font-weight:700;font-size:15px;margin-bottom:4px;">Cập nhật tin thành công!</div>
+            <div style="font-size:13px;color:#2e7d32;">Tin đang chờ kiểm duyệt lại. Chúng tôi sẽ phản hồi trong vòng 24 giờ.</div>
             <div class="success-links">
                 <a href="<?php echo esc_url(home_url('/quan-ly-tai-khoan/quan-ly-tin/')); ?>" class="link-green">Quản lý tin đăng</a>
-                <a href="<?php echo esc_url(get_permalink()); ?>" class="link-outline">Đăng tin khác</a>
             </div>
         </div>
     </div>
@@ -899,7 +928,7 @@ window.dtST = {};
 <?php return; endif; ?>
 
 <div class="dt-wrap">
-    <div class="dt-header"><h1>Đăng tin bất động sản</h1></div>
+    <div class="dt-header"><h1>Chỉnh sửa tin đăng</h1></div>
 
     <div class="dt-progress">
         <?php
@@ -929,12 +958,14 @@ window.dtST = {};
 
     <form method="post" id="dt-form" enctype="multipart/form-data">
         <?php wp_nonce_field('dang_tin_action', 'dang_tin_nonce'); ?>
+        <input type="hidden" name="edit_post_id" value="<?php echo esc_attr($edit_post_id); ?>">
         <input type="hidden" name="image_ids"              id="dt-image-ids" value="">
-        <input type="hidden" name="dt_mode"                id="dt-mode-val"  value="bds">
-        <input type="hidden" name="property_type_val"      id="pt-val"       value="">
-        <input type="hidden" name="property_developer_val" id="dev-val"      value="">
+        <input type="hidden" name="dt_mode"                id="dt-mode-val"  value="<?php echo esc_attr($_POST['dt_mode'] ?? $old_mode); ?>">
+        <input type="hidden" name="property_type_val"      id="pt-val"       value="<?php echo esc_attr($_POST['property_type_val'] ?? $old_pt_val); ?>">
+        <input type="hidden" name="property_developer_val" id="dev-val"      value="<?php echo esc_attr($_POST['property_developer_val'] ?? $old_dev_val); ?>">
         <input type="hidden" name="property_location_val"  id="loc-val"      value="">
 
+        <!-- ============ BLOCK 1: PHÂN LOẠI ============ -->
         <div class="dt-card is-active" id="block-1">
             <div class="dt-card-head" onclick="dtToggle(1)">
                 <div class="dt-card-ico">
@@ -952,35 +983,34 @@ window.dtST = {};
                 <div class="dt-field" style="margin-bottom:16px;">
                     <div class="dt-label" style="margin-bottom:8px;">Loại tin <span class="dt-req">*</span></div>
                     <div class="dt-tabs">
-                        <button type="button" class="dt-tab active" id="tab-bds"  onclick="dtSetMode('bds')">Bất động sản</button>
-                        <button type="button" class="dt-tab"        id="tab-duan" onclick="dtSetMode('du_an')">Dự án</button>
+                        <button type="button" class="dt-tab <?php echo $old_mode === 'bds' ? 'active' : ''; ?>" id="tab-bds"  onclick="dtSetMode('bds')">Bất động sản</button>
+                        <button type="button" class="dt-tab <?php echo $old_mode === 'du_an' ? 'active' : ''; ?>" id="tab-duan" onclick="dtSetMode('du_an')">Dự án</button>
                     </div>
                 </div>
                 <div class="dt-field" style="margin-bottom:16px;">
                     <div class="dt-label" style="margin-bottom:8px;">Hình thức <span class="dt-req">*</span></div>
                     <div class="dt-chips">
-                        <div class="dt-chip sel" data-g="loai_tin" data-v="ban"       onclick="dtChip(this,'loai_tin')">Bán</div>
-                        <div class="dt-chip"     data-g="loai_tin" data-v="cho-thue"  onclick="dtChip(this,'loai_tin')">Cho thuê</div>
+                        <div class="dt-chip <?php echo ($_POST['loai_tin'] ?? $old_loai_tin) === 'ban' ? 'sel' : ''; ?>" data-g="loai_tin" data-v="ban"       onclick="dtChip(this,'loai_tin')">Bán</div>
+                        <div class="dt-chip <?php echo ($_POST['loai_tin'] ?? $old_loai_tin) === 'cho-thue' ? 'sel' : ''; ?>" data-g="loai_tin" data-v="cho-thue"  onclick="dtChip(this,'loai_tin')">Cho thuê</div>
                     </div>
-                    <input type="hidden" name="loai_tin" id="loai_tin_val" value="ban">
+                    <input type="hidden" name="loai_tin" id="loai_tin_val" value="<?php echo esc_attr($_POST['loai_tin'] ?? $old_loai_tin); ?>">
                 </div>
 
-                <div id="sec-bds">
+                <div id="sec-bds" style="<?php echo $old_mode === 'du_an' ? 'display:none;' : ''; ?>">
                     <div class="dt-field">
                         <div class="dt-label" style="margin-bottom:8px;">Loại bất động sản <span class="dt-req">*</span></div>
                         <div class="dt-chips" id="pt-chips">
                             <?php if (!is_wp_error($property_type_terms) && !empty($property_type_terms)):
-                                foreach ($property_type_terms as $t): ?>
-                            <div class="dt-chip" data-g="property_type" data-v="<?php echo esc_attr($t->term_id); ?>"
+                                foreach ($property_type_terms as $t):
+                                    $is_sel = ((int)($_POST['property_type_val'] ?? $old_pt_val) === $t->term_id);
+                                ?>
+                            <div class="dt-chip <?php echo $is_sel ? 'sel' : ''; ?>" data-g="property_type" data-v="<?php echo esc_attr($t->term_id); ?>"
                                  onclick="dtSelectType(this)"><?php echo esc_html($t->name); ?></div>
                             <?php   if (!empty($property_type_children[$t->term_id])):
                                         $sd = array_map(fn($c) => ['id'=>$c->term_id,'name'=>$c->name], $property_type_children[$t->term_id]); ?>
                             <script>dtST=dtST||{};dtST[<?php echo $t->term_id;?>]=<?php echo json_encode($sd);?>;</script>
                             <?php   endif; endforeach;
-                            else:
-                                foreach ([['Nhà ở',0],['Căn hộ',1],['Đất nền',2],['Biệt thự',3],['Nhà phố',4]] as [$l,$i]): ?>
-                            <div class="dt-chip" data-g="property_type" data-v="<?php echo $i;?>" onclick="dtSelectType(this)"><?php echo $l;?></div>
-                            <?php endforeach; endif; ?>
+                            endif; ?>
                         </div>
                         <div id="pt-sub" class="dt-sublevel" style="display:none;">
                             <div class="dt-sublevel-title">Phân loại cụ thể</div>
@@ -989,7 +1019,7 @@ window.dtST = {};
                     </div>
                 </div>
 
-                <div id="sec-duan" style="display:none;">
+                <div id="sec-duan" style="<?php echo $old_mode === 'bds' ? 'display:none;' : ''; ?>">
                     <div class="dt-field">
                         <div class="dt-label" style="margin-bottom:8px;">Chọn dự án <span class="dt-req">*</span></div>
                         <div class="dt-chips" id="dev-chips">
@@ -1012,6 +1042,7 @@ window.dtST = {};
             </div>
         </div>
 
+        <!-- ============ BLOCK 2: VỊ TRÍ ============ -->
         <div class="dt-card is-locked" id="block-2">
             <div class="dt-card-head" onclick="dtToggle(2)">
                 <div class="dt-card-ico">
@@ -1028,32 +1059,32 @@ window.dtST = {};
             <div class="dt-card-body" id="body-2">
 
                 <div class="dt-grid3" style="margin-bottom:12px;">
-					<div class="dt-field">
-						<label class="dt-label">Tỉnh / Thành phố <span class="dt-req">*</span></label>
-						<select class="dt-select" id="sel-tinh" onchange="dtLoadL2(this.value)">
-							<option value="">-- Chọn --</option>
-						</select>
-					</div>
-					<div class="dt-field">
-						<label class="dt-label">Quận / Huyện</label>
-						<select class="dt-select" id="sel-quan" onchange="dtLoadL3(this.value)" disabled>
-							<option value="">-- Chọn --</option>
-						</select>
-					</div>
-					<div class="dt-field">
-						<label class="dt-label">Phường / Xã</label>
-						<select class="dt-select" id="sel-phuong" onchange="dtUpdateLoc()" disabled>
-							<option value="">-- Chọn --</option>
-						</select>
-					</div>
-				</div>
+                    <div class="dt-field">
+                        <label class="dt-label">Tỉnh / Thành phố <span class="dt-req">*</span></label>
+                        <select class="dt-select" id="sel-tinh" onchange="dtLoadL2(this.value)">
+                            <option value="">-- Chọn --</option>
+                        </select>
+                    </div>
+                    <div class="dt-field">
+                        <label class="dt-label">Quận / Huyện</label>
+                        <select class="dt-select" id="sel-quan" onchange="dtLoadL3(this.value)" disabled>
+                            <option value="">-- Chọn --</option>
+                        </select>
+                    </div>
+                    <div class="dt-field">
+                        <label class="dt-label">Phường / Xã</label>
+                        <select class="dt-select" id="sel-phuong" onchange="dtUpdateLoc()" disabled>
+                            <option value="">-- Chọn --</option>
+                        </select>
+                    </div>
+                </div>
 
-				<div class="dt-field dt-full" style="margin-bottom:14px;">
-					<label class="dt-label">Địa chỉ chi tiết <span class="dt-req">*</span></label>
-					<input class="dt-input" type="text" name="prefix-address" id="addr-detail"
-						placeholder="Số nhà, tên đường..."
-						value="<?php echo esc_attr($_POST['prefix-address'] ?? ''); ?>">
-				</div>
+                <div class="dt-field dt-full" style="margin-bottom:14px;">
+                    <label class="dt-label">Địa chỉ chi tiết <span class="dt-req">*</span></label>
+                    <input class="dt-input" type="text" name="prefix-address" id="addr-detail"
+                        placeholder="Số nhà, tên đường..."
+                        value="<?php echo esc_attr($_POST['prefix-address'] ?? $old_address); ?>">
+                </div>
 
                 <div class="dt-section-label">Xác định trên bản đồ</div>
 
@@ -1074,22 +1105,24 @@ window.dtST = {};
 
                 <div id="dt-map"
                      style="width:100%;height:360px;border-radius:10px;border:1px solid #e0e0e0;
-                            overflow:hidden;background:#f5f5f5;margin-bottom:10px;"></div>
+                            overflow:hidden;background:#f5f5f5;margin-bottom:10px;"
+                     data-existing-lat="<?php echo esc_attr($old_lat); ?>"
+                     data-existing-lng="<?php echo esc_attr($old_lng); ?>"></div>
 
                 <div style="font-size:12px;color:#888;margin-bottom:14px;">
-                    Nhấp vào bản đồ hoặc kéo iconđể điều chỉnh vị trí chính xác
+                    Nhấp vào bản đồ hoặc kéo icon để điều chỉnh vị trí chính xác
                 </div>
 
-				<input type="hidden" id="loc-tinh-name">
-				<input type="hidden" id="loc-quan-name">
-				<input type="hidden" id="loc-phuong-name">
-				<input type="hidden" name="dt-lat" id="map-lat">
-				<input type="hidden" name="dt-lng" id="map-lng">
+                <input type="hidden" id="loc-tinh-name">
+                <input type="hidden" id="loc-quan-name">
+                <input type="hidden" id="loc-phuong-name">
+                <input type="hidden" name="prefix-latlng" id="prefix-latlng" value="<?php echo esc_attr($old_latlng); ?>">
 
                 <div class="btn-next"><button type="button" onclick="dtNext(2)">Tiếp tục →</button></div>
             </div>
         </div>
 
+        <!-- ============ BLOCK 3: ĐẶC ĐIỂM ============ -->
         <div class="dt-card is-locked" id="block-3">
             <div class="dt-card-head" onclick="dtToggle(3)">
                 <div class="dt-card-ico">
@@ -1108,7 +1141,7 @@ window.dtST = {};
                     <label class="dt-label">Giá <span class="dt-req">*</span></label>
                     <input class="dt-input" type="text" inputmode="numeric" name="prefix-price" id="price-inp"
                            placeholder="Ví dụ: 3.500.000.000"
-                           value="<?php echo esc_attr($_POST['prefix-price'] ?? ''); ?>"
+                           value="<?php echo esc_attr($_POST['prefix-price'] ?? number_format((float)$old_price, 0, ',', '.')); ?>"
                            oninput="fmtPrice(this)">
                     <div class="dt-hint" id="price-hint">Nhập giá → tự động hiển thị bằng chữ</div>
                 </div>
@@ -1116,19 +1149,18 @@ window.dtST = {};
                     <div class="dt-field">
                         <label class="dt-label">Diện tích (m²) <span class="dt-req">*</span></label>
                         <input class="dt-input" type="number" name="prefix-area" min="1"
-                               placeholder="75" value="<?php echo esc_attr($_POST['prefix-area'] ?? ''); ?>">
+                               placeholder="75" value="<?php echo esc_attr($_POST['prefix-area'] ?? $old_area); ?>">
                     </div>
                     <div class="dt-field">
                         <label class="dt-label">Hướng nhà</label>
                         <select name="huong" class="dt-select">
                             <option value="">-- Chọn --</option>
                             <?php
-                            $dirs = ['dong'=>'Đông','tay'=>'Tây','nam'=>'Nam','bac'=>'Bắc','dong-bac'=>'Đông Bắc','dong-nam'=>'Đông Nam','tay-bac'=>'Tây Bắc','tay-nam'=>'Tây Nam'];
                             if (!is_wp_error($huong_terms) && !empty($huong_terms)):
-                                foreach ($huong_terms as $t): ?>
-                            <option value="<?php echo esc_attr($t->term_id);?>"><?php echo esc_html($t->name);?></option>
-                            <?php endforeach; else: foreach ($dirs as $s=>$l): ?>
-                            <option value="<?php echo esc_attr($s);?>"><?php echo esc_html($l);?></option>
+                                foreach ($huong_terms as $t):
+                                    $sel_h = (int)($_POST['huong'] ?? $old_huong_val) === $t->term_id;
+                            ?>
+                            <option value="<?php echo esc_attr($t->term_id);?>" <?php selected($sel_h, true); ?>><?php echo esc_html($t->name);?></option>
                             <?php endforeach; endif; ?>
                         </select>
                     </div>
@@ -1139,25 +1171,28 @@ window.dtST = {};
                         <label class="dt-label">Số phòng ngủ</label>
                         <select name="prefix-bedroom" class="dt-select">
                             <option value="">-- Chọn --</option>
-                            <option value="0">Studio</option>
-                            <option value="1">1</option><option value="2">2</option>
-                            <option value="3">3</option><option value="4">4</option>
-                            <option value="5">≥ 5</option>
+                            <?php foreach (['0'=>'Studio','1'=>'1','2'=>'2','3'=>'3','4'=>'4','5'=>'≥ 5'] as $v=>$l):
+                                $cur = $_POST['prefix-bedroom'] ?? $old_bedroom; ?>
+                            <option value="<?php echo $v;?>" <?php selected($cur, $v); ?>><?php echo $l;?></option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="dt-field">
                         <label class="dt-label">Số nhà vệ sinh</label>
                         <select name="prefix-bathroom" class="dt-select">
                             <option value="">-- Chọn --</option>
-                            <option value="1">1</option><option value="2">2</option>
-                            <option value="3">3</option><option value="4">4</option>
-                            <option value="5">≥ 5</option>
+                            <?php foreach (['1'=>'1','2'=>'2','3'=>'3','4'=>'4','5'=>'≥ 5'] as $v=>$l):
+                                $cur = $_POST['prefix-bathroom'] ?? $old_bathroom; ?>
+                            <option value="<?php echo $v;?>" <?php selected($cur, $v); ?>><?php echo $l;?></option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                 </div>
                 <div class="btn-next"><button type="button" onclick="dtNext(3)">Tiếp tục →</button></div>
             </div>
         </div>
+
+        <!-- ============ BLOCK 4: HÌNH ẢNH ============ -->
         <div class="dt-card is-locked" id="block-4">
             <div class="dt-card-head" onclick="dtToggle(4)">
                 <div class="dt-card-ico">
@@ -1177,62 +1212,98 @@ window.dtST = {};
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="flex-shrink:0;margin-top:1px;">
                         <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                     </svg>
-                    <span>1 ảnh chính (bắt buộc) + tối đa 9 ảnh phụ. Định dạng JPG, PNG, WebP, tối đa 10MB/ảnh.</span>
+                    <span>Chỉ tải ảnh mới nếu muốn thay thế ảnh hiện có. Bỏ trống để giữ nguyên ảnh cũ.</span>
                 </div>
-                <div class="dt-section-label">Ảnh chính <span class="dt-req">*</span></div>
+
+                <div class="dt-section-label">Ảnh chính hiện tại</div>
                 <div class="dt-field" style="margin-bottom:20px;">
-                    <label class="dt-label" style="font-size:13px;color:var(--c-muted);">Ảnh đại diện — hiển thị trong kết quả tìm kiếm</label>
+                    <?php if ($existing_main_thumb): ?>
+                    <div style="margin-bottom:10px;">
+                        <img src="<?php echo esc_url($existing_main_thumb); ?>" alt="Ảnh chính hiện tại"
+                             style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--c-border);object-fit:cover;">
+                    </div>
+                    <?php endif; ?>
+                    <label class="dt-label" style="font-size:13px;color:var(--c-muted);">Chọn ảnh mới để thay thế (không bắt buộc)</label>
                     <input class="dt-input" type="file" name="main_image" id="main-file-input"
                            accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                            onchange="dtPreviewMain(this)">
                     <div id="main-preview" style="margin-top:10px;display:none;">
-                        <img id="main-preview-img" src="" alt="Ảnh chính"
+                        <img id="main-preview-img" src="" alt="Ảnh chính mới"
                              style="max-width:100%;max-height:260px;border-radius:8px;border:1px solid var(--c-border);object-fit:cover;">
                     </div>
                 </div>
-                <div class="dt-section-label">Ảnh phụ (tối đa 9)</div>
+
+                <div class="dt-section-label">Ảnh phụ hiện tại (tối đa 9)</div>
                 <div class="dt-field" style="margin-bottom:14px;">
+                    <?php if (!empty($existing_subs)): ?>
+                    <div class="dt-img-grid" style="margin-bottom:10px;">
+                        <?php foreach ($existing_subs as $sub_id):
+                            $sub_url = wp_get_attachment_image_url($sub_id, 'thumbnail');
+                            if (!$sub_url) continue;
+                        ?>
+                        <div class="dt-sub-slot">
+                            <img src="<?php echo esc_url($sub_url); ?>" alt="Ảnh phụ">
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <div class="dt-hint" style="margin-bottom:10px;">Tải ảnh mới bên dưới sẽ <strong>thay thế toàn bộ</strong> ảnh phụ hiện tại.</div>
+                    <?php endif; ?>
                     <input class="dt-input" type="file" name="sub_images[]" id="sub-file-input"
                            accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                            multiple onchange="dtPreviewSubs(this)">
                     <div id="sub-previews" class="dt-img-grid" style="margin-top:10px;"></div>
                 </div>
-				<div class="dt-section-label">Ảnh 360°</div>
-				<div class="dt-field" style="margin-bottom:20px;">
-					<label class="dt-label" style="font-size:13px;color:var(--c-muted);">Ảnh toàn cảnh dạng equirectangular (không bắt buộc)</label>
-					<input class="dt-input" type="file" name="image_360" id="image360-file-input"
-						accept="image/jpeg,image/jpg,image/png,image/webp"
-						onchange="dtPreview360(this)">
-					<div id="image360-preview" style="margin-top:10px;display:none;">
-						<img id="image360-preview-img" src="" alt="Ảnh 360"
-							style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--c-border);object-fit:cover;">
-					</div>
-				</div>
 
-				<div class="dt-section-label">Ảnh giấy tờ pháp lý (riêng tư)</div>
-				<div class="dt-field" style="margin-bottom:20px;">
-					<div class="dt-info" style="margin-bottom:10px;">
-						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="flex-shrink:0;margin-top:1px;">
-							<path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/>
-							<path d="M19 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09A1.65 1.65 0 0015.4 4.6a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.36.14.66.38.86.7"/>
-						</svg>
-						<span>Ảnh sổ đỏ/sổ hồng chỉ bạn xem được, không hiển thị công khai. Giúp xác minh tin nhanh hơn khi kiểm duyệt.</span>
-					</div>
-					<input class="dt-input" type="file" name="legal_images[]" id="legal-file-input"
-						accept="image/jpeg,image/jpg,image/png,image/webp"
-						multiple onchange="dtPreviewLegal(this)">
-					<div id="legal-previews" class="dt-img-grid" style="margin-top:10px;"></div>
-				</div>
+                <div class="dt-section-label">Ảnh 360°</div>
+                <div class="dt-field" style="margin-bottom:20px;">
+                    <?php if ($existing_image360_url): ?>
+                    <div style="margin-bottom:10px;">
+                        <img src="<?php echo esc_url($existing_image360_url); ?>" alt="Ảnh 360 hiện tại"
+                             style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--c-border);object-fit:cover;">
+                    </div>
+                    <?php endif; ?>
+                    <label class="dt-label" style="font-size:13px;color:var(--c-muted);">Chọn ảnh mới để thay thế (không bắt buộc)</label>
+                    <input class="dt-input" type="file" name="image_360" id="image360-file-input"
+                           accept="image/jpeg,image/jpg,image/png,image/webp"
+                           onchange="dtPreview360(this)">
+                    <div id="image360-preview" style="margin-top:10px;display:none;">
+                        <img id="image360-preview-img" src="" alt="Ảnh 360 mới"
+                             style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--c-border);object-fit:cover;">
+                    </div>
+                </div>
+
+                <div class="dt-section-label">Ảnh giấy tờ pháp lý (riêng tư)</div>
+                <div class="dt-field" style="margin-bottom:20px;">
+                    <?php if (!empty($existing_legal_images)): ?>
+                    <div class="dt-img-grid" style="margin-bottom:10px;">
+                        <?php foreach ($existing_legal_images as $img): ?>
+                        <div class="dt-sub-slot">
+                            <img src="<?php echo esc_url($img['url']); ?>" alt="Giấy tờ pháp lý">
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <div class="dt-hint" style="margin-bottom:10px;">Tải ảnh mới bên dưới sẽ <strong>thay thế toàn bộ</strong> ảnh giấy tờ hiện tại.</div>
+                    <?php endif; ?>
+                    <div class="dt-info" style="margin-bottom:10px;">
+                        <span>Ảnh sổ đỏ/sổ hồng chỉ bạn xem được, không hiển thị công khai.</span>
+                    </div>
+                    <input class="dt-input" type="file" name="legal_images[]" id="legal-file-input"
+                           accept="image/jpeg,image/jpg,image/png,image/webp"
+                           multiple onchange="dtPreviewLegal(this)">
+                    <div id="legal-previews" class="dt-img-grid" style="margin-top:10px;"></div>
+                </div>
+
                 <div class="dt-field" style="margin-top:18px;">
                     <label class="dt-label">Link video YouTube</label>
                     <input class="dt-input" type="url" name="prefix-video"
                            placeholder="https://youtube.com/..."
-                           value="<?php echo old_form_value('prefix-video'); ?>">
+                           value="<?php echo esc_attr($_POST['prefix-video'] ?? $old_video); ?>">
                 </div>
                 <div class="btn-next"><button type="button" onclick="dtNext(4)">Tiếp tục →</button></div>
             </div>
         </div>
 
+        <!-- ============ BLOCK 5: PHÁP LÝ & NỘI THẤT ============ -->
         <div class="dt-card is-locked" id="block-5">
             <div class="dt-card-head" onclick="dtToggle(5)">
                 <div class="dt-card-ico">
@@ -1254,28 +1325,35 @@ window.dtST = {};
                 <div class="dt-field" style="margin-bottom:14px;">
                     <div class="dt-label" style="margin-bottom:8px;">Loại giấy tờ</div>
                     <div class="dt-chips" id="phap-ly-chips">
-                        <?php foreach (['so-do'=>'Sổ đỏ (GCNQSD đất)','so-hong'=>'Sổ hồng (GCNQSH)','hop-dong'=>'Hợp đồng mua bán','giay-to-khac'=>'Giấy tờ khác','chua-co'=>'Chưa có'] as $v=>$l): ?>
-                        <div class="dt-chip" data-g="phap_ly" data-v="<?php echo esc_attr($v);?>"
+                        <?php foreach (['so-do'=>'Sổ đỏ (GCNQSD đất)','so-hong'=>'Sổ hồng (GCNQSH)','hop-dong'=>'Hợp đồng mua bán','giay-to-khac'=>'Giấy tờ khác','chua-co'=>'Chưa có'] as $v=>$l):
+                            $cur_pl = $_POST['prefix-phap-ly'] ?? $old_phap_ly;
+                            $is_sel_pl = ($cur_pl === $v);
+                        ?>
+                        <div class="dt-chip <?php echo $is_sel_pl ? 'sel' : ''; ?>" data-g="phap_ly" data-v="<?php echo esc_attr($v);?>"
                              onclick="dtChipSingle(this,'phap_ly','phap-ly-val')"><?php echo esc_html($l);?></div>
                         <?php endforeach; ?>
                     </div>
-                    <input type="hidden" name="prefix-phap-ly" id="phap-ly-val" value="">
+                    <input type="hidden" name="prefix-phap-ly" id="phap-ly-val" value="<?php echo esc_attr($_POST['prefix-phap-ly'] ?? $old_phap_ly); ?>">
                 </div>
                 <div class="dt-section-label">Tình trạng nội thất</div>
                 <div class="dt-field">
                     <div class="dt-label" style="margin-bottom:8px;">Nội thất</div>
                     <div class="dt-chips" id="noi-that-chips">
-                        <?php foreach (['day-du'=>'Đầy đủ','co-ban'=>'Cơ bản','cao-cap'=>'Cao cấp','khong-co'=>'Không có'] as $v=>$l): ?>
-                        <div class="dt-chip" data-g="noi_that" data-v="<?php echo esc_attr($v);?>"
+                        <?php foreach (['day-du'=>'Đầy đủ','co-ban'=>'Cơ bản','cao-cap'=>'Cao cấp','khong-co'=>'Không có'] as $v=>$l):
+                            $cur_nt = $_POST['prefix-noi-that'] ?? $old_noi_that;
+                            $is_sel_nt = ($cur_nt === $v);
+                        ?>
+                        <div class="dt-chip <?php echo $is_sel_nt ? 'sel' : ''; ?>" data-g="noi_that" data-v="<?php echo esc_attr($v);?>"
                              onclick="dtChipSingle(this,'noi_that','noi-that-val')"><?php echo esc_html($l);?></div>
                         <?php endforeach; ?>
                     </div>
-                    <input type="hidden" name="prefix-noi-that" id="noi-that-val" value="">
+                    <input type="hidden" name="prefix-noi-that" id="noi-that-val" value="<?php echo esc_attr($_POST['prefix-noi-that'] ?? $old_noi_that); ?>">
                 </div>
                 <div class="btn-next"><button type="button" onclick="dtNext(5)">Tiếp tục →</button></div>
             </div>
         </div>
 
+        <!-- ============ BLOCK 6: TIÊU ĐỀ & MÔ TẢ ============ -->
         <div class="dt-card is-locked" id="block-6">
             <div class="dt-card-head" onclick="dtToggle(6)">
                 <div class="dt-card-ico">
@@ -1295,7 +1373,7 @@ window.dtST = {};
                     <input class="dt-input" type="text" name="post_title" id="title-inp"
                            placeholder="Ví dụ: Bán nhà 3 tầng 75m², hẻm xe hơi, Quận 1, giá 8.5 tỷ"
                            maxlength="150"
-                           value="<?php echo esc_attr($_POST['post_title'] ?? ''); ?>"
+                           value="<?php echo esc_attr($_POST['post_title'] ?? $old_title); ?>"
                            oninput="cntChars(this,'cnt-title',150)">
                     <div class="dt-char-row">
                         <span class="dt-hint">Tiêu đề rõ ràng giúp tăng khả năng tiếp cận</span>
@@ -1306,7 +1384,7 @@ window.dtST = {};
                     <label class="dt-label">Mô tả</label>
                     <textarea class="dt-textarea" name="post_content" rows="6" maxlength="3000"
                               placeholder="Mô tả về vị trí, tiện ích, tình trạng pháp lý, lý do bán/cho thuê..."
-                              oninput="cntChars(this,'cnt-desc',3000)"><?php echo esc_textarea($_POST['post_content'] ?? ''); ?></textarea>
+                              oninput="cntChars(this,'cnt-desc',3000)"><?php echo esc_textarea($_POST['post_content'] ?? $old_content); ?></textarea>
                     <div class="dt-char-row">
                         <span class="dt-hint">Tối thiểu 50 ký tự</span>
                         <span class="dt-char-count"><span id="cnt-desc">0</span>/3000</span>
@@ -1316,6 +1394,7 @@ window.dtST = {};
             </div>
         </div>
 
+        <!-- ============ BLOCK 7: LIÊN HỆ ============ -->
         <div class="dt-card is-locked" id="block-7">
             <div class="dt-card-head" onclick="dtToggle(7)">
                 <div class="dt-card-ico">
@@ -1334,25 +1413,25 @@ window.dtST = {};
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="flex-shrink:0;margin-top:1px;">
                         <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                     </svg>
-                    Thông tin được lấy từ hồ sơ tài khoản. Bạn có thể thay đổi riêng cho tin đăng này.
+                    Thông tin liên hệ hiện tại của tin đăng này. Bạn có thể thay đổi riêng cho tin.
                 </div>
                 <div class="dt-grid">
                     <div class="dt-field">
                         <label class="dt-label">Họ và tên <span class="dt-req">*</span></label>
                         <input class="dt-input" type="text" name="prefix-name-custom"
-                               value="<?php echo esc_attr($_POST['prefix-name-custom'] ?? $custom_user->full_name ?? ''); ?>"
+                               value="<?php echo esc_attr($_POST['prefix-name-custom'] ?? $old_name_custom ?? $custom_user->full_name ?? ''); ?>"
                                placeholder="Nhập họ tên">
                     </div>
                     <div class="dt-field">
                         <label class="dt-label">Số điện thoại <span class="dt-req">*</span></label>
                         <input class="dt-input" type="tel" name="prefix-phone-custom"
-                               value="<?php echo esc_attr($_POST['prefix-phone-custom'] ?? $custom_user->phone ?? ''); ?>"
+                               value="<?php echo esc_attr($_POST['prefix-phone-custom'] ?? $old_phone_custom ?? $custom_user->phone ?? ''); ?>"
                                placeholder="0901 234 567">
                     </div>
                     <div class="dt-field dt-full">
                         <label class="dt-label">Email</label>
                         <input class="dt-input" type="email" name="prefix-email-custom"
-                               value="<?php echo esc_attr($_POST['prefix-email-custom'] ?? $custom_user->email ?? ''); ?>"
+                               value="<?php echo esc_attr($_POST['prefix-email-custom'] ?? $old_email_custom ?? $custom_user->email ?? ''); ?>"
                                placeholder="email@example.com">
                     </div>
                 </div>
@@ -1360,9 +1439,23 @@ window.dtST = {};
         </div>
 
         <div class="dt-footer">
-            <div class="dt-footer-note">Tin đăng sẽ được kiểm duyệt trong <strong>24 giờ</strong>.</div>
-            <button type="submit" class="btn-primary" id="btn-submit">Đăng tin ngay</button>
+            <div class="dt-footer-note">Tin sẽ được kiểm duyệt lại sau khi cập nhật.</div>
+            <button type="submit" class="btn-primary" id="btn-submit">Lưu thay đổi</button>
         </div>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var mapEl = document.getElementById('dt-map');
+    if (mapEl) {
+        var existingLat = parseFloat(mapEl.dataset.existingLat) || 0;
+        var existingLng = parseFloat(mapEl.dataset.existingLng) || 0;
+        window.__dtExistingLat = existingLat;
+        window.__dtExistingLng = existingLng;
+    }
+    window.__dtHasExistingMainImage = <?php echo $existing_main_thumb ? 'true' : 'false'; ?>;
+});
+</script>
+
 <?php get_footer(); ?>

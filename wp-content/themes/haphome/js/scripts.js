@@ -235,6 +235,135 @@
             $('.mask-popup').removeClass("show");
             $('body').removeClass('popup-open');
         });
+
+        // UPGRADE VIP POPUP, DELETE, PUSH
+        jQuery(function ($) {
+            function openPopup($scope) {
+                $scope.find('.qlp-box').addClass('show');
+                $scope.find('.qlp-mask').addClass('show');
+                $('body').addClass('qlp-open');
+            }
+        
+            function closePopup($scope) {
+                $scope.find('.qlp-box').removeClass('show');
+                $scope.find('.qlp-mask').removeClass('show');
+                $('body').removeClass('qlp-open');
+            }
+            $('.vip-popup .qlp-mask, .close-vip-popup').on('click', function () {
+                closePopup($('.vip-popup'));
+            });
+            $('.delete-popup .qlp-mask, .close-delete-popup').on('click', function () {
+                closePopup($('.delete-popup'));
+            });
+            $('.push-popup .qlp-mask, .close-push-popup').on('click', function () {
+                closePopup($('.push-popup'));
+            });
+
+            window.qltUpgradeVip = function (postId) {
+                $('#vip-popup-post-id').val(postId);
+                $('.vip-popup .vip-error').removeClass('show').text('');
+                openPopup($('.vip-popup'));
+            };
+        
+            $('#vip-popup-confirm-btn').on('click', function () {
+                const postId = $('#vip-popup-post-id').val();
+                const $btn = $(this);
+                const $err = $('.vip-popup .vip-error');
+        
+                $btn.prop('disabled', true).text('Đang xử lý...');
+                $err.removeClass('show').text('');
+        
+                $.post(qlt_ajax.ajax_url, {
+                    action: 'ql_upgrade_vip',
+                    post_id: postId,
+                    _nonce: qlt_ajax.nonce
+                }).done(function (data) {
+                    $btn.prop('disabled', false).text('Đồng ý nâng cấp');
+        
+                    if (data.success) {
+                        closePopup($('.vip-popup'));
+                        qltApplyVipBadge(postId, data.data.vip_level, data.data.expired_at_formatted);
+                        qltToast('✓ ' + data.data.message);
+                    } else {
+                        $err.addClass('show').text(data.data?.message || 'Có lỗi xảy ra khi nâng cấp VIP.');
+                    }
+                }).fail(function () {
+                    $btn.prop('disabled', false).text('Đồng ý nâng cấp');
+                    $err.addClass('show').text('Không thể kết nối máy chủ, vui lòng thử lại.');
+                });
+            });
+            window.qltDelete = function (postId) {
+                document.getElementById('qlt-portal')?.classList.remove('open');
+                $('#delete-popup-post-id').val(postId);
+                $('.delete-popup .delete-error').removeClass('show').text('');
+                openPopup($('.delete-popup'));
+            };
+        
+            $('#delete-popup-confirm-btn').on('click', function () {
+                const postId = $('#delete-popup-post-id').val();
+                const $btn = $(this);
+                const $err = $('.delete-popup .delete-error');
+                $btn.prop('disabled', true).text('Đang xoá...');
+                $err.removeClass('show').text('');
+                $.post(qlt_ajax.ajax_url, {
+                    action: 'ql_delete_listing',
+                    post_id: postId,
+                    _nonce: qlt_ajax.nonce
+                }).done(function (data) {
+                    $btn.prop('disabled', false).text('Xoá tin');
+        
+                    if (data.success) {
+                        closePopup($('.delete-popup'));
+                        const card = document.getElementById('qlt-card-' + postId);
+                        if (card) {
+                            card.style.opacity = '0';
+                            setTimeout(() => card.remove(), 300);
+                        }
+                    } else {
+                        $err.addClass('show').text(data.data?.message || 'Có lỗi xảy ra.');
+                    }
+                }).fail(function () {
+                    $btn.prop('disabled', false).text('Xoá tin');
+                    $err.addClass('show').text('Không thể kết nối máy chủ, vui lòng thử lại.');
+                });
+            });
+            window.qltPush = function (postId) {
+                $('#push-popup-post-id').val(postId);
+                $('.push-popup .push-error').removeClass('show').text('');
+                $('.push-popup input[name="push_type"][value="normal"]').prop('checked', true);
+                openPopup($('.push-popup'));
+            };
+        
+            $('#push-popup-confirm-btn').on('click', function () {
+                const postId = $('#push-popup-post-id').val();
+                const pushType = $('.push-popup input[name="push_type"]:checked').val();
+                const $btn = $(this);
+                const $err = $('.push-popup .push-error');
+        
+                $btn.prop('disabled', true).text('Đang xử lý...');
+                $err.removeClass('show').text('');
+        
+                $.post(qlt_ajax.ajax_url, {
+                    action: 'ql_push_listing',
+                    post_id: postId,
+                    push_type: pushType,
+                    _nonce: qlt_ajax.nonce
+                }).done(function (data) {
+                    $btn.prop('disabled', false).text('Xác nhận đẩy tin');
+        
+                    if (data.success) {
+                        closePopup($('.push-popup'));
+                        qltToast('✓ ' + data.data.message);
+                    } else {
+                        $err.addClass('show').text(data.data?.message || 'Có lỗi xảy ra khi đẩy tin.');
+                    }
+                }).fail(function () {
+                    $btn.prop('disabled', false).text('Xác nhận đẩy tin');
+                    $err.addClass('show').text('Không thể kết nối máy chủ, vui lòng thử lại.');
+                });
+            });
+        
+        });
         /*End OPEN & CLOSE POPUP*/
 
         /*OPEN & CLOSE MOBILE MENU*/
