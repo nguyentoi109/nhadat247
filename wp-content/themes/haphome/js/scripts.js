@@ -258,7 +258,19 @@
             $('.push-popup .qlp-mask, .close-push-popup').on('click', function () {
                 closePopup($('.push-popup'));
             });
-
+            $('.repost-popup .qlp-mask, .close-repost-popup').on('click', function () {
+                closePopup($('.repost-popup'));
+            });
+            $('.balance-popup .qlp-mask, .close-balance-popup').on('click', function () {
+                closePopup($('.balance-popup'));
+            });
+            window.qltOpenBalancePopup = function (customMessage) {
+                if (customMessage) {
+                    $('#balance-popup-message').text(customMessage);
+                }
+                openPopup($('.balance-popup'));
+            };
+        
             window.qltUpgradeVip = function (postId) {
                 $('#vip-popup-post-id').val(postId);
                 $('.vip-popup .vip-error').removeClass('show').text('');
@@ -284,6 +296,9 @@
                         closePopup($('.vip-popup'));
                         qltApplyVipBadge(postId, data.data.vip_level, data.data.expired_at_formatted);
                         qltToast('✓ ' + data.data.message);
+                    } else if (data.data?.insufficient_balance) {
+                        closePopup($('.vip-popup'));
+                        qltOpenBalancePopup('Số dư không đủ để nâng cấp VIP (cần 150.000đ). Vui lòng nạp thêm tiền.');
                     } else {
                         $err.addClass('show').text(data.data?.message || 'Có lỗi xảy ra khi nâng cấp VIP.');
                     }
@@ -292,6 +307,7 @@
                     $err.addClass('show').text('Không thể kết nối máy chủ, vui lòng thử lại.');
                 });
             });
+
             window.qltDelete = function (postId) {
                 document.getElementById('qlt-portal')?.classList.remove('open');
                 $('#delete-popup-post-id').val(postId);
@@ -354,6 +370,9 @@
                     if (data.success) {
                         closePopup($('.push-popup'));
                         qltToast('✓ ' + data.data.message);
+                    } else if (data.data?.insufficient_balance) {
+                        closePopup($('.push-popup'));
+                        qltOpenBalancePopup('Số dư không đủ để đẩy tin. Vui lòng nạp thêm tiền.');
                     } else {
                         $err.addClass('show').text(data.data?.message || 'Có lỗi xảy ra khi đẩy tin.');
                     }
@@ -363,6 +382,195 @@
                 });
             });
         
+            window.qltRepost = function (postId) {
+                document.getElementById('qlt-portal')?.classList.remove('open');
+                $('#repost-popup-post-id').val(postId);
+                $('.repost-popup .repost-error').removeClass('show').text('');
+                openPopup($('.repost-popup'));
+            };
+        
+            $('#repost-popup-confirm-btn').on('click', function () {
+                const postId = $('#repost-popup-post-id').val();
+                const $btn = $(this);
+                const $err = $('.repost-popup .repost-error');
+        
+                $btn.prop('disabled', true).text('Đang xử lý...');
+                $err.removeClass('show').text('');
+        
+                $.post(qlt_ajax.ajax_url, {
+                    action: 'ql_repost_listing',
+                    post_id: postId,
+                    _nonce: qlt_ajax.nonce
+                }).done(function (data) {
+                    $btn.prop('disabled', false).text('Đồng ý, đăng lại');
+        
+                    if (data.success) {
+                        closePopup($('.repost-popup'));
+                        qltToast('✓ ' + data.data.message);
+                        if (data.data.expired_at_formatted) {
+                            qltApplyRepostUI(postId, data.data.expired_at_formatted);
+                        } else {
+                            setTimeout(() => window.location.reload(), 800);
+                        }
+                    } else if (data.data?.insufficient_balance) {
+                        closePopup($('.repost-popup'));
+                        qltOpenBalancePopup('Số dư không đủ để đăng lại tin (cần 150.000đ). Vui lòng nạp thêm tiền.');
+                    } else {
+                        $err.addClass('show').text(data.data?.message || 'Có lỗi xảy ra.');
+                    }
+                }).fail(function () {
+                    $btn.prop('disabled', false).text('Đồng ý, đăng lại');
+                    $err.addClass('show').text('Không thể kết nối máy chủ, vui lòng thử lại.');
+                });
+            });
+        
+            window.qltApplyRepostUI = function (postId, expiredAtFormatted) {
+                const card = document.getElementById('qlt-card-' + postId);
+                if (!card) return;
+                const statusText = card.querySelector('.qlt-status-text');
+                const statusDot = card.querySelector('.qlt-status-dot');
+                if (statusText) {
+                    statusText.textContent = 'Chờ duyệt';
+                    statusText.className = 'qlt-status-text yellow';
+                }
+                if (statusDot) {
+                    statusDot.className = 'qlt-status-dot yellow';
+                }
+        
+                const expEls = card.querySelectorAll('.qlt-meta-inline span');
+                expEls.forEach(function (el) {
+                    if (el.querySelector('strong') && el.querySelector('strong').textContent.includes('hết hạn')) {
+                        el.innerHTML = '<strong>Ngày hết hạn</strong><span style="color:#374151;">' + expiredAtFormatted + '</span>';
+                    }
+                });
+            };
+        });
+
+        jQuery(function ($) {
+            function openPopup($scope) {
+                $scope.find('.qlp-box').addClass('show');
+                $scope.find('.qlp-mask').addClass('show');
+                $('body').addClass('qlp-open');
+            }
+            function closePopup($scope) {
+                $scope.find('.qlp-box').removeClass('show');
+                $scope.find('.qlp-mask').removeClass('show');
+                $('body').removeClass('qlp-open');
+            }
+
+            $('.confirm-post-popup .qlp-mask, .close-confirm-post-popup').on('click', function () {
+                closePopup($('.confirm-post-popup'));
+            });
+
+            window.qltOpenBalancePopup = window.qltOpenBalancePopup || function (customMessage) {
+                if (customMessage) {
+                    $('#balance-popup-message').text(customMessage);
+                }
+                openPopup($('.balance-popup'));
+            };
+
+            const $form = $('#dt-form');
+            const $submitBtn = $('#btn-submit');
+
+            $form.on('submit', function (e) {
+                e.preventDefault();
+                const errors = dtValidateForm();
+                if (errors.length > 0) {
+                    dtShowClientErrors(errors);
+                    return false;
+                }
+
+                $('.confirm-post-popup .confirm-post-error').removeClass('show').text('');
+                openPopup($('.confirm-post-popup'));
+                return false;
+            });
+
+            function dtValidateForm() {
+                const errors = [];
+
+                if (!$('#title-inp').val() || $('#title-inp').val().trim() === '') {
+                    errors.push('Vui lòng nhập tiêu đề.');
+                }
+                if (!$('#price-inp').val() || $('#price-inp').val().trim() === '') {
+                    errors.push('Vui lòng nhập giá.');
+                }
+                if (!$('input[name="prefix-area"]').val()) {
+                    errors.push('Vui lòng nhập diện tích.');
+                }
+                if (!$('#addr-detail').val() || $('#addr-detail').val().trim() === '') {
+                    errors.push('Vui lòng nhập địa chỉ chi tiết.');
+                }
+                const mode = $('#dt-mode-val').val();
+                if (mode === 'bds' && !$('#pt-val').val()) {
+                    errors.push('Vui lòng chọn loại bất động sản.');
+                }
+                if (mode === 'du_an' && !$('#dev-val').val()) {
+                    errors.push('Vui lòng chọn dự án.');
+                }
+                const mainFile = $('#main-file-input')[0];
+                if (!mainFile || !mainFile.files || mainFile.files.length === 0) {
+                    errors.push('Vui lòng tải lên ảnh chính.');
+                }
+
+                return errors;
+            }
+
+            function dtShowClientErrors(errors) {
+                let $box = $('.dt-alert-err');
+                if ($box.length === 0) {
+                    $box = $('<div class="dt-alert-err"><strong>Vui lòng kiểm tra lại:</strong><ul style="margin:6px 0 0 16px;"></ul></div>');
+                    $form.before($box);
+                }
+                const $ul = $box.find('ul');
+                $ul.empty();
+                errors.forEach(function (msg) {
+                    $ul.append($('<li></li>').text(msg));
+                });
+                $box[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            $('#confirm-post-confirm-btn').on('click', function () {
+                const $btn = $(this);
+                const $err = $('.confirm-post-popup .confirm-post-error');
+
+                $btn.prop('disabled', true).text('Đang xử lý...');
+                $err.removeClass('show').text('');
+                $submitBtn.prop('disabled', true);
+
+                const formData = new FormData($form[0]);
+                formData.append('action', 'dt_submit_listing');
+                formData.append('_nonce', qlt_ajax.nonce);
+
+                $.ajax({
+                    url: qlt_ajax.ajax_url,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                }).done(function (data) {
+                    $btn.prop('disabled', false).text('Đồng ý, đăng tin');
+                    $submitBtn.prop('disabled', false);
+
+                    if (data.success) {
+                        closePopup($('.confirm-post-popup'));
+                        window.location.href = data.data.redirect_url;
+                    } else if (data.data && data.data.insufficient_balance) {
+                        closePopup($('.confirm-post-popup'));
+                        qltOpenBalancePopup('Số dư không đủ để đăng tin (cần 150.000đ). Vui lòng nạp thêm tiền.');
+                    } else {
+                        const msg = (data.data && data.data.message) || 'Có lỗi xảy ra, vui lòng thử lại.';
+                        $err.addClass('show').text(msg);
+                        if (data.data && Array.isArray(data.data.errors) && data.data.errors.length) {
+                            $err.addClass('show').html(data.data.errors.map(e => $('<div></div>').text(e).html()).join('<br>'));
+                        }
+                    }
+                }).fail(function () {
+                    $btn.prop('disabled', false).text('Đồng ý, đăng tin');
+                    $submitBtn.prop('disabled', false);
+                    $err.addClass('show').text('Không thể kết nối máy chủ, vui lòng thử lại.');
+                });
+            });
+
         });
         /*End OPEN & CLOSE POPUP*/
 

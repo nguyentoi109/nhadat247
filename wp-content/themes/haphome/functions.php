@@ -1846,25 +1846,29 @@ function dt_get_legal_images(int $post_id): array {
     }, $ids);
 }
  
-add_action('template_redirect', 'handle_dang_tin_form');
-function handle_dang_tin_form(): void {
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
-    if (!isset($_POST['dang_tin_nonce'])) return;
-    if (!wp_verify_nonce($_POST['dang_tin_nonce'], 'dang_tin_action')) return;
-    if (!empty($_POST['edit_post_id'])) return;
+define('QL_POST_PRICE', 150000);
+add_action('wp_ajax_dt_submit_listing', 'dt_ajax_submit_listing');
+function dt_ajax_submit_listing(): void {
+ 
+    if (!isset($_POST['_nonce']) || !wp_verify_nonce($_POST['_nonce'], 'ql_listing_nonce')) {
+        wp_send_json_error(['message' => 'Phiên làm việc đã hết hạn, vui lòng tải lại trang.']);
+    }
  
     $custom_user = get_current_custom_user();
     if (!$custom_user) {
-        wp_redirect(home_url('/dang-nhap/'));
-        exit;
+        wp_send_json_error([
+            'message'          => 'Vui lòng đăng nhập để đăng tin.',
+            'need_login'       => true,
+            'redirect_url'     => home_url('/dang-nhap/'),
+        ]);
     }
  
-    $uid     = (int) $custom_user->id;  
+    $uid     = (int) $custom_user->id;
     $uid_key = 'dang_tin_uid_' . md5($uid);
     $errors  = [];
     $title     = sanitize_text_field($_POST['post_title']  ?? '');
     $content   = wp_kses_post($_POST['post_content']       ?? '');
-    $mode      = sanitize_key($_POST['dt_mode']            ?? 'bds'); 
+    $mode      = sanitize_key($_POST['dt_mode']            ?? 'bds');
     $price_raw = preg_replace('/[^0-9]/', '', $_POST['prefix-price'] ?? '');
     $phone     = preg_replace('/[^0-9]/', '', $_POST['prefix-phone-custom'] ?? '');
     $video_url = esc_url_raw(trim($_POST['prefix-video'] ?? ''));
@@ -1885,30 +1889,60 @@ function handle_dang_tin_form(): void {
         $errors[] = 'Số điện thoại không hợp lệ (10 số, bắt đầu 03-09).';
     if ($video_url !== '' && !preg_match('/youtube\.com|youtu\.be|tiktok\.com/', $video_url))
         $errors[] = 'Link video chỉ hỗ trợ YouTube hoặc TikTok.';
-     $has_main = isset($_FILES['main_image']) && $_FILES['main_image']['error'] === UPLOAD_ERR_OK && $_FILES['main_image']['size']  > 0;
+ 
+    $has_main = isset($_FILES['main_image']) && $_FILES['main_image']['error'] === UPLOAD_ERR_OK && $_FILES['main_image']['size'] > 0;
     if (!$has_main)
         $errors[] = 'Vui lòng tải lên ảnh chính.';
  
     if (!empty($errors)) {
         set_transient('dt_errors_'   . $uid_key, $errors, 120);
         set_transient('dt_postdata_' . $uid_key, $_POST,  120);
-        wp_redirect(add_query_arg('dt_error', '1', get_permalink()));
-        exit;
+ 
+        wp_send_json_error([
+            'message' => 'Vui lòng kiểm tra lại thông tin.',
+            'errors'  => $errors,
+        ]);
     }
-     $wp_user_id = dt_get_wp_user_id($custom_user);
-     $post_id = wp_insert_post([
+ 
+    global $wpdb;
+    $wpdb->query('START TRANSACTION');
+    try {
+        ql_deduct_wallet_balance(
+            $uid,
+            QL_POST_PRICE,
+            'NEWPOST',
+            0,
+            'Đăng tin bất động sản mới'
+        );
+    } catch (Exception $e) {
+        $wpdb->query('ROLLBACK');
+ 
+        if ($e->getMessage() === 'INSUFFICIENT_BALANCE') {
+            wp_send_json_error([
+                'message'               => 'Số dư không đủ để đăng tin.',
+                'insufficient_balance'  => true,
+            ]);
+        }
+ 
+        wp_send_json_error([
+            'message' => 'Có lỗi xảy ra: ' . $e->getMessage(),
+        ]);
+    }
+    $wpdb->query('COMMIT');
+ 
+    $wp_user_id = dt_get_wp_user_id($custom_user);
+    $post_id = wp_insert_post([
         'post_title'   => $title,
         'post_content' => $content,
         'post_status'  => 'pending',
         'post_type'    => 'property',
-        'post_author'  => $wp_user_id, 
+        'post_author'  => $wp_user_id,
     ], true);
  
     if (is_wp_error($post_id)) {
-        set_transient('dt_errors_' . $uid_key,
-            ['Lỗi tạo tin: ' . $post_id->get_error_message()], 120);
-        wp_redirect(add_query_arg('dt_error', '1', get_permalink()));
-        exit;
+        wp_send_json_error([
+            'message' => 'Lỗi tạo tin: ' . $post_id->get_error_message(),
+        ]);
     }
  
     $main_id = dt_upload_image($_FILES['main_image'], $post_id);
@@ -1929,7 +1963,7 @@ function handle_dang_tin_form(): void {
             add_post_meta($post_id, 'prefix-image_property', $sub_id, false);
         }
     }
-
+ 
     if (isset($_FILES['image_360']) && $_FILES['image_360']['error'] === UPLOAD_ERR_OK && $_FILES['image_360']['size'] > 0) {
         $img360_id = dt_upload_image($_FILES['image_360'], $post_id);
         if (is_wp_error($img360_id)) {
@@ -1938,7 +1972,7 @@ function handle_dang_tin_form(): void {
             update_post_meta($post_id, 'image360', $img360_id);
         }
     }
-
+ 
     if (!empty($_FILES['legal_images']['name'][0])) {
         $legal_files = array_slice(dt_reformat_files($_FILES['legal_images']), 0, 5);
         foreach ($legal_files as $lf) {
@@ -1982,7 +2016,7 @@ function handle_dang_tin_form(): void {
     }
     update_post_meta($post_id, '_custom_user_id', $uid);
     update_post_meta($post_id, '_dt_mode', $mode);
-     $expired_at = date('Y-m-d', strtotime('+30 days'));
+    $expired_at = date('Y-m-d', strtotime('+30 days'));
     update_post_meta($post_id, '_expired_at', $expired_at);
  
     if ($mode === 'bds' && !empty($_POST['property_type_val'])) {
@@ -2009,8 +2043,11 @@ function handle_dang_tin_form(): void {
     dt_insert_listing($post_id, $uid, 30);
     delete_transient('dt_errors_'   . $uid_key);
     delete_transient('dt_postdata_' . $uid_key);
-    wp_redirect(add_query_arg('dt_success', '1', get_permalink()));
-    exit;
+    wp_send_json_success([
+        'message'      => 'Đăng tin thành công! Tin đang chờ kiểm duyệt.',
+        'post_id'      => $post_id,
+        'redirect_url' => add_query_arg('dt_success', '1', wp_get_referer() ?: home_url('/')),
+    ]);
 }
 
 add_action('template_redirect', 'handle_chinh_sua_tin_form');
@@ -2100,7 +2137,6 @@ function handle_chinh_sua_tin_form(): void {
         }
     }
     if (!empty($_FILES['sub_images']['name'][0])) {
-        // Xoá toàn bộ ảnh phụ cũ trước khi thêm ảnh mới
         $old_subs = get_post_meta($post_id, 'prefix-image_property', false);
         foreach ($old_subs as $old_sub_id) {
             wp_delete_attachment((int) $old_sub_id, true);
@@ -2225,12 +2261,126 @@ add_filter('query_vars', function ($vars) {
     return $vars;
 });
 
+//REPOST
+function ql_deduct_wallet_balance(int $user_id, float $price, string $ref_prefix, int $post_id, string $description): array {
+    global $wpdb;
+    $wallet = $wpdb->get_row($wpdb->prepare(
+        "SELECT * FROM {$wpdb->prefix}custom_wallets WHERE user_id = %d FOR UPDATE",
+        $user_id
+    ));
+    if (!$wallet) {
+        throw new Exception('INSUFFICIENT_BALANCE');
+    }
+    $balance_bonus = (float) $wallet->balance_bonus;
+    $balance_main  = (float) $wallet->balance_main;
+    $total         = $balance_bonus + $balance_main;
+    if ($total < $price) {
+        throw new Exception('INSUFFICIENT_BALANCE');
+    }
+ 
+    $remaining = $price;
+    $use_bonus = min($balance_bonus, $remaining);
+    $remaining -= $use_bonus;
+    $use_main  = min($balance_main, $remaining);
+    $new_bonus = $balance_bonus - $use_bonus;
+    $new_main  = $balance_main - $use_main;
+    $wpdb->update(
+        "{$wpdb->prefix}custom_wallets",
+        [
+            'balance_bonus' => $new_bonus,
+            'balance_main'  => $new_main,
+            'updated_at'    => current_time('mysql'),
+        ],
+        ['user_id' => $user_id]
+    );
+    $wpdb->insert("{$wpdb->prefix}custom_transactions", [
+        'user_id'         => $user_id,
+        'transaction_type'=> 'purchase',
+        'wallet_type'     => ($use_bonus > 0 && $use_main > 0) ? 'both' : (($use_bonus > 0) ? 'bonus' : 'main'),
+        'amount'          => $price,
+        'balance_after'   => $new_main,
+        'payment_method'  => 'wallet',
+        'reference_code'  => $ref_prefix . '-' . $post_id . '-' . time(),
+        'related_id'      => $post_id,
+        'status'          => 'completed',
+        'description'     => $description,
+        'created_at'      => current_time('mysql'),
+    ]);
+    return [
+        'use_bonus' => $use_bonus,
+        'use_main'  => $use_main,
+        'new_bonus' => $new_bonus,
+        'new_main'  => $new_main,
+    ];
+}
+
+function ql_send_wallet_error(Exception $e): void {
+    if ($e->getMessage() === 'INSUFFICIENT_BALANCE') {
+        wp_send_json_error(['insufficient_balance' => true, 'message' => 'Số dư không đủ.']);
+    }
+    wp_send_json_error(['message' => $e->getMessage()]);
+}
+ 
+define('QL_REPOST_PRICE', 150000);
+add_action('wp_ajax_ql_repost_listing', 'ql_handle_repost_listing');
+function ql_handle_repost_listing() {
+    check_ajax_referer('ql_listing_nonce', '_nonce');
+    $custom_user = get_current_custom_user();
+    if (!$custom_user) {
+        wp_send_json_error(['message' => 'Bạn cần đăng nhập.'], 401);
+    }
+    $user_id = (int) $custom_user->id;
+    $post_id = isset($_POST['post_id']) ? (int) $_POST['post_id'] : 0;
+    if (!$post_id) {
+        wp_send_json_error(['message' => 'Tin đăng không hợp lệ.']);
+    }
+ 
+    $owner_id = (int) get_post_meta($post_id, '_custom_user_id', true);
+    if ($owner_id && $owner_id !== $user_id) {
+        wp_send_json_error(['message' => 'Bạn không có quyền với tin đăng này.'], 403);
+    }
+ 
+    global $wpdb;
+    $wpdb->query('START TRANSACTION');
+ 
+    try {
+        ql_deduct_wallet_balance(
+            $user_id,
+            QL_REPOST_PRICE,
+            'REPOST',
+            $post_id,
+            'Đăng lại tin đăng #' . $post_id
+        );
+         wp_update_post([
+            'ID'          => $post_id,
+            'post_status' => 'pending',
+        ]);
+        $expired_at = date('Y-m-d', strtotime('+30 days'));
+        update_post_meta($post_id, '_expired_at', $expired_at);
+        $wpdb->update(
+            "{$wpdb->prefix}custom_post_listings",
+            [
+                'status'     => 'pending',
+                'expired_at' => $expired_at,
+                'renewed_at' => current_time('mysql'),
+                'updated_at' => current_time('mysql'),
+            ],
+            ['post_id' => $post_id]
+        );
+        $wpdb->query('COMMIT');
+        wp_send_json_success([
+            'message' => 'Đăng lại tin thành công! Tin đang chờ admin duyệt.',
+        ]);
+    } catch (Exception $e) {
+        $wpdb->query('ROLLBACK');
+        ql_send_wallet_error($e);
+    }
+}
+
 //upgrade vip post
 define('QL_VIP_PRICE', 150000);   
 define('QL_VIP_DAYS', 30);       
-add_action('wp_ajax_ql_upgrade_vip', 'ql_handle_upgrade_vip');
-add_action('wp_ajax_nopriv_ql_upgrade_vip', 'ql_handle_upgrade_vip');
- 
+add_action('wp_ajax_ql_upgrade_vip', 'ql_handle_upgrade_vip'); 
 function ql_handle_upgrade_vip() {
     check_ajax_referer('ql_listing_nonce', '_nonce');
  
@@ -2241,11 +2391,11 @@ function ql_handle_upgrade_vip() {
     $user_id = (int) $custom_user->id;
     $post_id = isset($_POST['post_id']) ? (int) $_POST['post_id'] : 0;
  
-    if (!$post_id || get_post_field('post_author', $post_id) === false) {
+    if (!$post_id) {
         wp_send_json_error(['message' => 'Tin đăng không hợp lệ.']);
     }
  
-    $owner_id = (int) get_post_meta($post_id, 'custom_user_id', true);
+    $owner_id = (int) get_post_meta($post_id, '_custom_user_id', true);
     if ($owner_id && $owner_id !== $user_id) {
         wp_send_json_error(['message' => 'Bạn không có quyền với tin đăng này.'], 403);
     }
@@ -2259,8 +2409,8 @@ function ql_handle_upgrade_vip() {
             "SELECT * FROM {$wpdb->prefix}custom_user_quotas WHERE user_id = %d FOR UPDATE",
             $user_id
         ));
- 
-        $used_quota = false;
+        $used_quota  = false;
+        $amount_paid = $price;
         if ($quota && (int) $quota->vip_quota > 0) {
             $wpdb->update(
                 "{$wpdb->prefix}custom_user_quotas",
@@ -2269,58 +2419,12 @@ function ql_handle_upgrade_vip() {
             );
             $used_quota  = true;
             $amount_paid = 0;
-            $pay_source  = 'quota';
  
         } else {
-            $wallet = $wpdb->get_row($wpdb->prepare(
-                "SELECT * FROM {$wpdb->prefix}custom_wallets WHERE user_id = %d FOR UPDATE",
-                $user_id
-            ));
- 
-            if (!$wallet) {
-                throw new Exception('Bạn chưa có ví, vui lòng nạp tiền trước khi nâng cấp.');
-            }
- 
-            $balance_bonus = (float) $wallet->balance_bonus;
-            $balance_main  = (float) $wallet->balance_main;
-            $total = $balance_bonus + $balance_main;
-            if ($total < $price) {
-                throw new Exception('Số dư không đủ để nâng cấp VIP. Vui lòng nạp thêm tiền.');
-            }
- 
-            $remaining = $price;
-            $use_bonus = min($balance_bonus, $remaining);
-            $remaining -= $use_bonus;
-            $use_main  = min($balance_main, $remaining);
-            $remaining -= $use_main;
-            $new_bonus = $balance_bonus - $use_bonus;
-            $new_main  = $balance_main - $use_main;
-            $wpdb->update(
-                "{$wpdb->prefix}custom_wallets",
-                [
-                    'balance_bonus' => $new_bonus,
-                    'balance_main'  => $new_main,
-                    'updated_at'    => current_time('mysql'),
-                ],
-                ['user_id' => $user_id]
+            ql_deduct_wallet_balance(
+                $user_id, $price, 'VIP', $post_id,
+                'Nâng cấp tin VIP (trừ bonus trước, main sau)'
             );
- 
-            $amount_paid = $price;
-            $pay_source  = ($use_bonus > 0 && $use_main > 0) ? 'bonus+main' : (($use_bonus > 0) ? 'bonus' : 'main');
-             $wpdb->insert("{$wpdb->prefix}custom_transactions", [
-                'user_id'         => $user_id,
-                'transaction_type'=> 'purchase',
-                'wallet_type'     => ($use_bonus > 0 && $use_main > 0) ? 'both' : (($use_bonus > 0) ? 'bonus' : 'main'),
-                'amount'          => $price,
-                'balance_after'   => $new_main,
-                'payment_method'  => 'wallet',
-                'reference_code'  => 'VIP-' . $post_id . '-' . time(),
-                'related_table'   => "{$wpdb->prefix}custom_vip_posts",
-                'related_id'      => $post_id,
-                'status'          => 'completed',
-                'description'     => 'Nâng cấp tin VIP (trừ bonus trước, main sau)',
-                'created_at'      => current_time('mysql'),
-            ]);
         }
         $current_vip = $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM {$wpdb->prefix}custom_vip_posts
@@ -2332,7 +2436,11 @@ function ql_handle_upgrade_vip() {
         $start_from = $current_vip ? $current_vip->expired_at : current_time('mysql');
         $started_at = current_time('Y-m-d');
         $expired_at = date('Y-m-d', strtotime($start_from . " +{$days} days"));
-        $wpdb->update("{$wpdb->prefix}custom_vip_posts",['status' => 'expired'],['post_id' => $post_id, 'status' => 'active']);
+        $wpdb->update(
+            "{$wpdb->prefix}custom_vip_posts",
+            ['status' => 'expired'],
+            ['post_id' => $post_id, 'status' => 'active']
+        );
         $wpdb->insert("{$wpdb->prefix}custom_vip_posts", [
             'user_id'     => $user_id,
             'post_id'     => $post_id,
@@ -2347,7 +2455,6 @@ function ql_handle_upgrade_vip() {
  
         update_post_meta($post_id, 'vip_level', 'vip');
         update_post_meta($post_id, 'vip_expired_at', $expired_at);
- 
         $wpdb->query('COMMIT');
         wp_send_json_success([
             'message'    => 'Nâng cấp VIP thành công! Có hiệu lực đến ' . date('d/m/Y', strtotime($expired_at)),
@@ -2355,12 +2462,10 @@ function ql_handle_upgrade_vip() {
             'expired_at' => $expired_at,
             'expired_at_formatted' => date('d/m/Y', strtotime($expired_at)),
             'used_quota' => $used_quota,
-            'pay_source' => $pay_source,
         ]);
- 
     } catch (Exception $e) {
         $wpdb->query('ROLLBACK');
-        wp_send_json_error(['message' => $e->getMessage()]);
+        ql_send_wallet_error($e);
     }
 }
 

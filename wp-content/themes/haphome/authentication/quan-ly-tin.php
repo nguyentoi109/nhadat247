@@ -1004,6 +1004,14 @@ function ql_format_price($price): string {
 <div class="push-popup">
     <?php get_template_part('authentication/popup-push'); ?>
 </div>
+
+<div class="balance-popup">
+    <?php get_template_part('authentication/popup-insufficient-balance'); ?>
+</div>
+ 
+<div class="repost-popup">
+    <?php get_template_part('authentication/popup-repost'); ?>
+</div>
 <script>
     var qlt_ajax = {
         ajax_url: '<?php echo esc_js(admin_url("admin-ajax.php")); ?>',
@@ -1102,11 +1110,6 @@ function qltDelete(postId) {
         }
     );
 }
-
-function qltRepost(id) {
-   window.location.href = '<?php echo esc_js(home_url("/dang-tin/")); ?>?repost=' + id;
-}
-
 function qltUpgradeVip(postId) {
     if (!confirm('Nâng cấp tin này lên VIP với giá 150.000đ (hoặc dùng 1 lượt nâng cấp VIP nếu có)?\nThời hạn VIP: 30 ngày kể từ hôm nay.\n\nBạn có đồng ý không?')) {
         return;

@@ -10063,4 +10063,127 @@ select.form-control option {
 body.qlp-open {
     overflow: hidden;
 }
+.section-form-balance,
+.section-form-repost,
+.section-form-confirm-post {
+    background: #fff;
+    border-radius: 14px;
+    padding: 32px 28px 26px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, .25);
+    box-sizing: border-box;
+}
+ 
+.balance-icon,
+.repost-icon,
+.confirm-post-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    margin: 0 auto 16px;
+}
+ 
+.balance-icon { background: #fee2e2; }
+.repost-icon { background: #fde8ec; }
+.confirm-post-icon { background: #fde8ec; }
+ 
+.balance-title,
+.repost-title,
+.confirm-post-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #0d1011;
+    margin-bottom: 10px;
+}
+ 
+.balance-message,
+.repost-message,
+.confirm-post-message {
+    font-size: 13px;
+    color: #6b7280;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+ 
+.balance-message strong,
+.repost-message strong,
+.confirm-post-message strong {
+    color: #0d1011;
+}
+ 
+.repost-error {
+    font-size: 12px;
+    color: #dc2626;
+    margin-bottom: 0;
+    display: none;
+}
+.repost-error.show {
+    display: block;
+    margin-bottom: 14px;
+}
+ 
+.balance-actions,
+.repost-actions,
+.confirm-post-actions {
+    display: flex;
+    gap: 10px;
+}
+ 
+.balance-actions button,
+.balance-actions a,
+.repost-actions button,
+.confirm-post-actions button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    border: none;
+    text-decoration: none;
+    display: inline-block;
+    box-sizing: border-box;
+    transition: opacity .15s, background .15s;
+}
+ 
+.btn-balance-cancel,
+.btn-repost-cancel,
+.btn-confirm-post-cancel {
+    background: #f3f4f6;
+    color: #374151;
+}
+.btn-balance-cancel:hover,
+.btn-repost-cancel:hover,
+.btn-confirm-post-cancel:hover {
+    opacity: .8;
+}
+ 
+.btn-balance-confirm {
+    background: #ee0033;
+    color: #fff;
+}
+.btn-balance-confirm:hover {
+    background: #cc0022;
+}
+ 
+.btn-repost-confirm,
+.btn-confirm-post-confirm {
+    background: #ee0033;
+    color: #fff;
+}
+.btn-repost-confirm:hover,
+.btn-confirm-post-confirm:hover {
+    background: #cc0022;
+}
+ 
+.repost-actions button:disabled,
+.confirm-post-actions button:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
 /*# sourceMappingURL=main.css.map */

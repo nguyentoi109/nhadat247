@@ -448,8 +448,6 @@ function dtPreviewLegal(inp) {
 
 document.addEventListener('DOMContentLoaded', function() {
 	dtLoadVnJson();
-	var form = document.getElementById('dt-form');
-	if (!form) return;
 
 	var detailInp = document.getElementById('addr-detail');
 	var _addrDebounce = null;
@@ -459,50 +457,4 @@ document.addEventListener('DOMContentLoaded', function() {
 			_addrDebounce = setTimeout(dtSearchOnMap, 1200);
 		});
 	}
-
-	form.addEventListener('submit', function(e) {
-		var mode = document.getElementById('dt-mode-val').value;
-		if (mode === 'bds' && !document.getElementById('pt-val').value) {
-			e.preventDefault();
-			alert('Vui lòng chọn loại bất động sản.');
-			return;
-		}
-		if (mode === 'du_an' && !document.getElementById('dev-val').value) {
-			e.preventDefault();
-			alert('Vui lòng chọn dự án.');
-			return;
-		}
-		if (!document.getElementById('title-inp').value.trim()) {
-			e.preventDefault();
-			document.getElementById('title-inp').focus();
-			alert('Vui lòng nhập tiêu đề.');
-			return;
-		}
-
-		var detailInp = document.getElementById('addr-detail');
-		var tinh   = document.getElementById('loc-tinh-name').value;
-		var quan   = document.getElementById('loc-quan-name').value;
-		var phuong = document.getElementById('loc-phuong-name').value;
-
-		if (!tinh) {
-			e.preventDefault();
-			alert('Vui lòng chọn Tỉnh/Thành phố.');
-			return;
-		}
-
-		var mainInp = document.getElementById('main-file-input');
-		var hasNewMain = dtMainImg || (mainInp && mainInp.files && mainInp.files.length);
-		var hasExistingMain = window.__dtHasExistingMainImage === true;
-		if (!hasNewMain && !hasExistingMain) {
-			e.preventDefault();
-			alert('Vui lòng chọn ảnh chính.');
-			return;
-		}
-
-		var btn = document.getElementById('btn-submit');
-		if (btn) {
-			btn.disabled = true;
-			btn.textContent = 'Đang gửi...';
-		}
-	});
 });
