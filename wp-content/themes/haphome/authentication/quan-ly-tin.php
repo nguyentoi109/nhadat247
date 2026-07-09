@@ -1012,12 +1012,6 @@ function ql_format_price($price): string {
 <div class="repost-popup">
     <?php get_template_part('authentication/popup-repost'); ?>
 </div>
-<script>
-    var qlt_ajax = {
-        ajax_url: '<?php echo esc_js(admin_url("admin-ajax.php")); ?>',
-        nonce: '<?php echo wp_create_nonce("ql_listing_nonce"); ?>'
-    };
-</script>
 
 <script>
 function qltSearch(q) {
@@ -1083,107 +1077,6 @@ function qltSearch(q) {
       passive: true
    });
 })();
-
-function qltDelete(postId) {
-    document.getElementById('qlt-portal').classList.remove('open');
-    qltConfirm(
-        'Xoá tin đăng',
-        'Bạn có chắc muốn xoá tin đăng này? Hành động này không thể hoàn tác.',
-        function () {
-            fetch('<?php echo esc_js(admin_url("admin-ajax.php")); ?>', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: 'action=ql_delete_listing&post_id=' + postId + '&_nonce=<?php echo wp_create_nonce("ql_listing_nonce"); ?>'
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    const card = document.getElementById('qlt-card-' + postId);
-                    if (card) {
-                        card.style.opacity = '0';
-                        setTimeout(() => card.remove(), 300);
-                    }
-                } else {
-                    qltAlert('Không thể xoá', data.data?.message || 'Có lỗi xảy ra.', 'error');
-                }
-            });
-        }
-    );
-}
-function qltUpgradeVip(postId) {
-    if (!confirm('Nâng cấp tin này lên VIP với giá 150.000đ (hoặc dùng 1 lượt nâng cấp VIP nếu có)?\nThời hạn VIP: 30 ngày kể từ hôm nay.\n\nBạn có đồng ý không?')) {
-        return;
-    }
- 
-    const card = document.getElementById('qlt-card-' + postId);
-    const btn = card ? card.querySelector('.qlt-more-btn') : null;
-    if (btn) btn.disabled = true;
-    fetch('<?php echo esc_js(admin_url("admin-ajax.php")); ?>', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'action=ql_upgrade_vip&post_id=' + postId +
-              '&_nonce=<?php echo wp_create_nonce("ql_listing_nonce"); ?>'
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (btn) btn.disabled = false;
-        if (data.success) {
-            qltToast('✓ ' + data.data.message);
-            qltApplyVipBadge(postId, data.data.vip_level, data.data.expired_at_formatted);
-        } else {
-            alert(data.data?.message || 'Có lỗi xảy ra khi nâng cấp VIP.');
-        }
-    })
-    .catch(() => {
-        if (btn) btn.disabled = false;
-        alert('Không thể kết nối máy chủ, vui lòng thử lại.');
-    });
-}
- 
-function qltApplyVipBadge(postId, vipLevel, expiredAtText) {
-    const card = document.getElementById('qlt-card-' + postId);
-    if (!card) return;
-     const thumb = card.querySelector('.qlt-thumb');
-    if (thumb) {
-        let badge = thumb.querySelector('.qlt-thumb-badge');
-        if (!badge) {
-            badge = document.createElement('span');
-            thumb.appendChild(badge);
-        }
-        badge.className = 'qlt-thumb-badge yellow';
-        badge.textContent = 'VIP ' + vipLevel.replace('vip', '');
-    }
-     const statusRow = card.querySelector('.qlt-status-row');
-    if (statusRow) {
-        const oldTag = statusRow.querySelector('span:last-child');
-        if (oldTag) {
-            oldTag.outerHTML = '<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 7px;border-radius:4px;">VIP ' + vipLevel.replace('vip', '') + '</span>';
-        }
-    }
- 
-    const verifyBanner = card.querySelector('.qlt-banner-verify');
-    if (verifyBanner) verifyBanner.remove();
-     const moreBtn = card.querySelector('.qlt-more-btn');
-    if (moreBtn) moreBtn.dataset.vip = vipLevel;
-}
-
-async function qltShare(url, title) {
-   if (navigator.share) {
-      try {
-         await navigator.share({
-            title,
-            url
-         });
-         return;
-      } catch (e) {}
-   }
-   try {
-      await navigator.clipboard.writeText(url);
-      qltToast('✓ Đã sao chép đường dẫn!');
-   } catch (e) {
-      prompt('Sao chép đường dẫn:', url);
-   }
-}
 
 function qltToast(msg) {
    let t = document.getElementById('qlt-toast');

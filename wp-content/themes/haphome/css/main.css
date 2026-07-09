@@ -10037,12 +10037,12 @@ select.form-control option {
  
 .btn-vip-confirm,
 .btn-push-confirm {
-    background: #ee0033;
+    background: #00A86B;
     color: #fff;
 }
 .btn-vip-confirm:hover,
 .btn-push-confirm:hover {
-    background: #cc0022;
+    background: #008a5a;
 }
  
 .btn-delete-confirm {
@@ -10164,21 +10164,21 @@ body.qlp-open {
 }
  
 .btn-balance-confirm {
-    background: #ee0033;
+    background: #00A86B;
     color: #fff;
 }
 .btn-balance-confirm:hover {
-    background: #cc0022;
+    background: #008a5a;
 }
  
 .btn-repost-confirm,
 .btn-confirm-post-confirm {
-    background: #ee0033;
+    background: #00A86B;
     color: #fff;
 }
 .btn-repost-confirm:hover,
 .btn-confirm-post-confirm:hover {
-    background: #cc0022;
+    background: #008a5a;
 }
  
 .repost-actions button:disabled,

@@ -1373,12 +1373,5 @@ window.dtST = {};
 <div class="balance-popup">
     <?php get_template_part('authentication/popup-insufficient-balance'); ?>
 </div>
- 
-<script>
-    var qlt_ajax = {
-        ajax_url: '<?php echo esc_js(admin_url("admin-ajax.php")); ?>',
-        nonce: '<?php echo wp_create_nonce("ql_listing_nonce"); ?>'
-    };
-</script>
 
 <?php get_footer(); ?>

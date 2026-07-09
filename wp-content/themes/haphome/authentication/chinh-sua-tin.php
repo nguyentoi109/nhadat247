@@ -1445,6 +1445,10 @@ window.dtST = {};
     </form>
 </div>
 
+<div class="confirm-post-popup">
+    <?php get_template_part('authentication/popup-confirm-post-edit'); ?>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var mapEl = document.getElementById('dt-map');

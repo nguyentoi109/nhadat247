@@ -9,26 +9,8 @@
         Đẩy tin lên đầu
     </div>
 
-    <div class="push-message">
-        Chọn loại đẩy tin phù hợp với tin đăng của bạn.
-    </div>
-
-    <div class="push-options">
-        <label class="push-option">
-            <input type="radio" name="push_type" value="normal" checked>
-            <div class="push-option-content">
-                <div class="push-option-title">Đẩy tin thường</div>
-                <div class="push-option-desc">Lên đầu danh sách tin thường</div>
-            </div>
-        </label>
-
-        <label class="push-option push-option-vip">
-            <input type="radio" name="push_type" value="vip">
-            <div class="push-option-content">
-                <div class="push-option-title">Đẩy tin VIP</div>
-                <div class="push-option-desc">Lên đầu danh sách tin VIP</div>
-            </div>
-        </label>
+    <div class="push-message" id="push-popup-message">
+        Đẩy tin này lên đầu danh sách. Xác nhận để tiếp tục.
     </div>
 
     <div class="push-error" id="push-popup-error"></div>
