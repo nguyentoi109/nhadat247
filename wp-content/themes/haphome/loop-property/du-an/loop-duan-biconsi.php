@@ -1,24 +1,27 @@
 <?php
-$query = new WP_Query(array(
-    'post_type' => 'property',
-    'tax_query' => array(
+$paged = max(1, get_query_var('paged'));
+$price_area_meta_query = bds_filter_price_area_meta_query();
+
+$query_args = array(
+    'post_type'   => 'property',
+    'post_status' => 'publish',
+    'tax_query'   => array(
         array(
             'taxonomy' => 'property_developer',
-            'field' => 'term_id',
-            'terms' => 113,
+            'field'    => 'term_id',
+            'terms'    => 113,
         ),
     ),
-    'post_status' => 'publish',
-    'orderby' => 'ID',
-    'order' => 'DESC',
-    'paged' => get_query_var('paged'),
-    'posts_per_page' => 20
-));
+);
+
+if (!empty($price_area_meta_query)) {
+    $query_args['meta_query'] = $price_area_meta_query;
+}
+
+$result = bds_get_sorted_query($query_args, $paged, 20);
+$query  = $result['query'];
 
 if ($query->have_posts()) :
-
-    $temp_query = $wp_query;
-    $wp_query = $query;
 ?>
     <div class="breadcrumb-container">
         <?php
@@ -36,12 +39,19 @@ if ($query->have_posts()) :
     </div>
 
     <div class="pagination">
-        <?php get_template_part('pagination'); ?>
+        <?php
+        if (function_exists('wp_pagenavi')) {
+            wp_pagenavi(array('query' => $query));
+        } else {
+            echo paginate_links(array(
+                'total'   => $result['max_num_pages'],
+                'current' => $paged,
+            ));
+        }
+        ?>
     </div>
 
 <?php
-    $wp_query = $temp_query;
-
 else :
 ?>
 

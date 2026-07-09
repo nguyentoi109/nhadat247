@@ -33,7 +33,8 @@ if (!empty($price_area_meta_query)) {
     $query_args['meta_query'] = $price_area_meta_query;
 }
 
-$query = new WP_Query($query_args);
+$result = bds_get_sorted_query($query_args, $paged, 20);
+$query  = $result['query'];
 
 set_query_var('related_posts', get_related_posts_by_location(54, 5));
 ?>
@@ -58,10 +59,6 @@ set_query_var('related_posts', get_related_posts_by_location(54, 5));
 <div class="list-style-wrap container">
     <div class="list-style list-all">
         <?php if ($query->have_posts()) : ?>
-            <?php
-            $temp_query = $wp_query;
-            $wp_query   = $query;
-            ?>
             <?php while ($query->have_posts()) : $query->the_post(); ?>
                 <?php set_query_var('is_ngop', true); ?>
                 <?php get_template_part('loop-property/item-property'); ?>
@@ -73,17 +70,14 @@ set_query_var('related_posts', get_related_posts_by_location(54, 5));
                     wp_pagenavi(array('query' => $query));
                 } else {
                     echo paginate_links(array(
-                        'total'   => $query->max_num_pages,
+                        'total'   => $result['max_num_pages'],
                         'current' => $paged,
                     ));
                 }
                 ?>
             </div>
 
-            <?php
-            $wp_query = $temp_query;
-            wp_reset_postdata();
-            ?>
+            <?php wp_reset_postdata(); ?>
 
         <?php else : ?>
             <h2>Không có bất động sản nào</h2>

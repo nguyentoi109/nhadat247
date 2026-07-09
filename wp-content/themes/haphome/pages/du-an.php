@@ -29,7 +29,7 @@ get_header();
                     array(
                         'taxonomy' => 'property_developer',
                         'field'    => 'term_id',
-                        'terms'    => 111 
+                        'terms'    => array(112, 113, 114, 115)
                     )
                 )
 			));

@@ -8,8 +8,6 @@
     $project_id   = get_query_var('breadcrumb_project');
 ?>
 <div class="custom-breadcrumb">
-    <a href="<?php echo home_url(); ?>">Trang chủ</a>
-            <span class="breadcrumb-separator"> / </span>
         <?php if (!$developer_id): ?>
                 <span class="active">Dự án</span>
             <?php else: ?>

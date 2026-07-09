@@ -29,28 +29,12 @@ get_header();
                 $paged = max(1, get_query_var('paged'));
                 $price_area_meta_query = bds_filter_price_area_meta_query();
 
-                $query_args = array(
-                    'post_type'      => 'property',
-                    'post_status'    => 'publish',
-                    'orderby'        => 'ID',
-                    'order'          => 'DESC',
-                    'paged'          => $paged,
-                    'posts_per_page' => 20,
-
-                    'tax_query' => array(
-                        array(
-                            'taxonomy' => 'property_location',
-                            'field'    => 'term_id',
-                            'terms'    => 54 
-                        )
-                    )
-                );
-
+                $extra_args = [];
                 if (!empty($price_area_meta_query)) {
-                    $query_args['meta_query'] = $price_area_meta_query;
+                    $extra_args['meta_query'] = $price_area_meta_query;
                 }
-
-                $query = new WP_Query($query_args);
+                $result = bds_get_sorted_listing_query(54, $extra_args, $paged, 20);
+                $query  = $result['query'];
             ?>
 
 			<?php if ($query->have_posts()) : ?>

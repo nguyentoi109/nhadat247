@@ -33,14 +33,12 @@ if ($type_id) {
     ];
 }
 
-$query = new WP_Query([
-    'post_type'      => 'property',
-    'post_status'    => 'publish',
-    'posts_per_page' => 18,
-    'orderby'        => 'date',
-    'order'          => 'DESC',
-    'tax_query'      => $tax_query,
-]);
+$result = bds_get_sorted_query([
+    'post_type'   => 'property',
+    'post_status' => 'publish',
+    'tax_query'   => $tax_query,
+], 1, 18);
+$query = $result['query'];
 
 if (!$query->have_posts()) {
     wp_reset_postdata();
