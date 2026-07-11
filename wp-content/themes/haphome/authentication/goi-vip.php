@@ -133,6 +133,17 @@ $durations = [
 	--gv-shadow-hover: 0 6px 24px rgba(0, 0, 0, .12);
 }
 
+.gv-hero,
+.gv-hero-inner,
+.gv-body,
+.gv-subnav,
+.gv-plans,
+.gv-plan-card,
+.gv-bal-card {
+	max-width: 100%;
+	box-sizing: border-box;
+}
+
 .gv-hero {
 	position: relative;
 	overflow: hidden;
@@ -174,8 +185,8 @@ $durations = [
 }
 
 .gv-hero-left {
-	flex: 1;
-	min-width: 220px;
+	flex: 1 1 220px;
+	min-width: 0; /* cho phép co dưới kích thước nội dung — tránh tràn trên mobile hẹp */
 }
 
 .gv-eyebrow {
@@ -200,6 +211,7 @@ $durations = [
 	color: #fff;
 	line-height: 1.25;
 	margin-bottom: 8px;
+	word-break: break-word;
 }
 
 .gv-hero-title span {
@@ -222,6 +234,7 @@ $durations = [
 	align-items: center;
 	gap: 0;
 	flex-wrap: wrap;
+	row-gap: 12px;
 }
 
 .gv-hstat {
@@ -241,6 +254,7 @@ $durations = [
 	text-transform: uppercase;
 	letter-spacing: .5px;
 	margin-top: 2px;
+	white-space: nowrap;
 }
 
 .gv-hstat-sep {
@@ -257,8 +271,8 @@ $durations = [
 	backdrop-filter: blur(8px);
 	border-radius: 12px;
 	padding: 16px 20px;
-	min-width: 220px;
-	flex-shrink: 0;
+	flex: 1 1 260px;
+	min-width: 0; /* cho phép co, không ép cứng 220px như bản cũ */
 	color: #fff;
 }
 
@@ -277,16 +291,20 @@ $durations = [
 .gv-bal-row {
 	display: flex;
 	justify-content: space-between;
+	gap: 8px;
 	font-size: 12px;
 	margin-bottom: 5px;
 }
 
 .gv-bal-lbl {
 	color: rgba(255, 255, 255, .65);
+	flex-shrink: 0;
 }
 
 .gv-bal-val {
 	font-weight: 700;
+	word-break: break-word;
+	text-align: right;
 }
 
 .gv-bal-div {
@@ -299,6 +317,7 @@ $durations = [
 	display: flex;
 	justify-content: space-between;
 	align-items: baseline;
+	gap: 8px;
 	margin-bottom: 12px;
 }
 
@@ -306,12 +325,15 @@ $durations = [
 	font-size: 12px;
 	font-weight: 600;
 	color: rgba(255, 255, 255, .85);
+	flex-shrink: 0;
 }
 
 .gv-bal-total-val {
 	font-size: 22px;
 	font-weight: 800;
 	color: #fbbf24;
+	word-break: break-word;
+	text-align: right;
 }
 
 .gv-topup-btn {
@@ -358,6 +380,7 @@ $durations = [
 	border-bottom: 1px solid var(--ql-border);
 	margin-top: -1px;
 	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
 }
 
 .gv-snav-tab {
@@ -374,6 +397,7 @@ $durations = [
 	transition: all .15s;
 	cursor: pointer;
 	white-space: nowrap;
+	flex-shrink: 0;
 }
 
 .gv-snav-tab:hover {
@@ -402,6 +426,7 @@ $durations = [
 	display: flex;
 	align-items: center;
 	gap: 14px;
+	min-width: 0;
 }
 
 .gv-cur-plan-icon {
@@ -453,10 +478,12 @@ $durations = [
 	background: #fff;
 	border: 1px solid #86efac;
 	color: #166534;
+	white-space: nowrap;
 }
 
 .gv-body {
-	padding: 24px;
+	padding: 10px;
+	overflow-x: hidden; /* an toàn tuyệt đối: chặn mọi tràn ngang phát sinh từ nội dung động bên trong */
 }
 
 .gv-step-lbl {
@@ -498,9 +525,10 @@ $durations = [
 	margin: 28px 0;
 }
 
+/* ============ Danh sách gói VIP: grid 3 cột desktop → 1 cột mobile ============ */
 .gv-plans {
 	display: grid;
-	grid-template-columns: repeat(3, 1fr);
+	grid-template-columns: repeat(3, minmax(0, 1fr)); /* minmax(0,1fr) bắt buộc để cột co được nhỏ hơn nội dung tự nhiên */
 	gap: 14px;
 	margin-bottom: 28px;
 }
@@ -563,6 +591,7 @@ $durations = [
 	font-size: 16px;
 	font-weight: 800;
 	margin-bottom: 8px;
+	word-break: break-word;
 }
 
 .gv-plan-reach {
@@ -574,6 +603,7 @@ $durations = [
 	padding: 3px 10px;
 	border-radius: 20px;
 	margin-bottom: 14px;
+	white-space: nowrap;
 }
 
 .gv-push-badge {
@@ -591,6 +621,7 @@ $durations = [
 	font-size: 30px;
 	font-weight: 900;
 	line-height: 1;
+	flex-shrink: 0;
 }
 
 .gv-push-label {
@@ -610,11 +641,13 @@ $durations = [
 	justify-content: center;
 	gap: 4px;
 	margin-bottom: 3px;
+	flex-wrap: wrap;
 }
 
 .gv-plan-price {
 	font-size: 26px;
 	font-weight: 900;
+	word-break: break-word;
 }
 
 .gv-plan-per {
@@ -668,9 +701,10 @@ $durations = [
 	line-height: 1.4;
 }
 
+/* ============ Khung giờ vàng: 4 cột desktop → 2 cột mobile ============ */
 .gv-gh-grid {
 	display: grid;
-	grid-template-columns: repeat(4, 1fr);
+	grid-template-columns: repeat(4, minmax(0, 1fr));
 	gap: 8px;
 	margin-bottom: 8px;
 }
@@ -685,6 +719,7 @@ $durations = [
 	text-align: center;
 	transition: all .15s;
 	user-select: none;
+	min-width: 0;
 }
 
 .gv-gh-btn:hover {
@@ -757,6 +792,7 @@ $durations = [
 	display: flex;
 	align-items: center;
 	gap: 6px;
+	flex-wrap: wrap;
 }
 
 .gv-gh-slots-pill {
@@ -766,6 +802,7 @@ $durations = [
 	font-weight: 700;
 	padding: 2px 9px;
 	border-radius: 20px;
+	white-space: nowrap;
 }
 
 .gv-gh-slots-pill.ok {
@@ -846,6 +883,8 @@ $durations = [
 	padding: 14px 20px;
 	border-bottom: 1px solid var(--ql-border);
 	background: #fafafa;
+	flex-wrap: wrap;
+	gap: 8px;
 }
 
 .gv-summary-title {
@@ -883,6 +922,7 @@ $durations = [
 	font-weight: 900;
 	line-height: 1;
 	margin-bottom: 4px;
+	word-break: break-word;
 }
 
 .gv-sum-perday {
@@ -917,6 +957,7 @@ $durations = [
 	font-size: 11px;
 	font-weight: 600;
 	border: 1px solid;
+	white-space: nowrap;
 }
 
 .gv-buy-btn {
@@ -936,6 +977,7 @@ $durations = [
 	white-space: nowrap;
 	transition: all .2s;
 	box-shadow: 0 4px 14px rgba(238, 0, 51, .3);
+	width: 100%;
 }
 
 .gv-buy-btn:hover {
@@ -965,7 +1007,7 @@ $durations = [
 
 .gv-notes {
 	display: grid;
-	grid-template-columns: repeat(4, 1fr);
+	grid-template-columns: repeat(4, minmax(0, 1fr));
 	gap: 10px;
 	margin-bottom: 20px;
 }
@@ -979,6 +1021,7 @@ $durations = [
 	flex-direction: column;
 	gap: 8px;
 	align-items: flex-start;
+	min-width: 0;
 }
 
 .gv-note-icon {
@@ -1018,6 +1061,7 @@ $durations = [
 	letter-spacing: .4px;
 	border-bottom: 2px solid var(--ql-border);
 	background: #fafafa;
+	white-space: nowrap;
 }
 
 .gv-cmp-table th:first-child {
@@ -1052,9 +1096,15 @@ $durations = [
 	color: #d1d5db;
 }
 
+.gv-cmp-scroll {
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	max-width: 100%;
+}
+
 .gv-how {
 	display: grid;
-	grid-template-columns: repeat(4, 1fr);
+	grid-template-columns: repeat(4, minmax(0, 1fr));
 	gap: 12px;
 }
 
@@ -1064,6 +1114,7 @@ $durations = [
 	padding: 18px;
 	position: relative;
 	overflow: hidden;
+	min-width: 0;
 }
 
 .gv-how-card::before {
@@ -1101,44 +1152,78 @@ $durations = [
 	line-height: 1.6;
 }
 
-@media(max-width:900px) {
+@media (max-width: 900px) {
 	.gv-plans {
-		grid-template-columns: 1fr;
+		grid-template-columns: minmax(0, 1fr);
 	}
 
 	.gv-gh-grid {
-		grid-template-columns: repeat(2, 1fr);
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 
 	.gv-notes {
-		grid-template-columns: repeat(2, 1fr);
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 
 	.gv-how {
-		grid-template-columns: repeat(2, 1fr);
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 }
 
-@media(max-width:600px) {
-	.gv-summary-body {
-		grid-template-columns: 1fr;
+@media (max-width: 600px) {
+	.gv-hero {
+		display: none;
 	}
+
+    .gv-subnav {
+		display: none;
+	}
+
+    .gv-how-card::before{
+        display: none;
+    }
 
 	.gv-hero-inner {
 		flex-direction: column;
 	}
 
-	.gv-bal-card {
-		min-width: unset;
+	.gv-hero-left {
+		flex-basis: auto;
 		width: 100%;
 	}
 
+	.gv-hero-title {
+		font-size: 22px;
+	}
+
+	.gv-bal-card {
+		flex-basis: auto;
+		width: 100%;
+	}
+
+	.gv-subnav {
+		padding: 0 16px;
+	}
+
+	.gv-body {
+		padding: 10px;
+	}
+
+	.gv-summary-body {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
 	.gv-notes {
-		grid-template-columns: 1fr;
+		grid-template-columns: minmax(0, 1fr);
 	}
 
 	.gv-how {
-		grid-template-columns: 1fr;
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.gv-cur-plan {
+		flex-direction: column;
+		align-items: flex-start;
 	}
 }
 </style>
@@ -1518,7 +1603,7 @@ $durations = [
         </svg>
         So sánh chi tiết các gói
     </div>
-    <div style="overflow-x:auto;">
+    <div class="gv-cmp-scroll">
         <table class="gv-cmp-table">
             <thead>
                 <tr>
@@ -1607,7 +1692,6 @@ $durations = [
     </div>
 
 </div><!-- /.gv-body -->
-
 <script>
 var GV_PLANS = <?php echo json_encode(array_map(fn($p)=>[
     'id'          => $p['id'],

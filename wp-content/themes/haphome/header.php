@@ -103,6 +103,12 @@
         max-height:none !important;
         overflow:visible !important;
     }
+
+    .mobile-auth-block,
+    .mobile-user-block,
+    .mobile-account-menu{
+        display:none !important;
+    }
 }
 
 @media (max-width: 1024px) {
@@ -211,11 +217,6 @@
         display:flex !important;
         justify-content:center;
     }
-
-    /* .header-right{
-        display:none !important;
-    } */
-
     .desktop-nav{
         display:none !important;
     }
@@ -271,20 +272,235 @@
         padding-top:60px;
     }
 
-    /* .mobile-extra-link{
+    .mobile-auth-block{
         display:flex;
-        align-items:center;
         gap:10px;
-        padding:14px 16px;
-        margin-bottom:1px;
-        background:#f5f5f5;
-        font-size:14px;
-        color: #ffa600;
+        padding:16px 16px 12px;
     }
 
-    .mobile-extra-link span{
+    .mobile-auth-block .btn-login,
+    .mobile-auth-block .btn-register{
+        height: 44px;
+        flex:1;
+        text-align:center;
+        padding:11px 0;
+        border-radius:4px;
+        font-size:14px;
+        font-weight:600;
+        text-decoration:none;
+        border:1.5px solid #ddd;
+        transition:all .2s ease;
+    }
+
+    .mobile-auth-block .btn-login{
+        color:#2c2c2c;
+        background:#fff;
+        border-color:#ddd;
+    }
+    .mobile-auth-block .btn-login:hover{
+        background:#f5f5f5;
+    }
+
+    .mobile-auth-block .btn-login:active{
+        background:#f5f5f5;
+    }
+
+    .mobile-auth-block .btn-register{
+        color:#fff;
+        background:#e03c31;
+        border-color:#e03c31;
+        box-shadow:0 2px 6px rgba(224,60,49,.25);
+    }
+
+    .mobile-auth-block .btn-register:hover{
+        background:#c8342a;
+    }
+
+    .mobile-auth-block .btn-register:active{
+        background:#c8342a;
+    }
+
+    .mobile-post-btn{
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:6px;
+        margin:0 16px 16px;
+        text-align:center;
+        padding:11px 0;
+        border-radius:4px;
+        font-size:14px;
+        font-weight:600;
+        text-decoration:none;
+        color:#2c2c2c;
+        background:#fff;
+        border:1.5px solid #ddd;
+        transition:all .2s ease;
+    }
+
+    .mobile-post-btn:active{
+        background:#f5f5f5;
+    }
+    
+    .mobile-post-btn:hover{
+        background:#f5f5f5;
+    }
+
+    .mobile-user-block + .mobile-post-btn{
+        color:#fff;
+        background:#e03c31;
+        border-color:#e03c31;
+        box-shadow:0 2px 6px rgba(224,60,49,.25);
+    }
+
+    .mobile-user-block + .mobile-post-btn:hover{
+        background:#c8342a;
+    }
+
+    .mobile-user-block + .mobile-post-btn:active{
+        background:#c8342a;
+    }
+
+    .mobile-utility-links{
+        padding-top:4px;
+    }
+
+    .mobile-user-block{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:12px;
+        padding:16px 16px 12px;
+    }
+
+    .mobile-user-block .mu-left{
+        display:flex;
+        align-items:center;
+        gap:12px;
+        flex:1;
+        min-width:0;
+    }
+
+    .mobile-user-block .mu-avatar{
+        width:44px;
+        height:44px;
+        border-radius:50%;
+        overflow:hidden;
+        flex-shrink:0;
+        background:#e03c31;
+        color:#fff;
+        display:flex;
+        align-items:center;
+        justify-content:center;
         font-size:18px;
-    } */
+        font-weight:600;
+    }
+
+    .mobile-user-block .mu-avatar img{
+        width:100%;
+        height:100%;
+        object-fit:cover;
+    }
+
+    .mobile-user-block .mu-name{
+        font-size:15px;
+        font-weight:600;
+        color:#2c2c2c;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+    }
+
+    .mobile-user-block .mu-notif{
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        width:36px;
+        height:36px;
+        border-radius:50%;
+        background:#f5f5f5;
+        position:relative;
+        flex-shrink:0;
+        border:none;
+        cursor:pointer;
+    }
+
+    .mobile-user-block .mu-notif img{
+        width:18px;
+        height:18px;
+    }
+
+    .mobile-account-menu{
+        margin-top:8px;
+        border-top:1px solid #eee;
+        padding-top:8px;
+    }
+
+    .mobile-account-menu a{
+        display:flex;
+        align-items:center;
+        gap:12px;
+        padding:12px 16px;
+        text-decoration:none;
+        color:#2c2c2c;
+        font-size:14px;
+        font-weight:500;
+    }
+
+    .mobile-account-menu a img{
+        width:18px;
+        height:18px;
+        flex-shrink:0;
+    }
+
+    .mobile-account-menu .mam-divider{
+        border-bottom:1px solid #f2f2f2;
+        margin:6px 0;
+    }
+
+    .header .hotline,
+    .header-right .link-featured,
+    .header-right #fav-icon-wrap,
+    .header-right #notif-icon-wrap,
+    .header-right .custom-user-box,
+    .header-right .link-login,
+    .header-right .link-register,
+    .header-right .re-line,
+    .header-right .link-post{
+        display:none !important;
+    }
+
+    .header .container.clear.flexbox{
+        justify-content:space-between !important;
+        padding:0 16px;
+    }
+
+    .header-right{
+        gap:8px;
+    }
+
+    .mobile-utility-links{
+        border-bottom:1px solid #eee;
+        margin-bottom:4px;
+    }
+
+    .mobile-utility-links a{
+        display:flex;
+        align-items:center;
+        gap:12px;
+        padding:12px 16px;
+        text-decoration:none;
+        color:#2c2c2c;
+        font-size:14px;
+        font-weight:500;
+    }
+
+    .mobile-utility-links a span[class^="ti-"]{
+        width:18px;
+        text-align:center;
+        font-size:15px;
+        color:#555;
+    }
 }
 
 .hdr-icon-wrap {
@@ -387,14 +603,6 @@
 
 
 </head>
-<!-- <script>
-window.addEventListener("load", function(){
-
-    document.getElementById("loading-page").style.opacity = "0";
-    document.getElementById("loading-page").style.visibility = "hidden";
-
-});
-</script> -->
 
 <body id="container" <?php body_class(); ?>>
     <!-- <div id="loading-page">
@@ -443,7 +651,7 @@ window.addEventListener("load", function(){
                     <a href="<?php echo home_url('tinh-lai-suat-vay'); ?>" class="link link-featured">
                         <span class="ti-bar-chart-alt"></span> <?php echo wp_is_mobile() ? 'Tính lãi' : 'Tính lãi suất' ?>
                     </a>
-                    
+
                     <a href="<?php echo home_url('chuyen-doi-dia-chi'); ?>" class="link link-featured">
                         <span class="ti-location-pin"></span> <?php echo wp_is_mobile() ? 'Đổi địa chỉ' : 'Chuyển đổi địa chỉ' ?>
                     </a>
@@ -497,18 +705,94 @@ window.addEventListener("load", function(){
             <span class="mobile-menu-close">&times;</span>
             <!-- nav -->
             <nav class="nav container mobile-nav" role="navigation">
-                    <?php html5blank_nav(); ?>
 
-                    <div class="mobile-extra">
-                    <!-- <a href="<?php echo home_url('tinh-lai-suat-vay'); ?>" class="mobile-extra-link">
-                        <span class="ti-bar-chart-alt"></span>
-                        Tính lãi suất
+                <?php
+                    $custom_user    = isset($custom_user) ? $custom_user : get_current_custom_user();
+                    $custom_user_id = $custom_user ? (int) $custom_user->id : 0;
+                    $fav_count      = isset($fav_count) ? $fav_count : ( $custom_user_id ? count_favorites($custom_user_id) : 0 );
+                    $is_logged_in   = !empty($_SESSION['custom_user_id']);
+                ?>
+
+                <?php if ($is_logged_in): ?>
+                    <div class="mobile-user-block">
+                        <div class="mu-left">
+                            <div class="mu-avatar">
+                                <?php echo custom_get_avatar_html( $custom_user ); ?>
+                            </div>
+                            <div class="mu-name"><?php echo esc_html($custom_user->full_name ?? ''); ?></div>
+                        </div>
+                        <button class="mu-notif" id="mu-notif-btn" onclick="hdToggle('notif')" aria-label="Thông báo">
+                            <img src="<?php echo get_template_directory_uri() ?>/img/notification.png" alt="">
+                        </button>
+                    </div>
+
+                    <a href="<?php echo esc_url(home_url('/dang-tin/')); ?>" class="mobile-post-btn">Đăng tin</a>
+                <?php else: ?>
+                    <div class="mobile-auth-block">
+                        <a href="javascript:void(0)" class="btn-login login">Đăng nhập</a>
+                        <a href="javascript:void(0)" class="btn-register open-register-popup">Đăng ký</a>
+                    </div>
+                    <a href="<?php echo esc_url(home_url('/dang-tin/')); ?>" class="mobile-post-btn">Đăng tin</a>
+                <?php endif; ?>
+
+                <div class="mobile-utility-links">
+                    <a href="<?php echo home_url('tinh-lai-suat-vay'); ?>">
+                        <span class="ti-bar-chart-alt"></span> Tính lãi suất
                     </a>
-                    <a href="<?php echo home_url('chuyen-doi-dia-chi'); ?>" class="mobile-extra-link">
-                        <span class="ti-location-pin"></span>
-                        Chuyển đổi địa chỉ
+                    <a href="<?php echo home_url('chuyen-doi-dia-chi'); ?>">
+                        <span class="ti-location-pin"></span> Chuyển đổi địa chỉ
                     </a>
-                </div> -->
+                </div>
+
+                <?php html5blank_nav(); ?>
+
+                <?php if ($is_logged_in): ?>
+                    <div class="mobile-account-menu">
+                        <a href="<?php echo esc_url(home_url('/quan-ly-tai-khoan/tong-quan/')); ?>">
+                            <img src="<?php echo get_template_directory_uri(); ?>/img/overview.png" alt="">
+                            <span>Tổng quan</span>
+                        </a>
+                        <a href="<?php echo esc_url(home_url('/quan-ly-tai-khoan/quan-ly-tin/')); ?>">
+                            <img src="<?php echo get_template_directory_uri(); ?>/img/list.png" alt="">
+                            <span>Quản lý tin đăng</span>
+                        </a>
+                        <a href="<?php echo esc_url(home_url('/quan-ly-tai-khoan/tin-da-luu/')); ?>">
+                            <img src="<?php echo get_template_directory_uri(); ?>/img/heart.png" alt="">
+                            <span>Tin đã lưu</span>
+                        </a>
+                        <a href="<?php echo esc_url(home_url('/quan-ly-tai-khoan/quan-ly-khach/')); ?>">
+                            <img src="<?php echo get_template_directory_uri(); ?>/img/contact.png" alt="">
+                            <span>Quản lý khách hàng</span>
+                        </a>
+                        <a href="<?php echo esc_url(home_url('/quan-ly-tai-khoan/goi-thanh-vien/')); ?>">
+                            <img src="<?php echo get_template_directory_uri(); ?>/img/membership.png" alt="">
+                            <span>Gói thành viên</span>
+                        </a>
+                        <a href="<?php echo esc_url(home_url('/quan-ly-tai-khoan/goi-vip/')); ?>">
+                            <img src="<?php echo get_template_directory_uri(); ?>/img/premium.png" alt="">
+                            <span>Gói VIP</span>
+                        </a>
+                        <a href="<?php echo esc_url(home_url('/quan-ly-tai-khoan/nap-tien/')); ?>">
+                            <img src="<?php echo get_template_directory_uri(); ?>/img/wallet.png" alt="">
+                            <span>Nạp tiền</span>
+                        </a>
+
+                        <div class="mam-divider"></div>
+
+                        <a href="<?php echo esc_url(home_url('/quan-ly-tai-khoan/cai-dat/')); ?>">
+                            <img src="<?php echo get_template_directory_uri(); ?>/img/settings.png" alt="">
+                            <span>Cài đặt tài khoản</span>
+                        </a>
+
+                        <div class="mam-divider"></div>
+
+                        <a href="<?php echo home_url('/?custom_logout=1'); ?>">
+                            <img src="<?php echo get_template_directory_uri(); ?>/img/logout.png" alt="">
+                            <span>Đăng xuất</span>
+                        </a>
+                    </div>
+                <?php endif; ?>
+
             </nav>
             <!-- /nav -->
          </section> 
@@ -546,23 +830,42 @@ window.addEventListener("load", function(){
 document.addEventListener("DOMContentLoaded", function () {
 
     const mobileMenuBtn = document.querySelector('.mobile-menu');
-    const mobileMenu = document.querySelector('.wrap-nav');
-    const mobileClose = document.querySelector('.mobile-menu-close');
+    const mobileMenus = document.querySelectorAll('.wrap-nav');
+    const mobileCloses = document.querySelectorAll('.mobile-menu-close');
 
-    mobileMenuBtn.addEventListener('click', function(){
-        mobileMenu.classList.add('active');
+    function openMenu(){
+        mobileMenus.forEach(function(nav){
+            nav.classList.add('active');
+        });
         document.body.style.overflow = 'hidden';
+        document.body.classList.add('show-menu'); 
+    }
+    function closeMenu(){
+        mobileMenus.forEach(function(nav){
+            nav.classList.remove('active');
+        });
+        document.body.style.overflow = '';
+        document.body.classList.remove('show-menu'); 
+    }
+    window.closeMobileNav = closeMenu;
+    mobileMenuBtn && mobileMenuBtn.addEventListener('click', openMenu);
+    mobileCloses.forEach(function(btn){
+        btn.addEventListener('click', closeMenu);
     });
 
-    function closeMenu(){
-        mobileMenu.classList.remove('active');
-        document.body.style.overflow = '';
-    }
-
-    mobileClose.addEventListener('click', closeMenu);
-
+    document.addEventListener('click', function (e) {
+        var trigger = e.target.closest(
+            '.mobile-nav .login, ' +
+            '.mobile-nav .open-register-popup, ' +
+            '.mobile-nav .mobile-post-btn, ' +
+            '.mobile-nav .btn-login, ' +
+            '.mobile-nav .btn-register'
+        );
+        if (trigger) {
+            closeMenu();
+        }
+    }, true);
     document.querySelectorAll('.mobile-nav .menu-item-has-children').forEach(function(item){
-
         if (!item.querySelector('.submenu-toggle')) {
             let toggle = document.createElement('span');
             toggle.className = 'submenu-toggle';
@@ -573,14 +876,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function updateParentHeight(element, isOpening){
         let parentSubmenu = element.parentElement.closest('.sub-menu');
-
         if(parentSubmenu){
             if(isOpening){
                 parentSubmenu.style.maxHeight = "2000px";
-
             }else{
-                parentSubmenu.style.maxHeight =
-                    parentSubmenu.scrollHeight + "px";
+                parentSubmenu.style.maxHeight = parentSubmenu.scrollHeight + "px";
             }
             updateParentHeight(parentSubmenu, isOpening);
         }
@@ -590,22 +890,17 @@ document.addEventListener("DOMContentLoaded", function () {
         toggle.addEventListener('click', function(e){
             e.preventDefault();
             e.stopPropagation();
-
             let parentLi = this.parentElement;
             let submenu = parentLi.querySelector(':scope > .sub-menu');
-
             if(parentLi.classList.contains('active')){
                 parentLi.classList.remove('active');
                 submenu.style.maxHeight = null;
                 this.innerHTML = '<span class="ti-angle-down"></span>';
                 updateParentHeight(submenu, false);
-
             }else{
                 parentLi.classList.add('active');
-                submenu.style.maxHeight =
-                    submenu.scrollHeight + "px";
-                this.innerHTML =
-                    '<span class="ti-angle-up"></span>';
+                submenu.style.maxHeight = submenu.scrollHeight + "px";
+                this.innerHTML = '<span class="ti-angle-up"></span>';
                 updateParentHeight(submenu, true);
             }
         });

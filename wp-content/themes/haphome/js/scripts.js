@@ -237,20 +237,20 @@
         });
         /*End OPEN & CLOSE POPUP*/
 
-        /*OPEN & CLOSE MOBILE MENU*/
-        $(".mobile-menu").click(function() {
-            $('body').toggleClass("show-menu");
-            $("body").css("overflow", "hidden");
-        });
-        $(".wrap-master .cat").click(function() {
-            $('body').toggleClass("show-menu");
-            $("body").css("overflow", "hidden");
-        });
-        $(".mobile-menu-close").click(function() {
-            $('body').toggleClass("show-menu");
-            $("body").css("overflow", "");
-        });
-        /*End OPEN & CLOSE MOBILE MENU*/
+        // /*OPEN & CLOSE MOBILE MENU*/
+        // $(".mobile-menu").click(function() {
+        //     $('body').toggleClass("show-menu");
+        //     $("body").css("overflow", "hidden");
+        // });
+        // $(".wrap-master .cat").click(function() {
+        //     $('body').toggleClass("show-menu");
+        //     $("body").css("overflow", "hidden");
+        // });
+        // $(".mobile-menu-close").click(function() {
+        //     $('body').toggleClass("show-menu");
+        //     $("body").css("overflow", "");
+        // });
+        // /*End OPEN & CLOSE MOBILE MENU*/
 
         /*SHOW HIDDE CONTACT*/
         $(".contact-mobile").click(function() {

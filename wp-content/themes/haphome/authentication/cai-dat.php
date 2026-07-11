@@ -107,6 +107,11 @@
 	background: #fafafa;
 }
 
+.cs-avatar-wrap > div:last-child {
+	min-width: 0;
+	flex: 1;
+}
+
 .cs-avatar-circle {
 	width: 68px;
 	height: 68px;
@@ -125,12 +130,13 @@
 }
 
 .cs-avatar-img {
-	width: 100%;
-	height: 100%;
+	width: 68px;
+	height: 68px;
 	object-fit: cover;
 	object-position: center;
 	border-radius: 50%;
 	display: block;
+	flex-shrink: 0;
 }
 
 .cs-avatar-letter {
@@ -145,6 +151,8 @@
 	font-size: 18px;
 	font-weight: 700;
 	color: var(--ql-text);
+	overflow-wrap: break-word;
+	word-break: break-word;
 }
 
 .cs-avatar-email {
@@ -708,6 +716,16 @@ textarea.cs-form-input {
 		flex-direction: column;
 		gap: 10px;
 	}
+
+    .cs-wrap,
+    .cs-wrap * {
+        box-sizing: border-box;
+        max-width: 100%;
+    }
+
+    .cs-wrap select.cs-form-input {
+        min-width: 0;
+    }
 }
 </style>
 
@@ -809,7 +827,7 @@ textarea.cs-form-input {
 ?>
 
 <div class="cs-wrap">
-    `<div class="ql-panel-header" style="padding-bottom:0;border-bottom:none;">
+    <div class="ql-panel-header" style="padding-bottom:0;border-bottom:none;">
         <h2 class="ql-panel-title" style="padding:20px 24px 0;">Cài đặt tài khoản</h2>
         <div class="cs-tabbar">
             <a href="<?php echo caidat_tab_url('thong-tin'); ?>"
@@ -1365,7 +1383,7 @@ textarea.cs-form-input {
             </div>
         </div><!-- /#cs-delete-modal --> 
     <?php endif; /* end bao-mat */ ?>
-    </div><!-- /.ql-panel-body -->`
+    </div><!-- /.ql-panel-body -->
 </div><!-- /.cs-wrap -->
 
 <script>

@@ -17,7 +17,7 @@
 		display: flex;
 		gap: 20px;
 		align-items: flex-start;
-		padding: 24px 0;
+		/* padding: 24px 0; */
 		font-family: inherit;
 	}
 
@@ -247,8 +247,10 @@
 	}
 
 	.ql-content {
+		width: 100%;
 		flex: 1;
 		min-width: 0;
+		padding: 10px;
 	}
 
 	.ql-content-inner {
@@ -275,7 +277,7 @@
 	}
 
 	.ql-panel-body {
-		padding: 24px;
+		padding: 10px;
 	}
 
 	.ql-section {
@@ -524,12 +526,21 @@
 			grid-template-columns: 1fr 1fr;
 		}
 	}
+	@media (max-width: 640px) {
+		.ql-nav{
+			display: none;
+		}
+		.ql-panel-body{
+			padding: 10px;
+		}
+	}
+
 	</style>
 
 	<?php
 	if (!defined('ABSPATH')) exit;
 	$user        = wp_get_current_user();
-	$page_url    = get_permalink(); // URL trang Quản lý tài khoản
+	$page_url    = get_permalink(); 
 	$current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'tong-quan';
 
 	$tab_map = [

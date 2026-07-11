@@ -9540,7 +9540,7 @@ select.form-control option {
     font-weight:500;
     line-height: 20px;
     cursor:pointer;
-    margin-top:10px;
+    /* margin-top:10px; */
 }
 
 .btn-login:hover{

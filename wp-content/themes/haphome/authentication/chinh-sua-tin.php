@@ -479,7 +479,7 @@ get_header();
 .dt-footer {
 	position: sticky;
 	bottom: 0;
-	z-index: 100;
+	z-index: 98;
 	background: var(--c-white);
 	border-top: 1px solid var(--c-border);
 	padding: 12px 18px;
