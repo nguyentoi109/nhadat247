@@ -2,7 +2,6 @@
 
     <?php while (have_posts()) : the_post(); ?>
 	
-		<?php set_query_var('is_ngop', true);?>
         <?php get_template_part('loop-property/item-property'); ?>
 
     <?php endwhile; ?>

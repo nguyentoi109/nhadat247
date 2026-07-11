@@ -27,7 +27,19 @@
 		font-size: 15px;
 	}
 	.title-post{
-		color: #2c2c2c;
+		color: #2c2c2c !important;
+		background: none !important;
+		opacity: 1 !important;
+		display: block !important;
+		width: 100% !important;
+		min-width: 100% !important;
+		max-width: 100% !important;
+		flex: none !important;
+	}
+	.title-post a{
+		color: #2c2c2c !important;
+		display: block !important;
+		width: 100% !important;
 	}
 .bds-save-btn {
 	position: absolute;
@@ -135,8 +147,158 @@
 	width: 11px;
 	height: 11px;
 }
+
+/* ===== 3-column layout for non-ngop items ===== */
+.list-news.has-author-col {
+	display: flex;
+	align-items: stretch;
+	gap: 16px;
+}
+.list-news.has-author-col .thumb-list {
+	flex: 0 0 240px;
+	width: 240px;
+}
+.list-news.has-author-col .content {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.list-news.has-author-col .item-author-col {
+	flex: 0 0 220px;
+	width: 220px;
+	border-left: 1px solid #eee;
+	padding: 12px 16px 12px 20px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-self: center;
+}
+
+.ia-author-row {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	text-align: left;
+	gap: 10px;
+	margin-bottom: 14px;
+}
+.ia-avatar {
+	width: 64px;
+	height: 64px;
+	border-radius: 50%;
+	border: 2px solid #e5e7eb;
+	background: #fff4f1;
+	color: #b91c1c;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 26px;
+	font-weight: 700;
+	flex-shrink: 0;
+	overflow: hidden;
+}
+.ia-avatar img {
+	width: 100%;
+	height: 100%;
+	border-radius: 50%;
+	object-fit: cover;
+}
+.ia-author-name {
+	font-size: 16px;
+	font-weight: 600;
+	color: #1a1a1a;
+	line-height: 1.3;
+}
+.ia-post-count {
+	font-size: 13px;
+	color: #08979c;
+	text-decoration: underline;
+	display: inline-block;
+	margin-top: 2px;
+}
+.ia-post-count:hover {
+	color: #0c7d8b;
+}
+.ia-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	width: 100%;
+	height: 42px;
+	border-radius: 4px;
+	text-decoration: none;
+	font-size: 14px;
+	font-weight: 600;
+	box-sizing: border-box;
+	margin-bottom: 8px;
+	color: #fff;
+	transition: all .2s ease;
+}
+.ia-btn:last-of-type { margin-bottom: 0; }
+.ia-btn img {
+	width: 16px;
+	height: 16px;
+	object-fit: contain;
+	flex-shrink: 0;
+}
+.ia-btn-zalo {
+	background: #fff;
+	border: 1px solid #d9d9d9;
+	color: #222;
+	font-weight: normal;
+}
+.ia-btn-zalo:hover { background: #fafafa; }
+.ia-btn-call {
+	background: var(--btn, #10b981);
+	color: #fff;
+	border: none;
+	font-weight: normal;
+}
+.ia-btn-call:hover {
+	color: #fff;
+	background: var(--btn-hover, #0da271);
+}
+.ia-icon-call { filter: invert(1) brightness(100%); }
+
+.footer-content .date {
+	font-size: 13px;
+	color: #8a8a8a;
+	display: flex;
+	align-items: center;
+	gap: 5px;
+}
+
+/* Desktop: hiện ngày đăng, ẩn tên/sđt. Mobile: ngược lại */
+.footer-content-contact-mobile {
+	display: none;
+}
+@media (max-width: 992px) {
+	.footer-content-date {
+		display: none !important;
+	}
+	.footer-content-contact-mobile {
+		display: block;
+	}
+}
+
+@media (max-width: 992px) {
+	.list-news.has-author-col {
+		display: block;
+	}
+	.list-news.has-author-col .thumb-list {
+		width: 100%;
+		flex: none;
+	}
+	.list-news.has-author-col .content {
+		width: 100%;
+		flex: none;
+	}
+	.list-news.has-author-col .item-author-col {
+		display: none;
+	}
+}
 </style>
-<article id="post-<?php the_ID(); ?>" class="list-news swiper-slide">
+<article id="post-<?php the_ID(); ?>" class="list-news swiper-slide<?php echo (!get_query_var('is_ngop', false)) ? ' has-author-col' : ''; ?>">
  
 <?php
 $post_id = get_the_ID();
@@ -174,57 +336,6 @@ $is_vip_active = $vip_check['is_vip'];
 ?>
  
 <?php $is_ngop = get_query_var('is_ngop', false);?>
-<?php if(!$is_ngop): ?>
-<div class="header-list-news">
-    <span class="price">
-		<strong>
-			<strong><span class="ti-tag"></span> Giá:</strong>
-				<span class="num">
-						<?php
-						if ($price) {
-							if ($price >= 1000000000) {
-								$value = $price / 1000000000;
-								echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
-							} elseif ($price >= 1000000) {
-								$value = $price / 1000000;
-								echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
-							} else {
-								if ($unit == 'trieu' && $price > 1000) {
-									$value = $price / 1000;
-									echo rtrim(rtrim(sprintf('%.10f', $value), '0'), '.');
-								} else {
-									echo number_format($price, 0, ',', '.');
-								}
-							}
-						}
-						?>
-						</span>
-						<?php
-						if ($price) {
-							if ($price >= 1000000000) {
-								echo ' tỷ';
-							} elseif ($price >= 1000000) {
-								echo ' triệu';
-							} else {
-								if ($unit == 'trieu') {
-									if ($price > 1000) {
-										echo 'tỷ';
-									} else {
-										echo ' triệu';
-									}
-								} elseif ($unit == 'ty') {
-									echo ' tỷ';
-								} else {
-									echo ' đ';
-								}
-							}
-						}
-						?>
-				</span>
-		</strong>
-	</span>
-</div>
-<?php endif; ?>
 		<?php if (has_post_thumbnail()) : ?>
 <div class="thumb-list">
 	<?php if ($is_vip_active): ?>
@@ -268,12 +379,8 @@ $is_vip_active = $vip_check['is_vip'];
 			<h3 class="title-post">
 				<a href="<?php the_permalink(); ?>" title="<?php the_title(); ?>"><?php the_title(); ?></a>
 			</h3>
-      		<?php if(!$is_ngop): ?>
-				<?php html5wp_excerpt('html5wp_index');?>
-			<?php endif; ?>
 			<div class="meta">
-				<?php if($is_ngop): ?>
-					<span class="meta-price">
+				<span class="meta-price">
 						<strong>
 							<?php
 								if ($price) {
@@ -318,7 +425,6 @@ $is_vip_active = $vip_check['is_vip'];
 						</strong>
 					</span> 
 				<span class="dot">•</span>
-					<?php endif; ?>
 				<span class="area">
 					<?php echo $area; ?> m<sup>2<sup>
 				</span> 
@@ -397,6 +503,7 @@ $is_vip_active = $vip_check['is_vip'];
 					</span>
 				</div>
 			</div>
+			<?php if($is_ngop): ?>
 			<div class="footer-content">
 			  <div class="user-name">
 					<?php
@@ -409,42 +516,94 @@ $is_vip_active = $vip_check['is_vip'];
 				</div>
 				<div class="author">
             	<?php 
-				//get_template_part("meta-user")
 						if($phone_custom){
 							echo '<a class="phone" href="tel:'.$phone_custom.'"><span class="ti-mobile"></span> '.$phone_custom .'</a>';
 						}
 				?>
 			  </div>
-				<!-- <div class="date">
-					<span class="ti-calendar"></span> 
-					<?php 
-						// $post_timestamp = get_the_time('U');
-						// $current_timestamp = current_time('timestamp');
-
-						// $post_date = date('Y-m-d', $post_timestamp);
-						// $today = date('Y-m-d', $current_timestamp);
-						// $yesterday = date('Y-m-d', strtotime('-1 day', $current_timestamp));
-						// $two_days_ago = date('Y-m-d', strtotime('-2 days', $current_timestamp));
-
-						// if ( $post_date == $today ) {
-						// 	echo 'Hôm nay';
-						// } elseif ( $post_date == $yesterday ) {
-						// 	echo '1 ngày trước';
-						// } elseif ( $post_date == $two_days_ago ) {
-						// 	echo '2 ngày trước';
-						// } else {
-						// 	the_time('d/m/Y');
-						// }
-					?>
-				</div> -->
 			</div>
+			<?php else: ?>
+			<div class="footer-content footer-content-date">
+				<div class="date">
+					<span class="ti-calendar"></span>
+					<?php
+						$post_timestamp = get_the_time('U');
+						$current_timestamp = current_time('timestamp');
+
+						$post_date = date('Y-m-d', $post_timestamp);
+						$today = date('Y-m-d', $current_timestamp);
+						$yesterday = date('Y-m-d', strtotime('-1 day', $current_timestamp));
+						$two_days_ago = date('Y-m-d', strtotime('-2 days', $current_timestamp));
+
+						if ( $post_date == $today ) {
+							echo 'Hôm nay';
+						} elseif ( $post_date == $yesterday ) {
+							echo '1 ngày trước';
+						} elseif ( $post_date == $two_days_ago ) {
+							echo '2 ngày trước';
+						} else {
+							the_time('d/m/Y');
+						}
+					?>
+				</div>
+			</div>
+			<div class="footer-content footer-content-contact-mobile">
+			  <div class="user-name">
+					<?php
+						if(!empty($name_custom)){
+							echo esc_html($name_custom);
+						}else{
+							echo '';
+						}
+					?>
+				</div>
+				<div class="author">
+            	<?php 
+						if($phone_custom){
+							echo '<a class="phone" href="tel:'.$phone_custom.'"><span class="ti-mobile"></span> '.$phone_custom .'</a>';
+						}
+				?>
+			  </div>
+			</div>
+			<?php endif; ?>
 		</div>
-		<!-- <?php if($post_link): ?>
-		<div class="wrap-news">
-			<div class="title">Tin tức liên quan</div>
-			<a href="<?php echo $post_link[1]?>" target="_blank" title="<?php echo $post_link[0]?>"><?php echo $post_link[0]?></a>
+		<!-- /content -->
+
+		<?php if (!$is_ngop): ?>
+		<!-- cột 3: mini sidebar tác giả -->
+		<div class="item-author-col">
+			<?php
+			$author_info = function_exists('bds_get_post_author_info') ? bds_get_post_author_info($post_id) : null;
+			if ($author_info):
+				$ia_phone_clean = preg_replace('/[^0-9+]/', '', $author_info['phone']);
+				$ia_link_param  = ($author_info['link_type'] === 'custom') ? 'dt_author' : 'dt_wp_author';
+				$ia_listing_url = add_query_arg($ia_link_param, $author_info['author_id_for_link'], home_url('/tin-dang-cua-nguoi-dung/'));
+			?>
+				<div class="ia-author-row">
+					<div class="ia-avatar">
+						<?php echo $author_info['avatar_html']; ?>
+					</div>
+					<div>
+						<div class="ia-author-name"><?php echo esc_html($author_info['name']); ?></div>
+						<?php if ($author_info['post_count'] > 0): ?>
+							<a href="<?php echo esc_url($ia_listing_url); ?>" class="ia-post-count">
+								<?php echo (int) $author_info['post_count']; ?> tin đăng
+							</a>
+						<?php endif; ?>
+					</div>
+				</div>
+
+				<?php if ($author_info['phone']): ?>
+					<a href="https://zalo.me/<?php echo esc_attr($ia_phone_clean); ?>" target="_blank" class="ia-btn ia-btn-zalo">
+						<img src="<?php echo get_template_directory_uri(); ?>/img/zalo.jpg" alt="Zalo">
+						<span>Chat Zalo</span>
+					</a>
+					<a href="tel:<?php echo esc_attr($ia_phone_clean); ?>" class="ia-btn ia-btn-call">
+						<img src="<?php echo get_template_directory_uri(); ?>/img/phone.png" class="ia-icon-call" alt="Gọi điện">
+						<span>Gọi điện</span>
+					</a>
+				<?php endif; ?>
+			<?php endif; ?>
 		</div>
-		<?php endif; ?> -->
-      <!-- <a href="<?php the_permalink(); ?>" title="<?php the_title(); ?>" class="btn">Xem chi tiết</a> -->
-		<!-- </div> -->
+		<?php endif; ?>
 	</article>

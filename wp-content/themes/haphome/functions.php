@@ -1215,6 +1215,101 @@ function custom_save_profile( int $user_id, array $data, array $addr ) {
     return true;
 }
 
+//get post for user and admin
+function bds_get_post_author_info(int $post_id): array {
+    global $wpdb;
+    $author_uid = (int) get_post_meta($post_id, '_custom_user_id', true);
+    if ($author_uid) {
+        $u = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}custom_users WHERE id = %d",
+            $author_uid
+        ));
+        $post_count = (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}custom_post_listings cpl
+             INNER JOIN {$wpdb->prefix}posts p ON p.ID = cpl.post_id
+             WHERE cpl.custom_user_id = %d
+               AND cpl.status = 'active'
+               AND (cpl.expired_at IS NULL OR cpl.expired_at >= CURDATE())
+               AND p.post_type = 'property'
+               AND p.post_status IN ('publish','pending')",
+            $author_uid
+        ));
+
+        $duration_text = ($u && !empty($u->created_at))
+            ? bds_format_membership_duration($u->created_at)
+            : '';
+
+        $avatar_html = $u ? custom_get_avatar_html($u, 'thumbnail') : '<span class="cs-avatar-letter">?</span>';
+
+        return [
+            'source'        => 'custom_user',
+            'name'          => $u->full_name ?? '',
+            'email'         => $u->email ?? '',
+            'phone'         => $u->phone ?? '',
+            'post_count'    => $post_count,
+            'duration_text' => $duration_text,
+            'avatar_html'   => $avatar_html,
+            'author_id_for_link' => $author_uid,
+            'link_type'           => 'custom',
+        ];
+    }
+
+    $wp_author_id = (int) get_post_field('post_author', $post_id);
+    $wp_user      = get_userdata($wp_author_id);
+
+    $post_count = (int) (new WP_Query([
+        'post_type'      => 'property',
+        'author'         => $wp_author_id,
+        'post_status'    => ['publish', 'pending'],
+        'posts_per_page' => -1,
+        'fields'         => 'ids',
+    ]))->found_posts;
+
+    $duration_text = ($wp_user && !empty($wp_user->user_registered))
+        ? bds_format_membership_duration($wp_user->user_registered)
+        : '';
+    $fake_user = (object) [
+        'avatar'    => null,
+        'full_name' => $wp_user ? $wp_user->display_name : '',
+    ];
+    $avatar_html = custom_get_avatar_html($fake_user, 'thumbnail');
+
+    return [
+        'source'        => 'wp_admin',
+        'name'          => $wp_user ? $wp_user->display_name : '',
+        'email'         => $wp_user ? $wp_user->user_email : '',
+        'phone'         => get_user_meta($wp_author_id, 'phone', true),
+        'post_count'    => $post_count,
+        'duration_text' => $duration_text,
+        'avatar_html'   => $avatar_html,
+        'author_id_for_link' => $wp_author_id,
+        'link_type'     => 'wp',
+    ];
+}
+
+function bds_format_membership_duration(string $joined_datetime): string {
+    if (empty($joined_datetime)) return '';
+
+    try {
+        $joined = new DateTime($joined_datetime);
+        $now    = new DateTime();
+        $diff   = $now->diff($joined);
+    } catch (Exception $e) {
+        return '';
+    }
+
+    if ($diff->y >= 1) {
+        return 'Tham gia nhadathochiminh247 ' . $diff->y . ' năm';
+    }
+    if ($diff->m >= 1) {
+        return 'Tham gia nhadathochiminh247 ' . $diff->m . ' tháng';
+    }
+    if ($diff->d >= 1) {
+        return 'Tham gia nhadathochiminh247 ' . $diff->d . ' ngày';
+    }
+    return 'Mới tham gia nhadathochiminh247';
+}
+
 function custom_get_default_address( $user_id ) {
     global $wpdb;
     return $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}custom_user_addresses WHERE user_id = %d AND is_default = 1 LIMIT 1",$user_id));

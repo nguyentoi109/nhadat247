@@ -32,6 +32,9 @@ function bds_get_sorted_listing_ids(int $location_term_id, array $extra_query_ar
     $query    = new WP_Query($base_args);
     $post_ids = $query->posts; 
     wp_reset_postdata();
+
+    $post_ids = bds_filter_valid_listings($post_ids);
+
     if (empty($post_ids)) {
         return ['post_ids' => [], 'total_found' => 0, 'max_num_pages' => 0];
     }
@@ -169,8 +172,10 @@ function bds_get_sorted_query(array $wp_query_args, int $paged = 1, int $per_pag
     $query    = new WP_Query($base_args);
     $post_ids = $query->posts;
     wp_reset_postdata();
+
+    $post_ids = bds_filter_valid_listings($post_ids);
  
-    if (empty($post_ids)) {
+     if (empty($post_ids)) {
         $empty_query = new WP_Query(['post__in' => [0], 'post_type' => $wp_query_args['post_type'] ?? 'property']);
         return ['query' => $empty_query, 'max_num_pages' => 0];
     }
@@ -268,4 +273,45 @@ function bds_get_sorted_query(array $wp_query_args, int $paged = 1, int $per_pag
         'ignore_sticky_posts' => true,
     ]);
     return ['query' => $final_query, 'max_num_pages' => $max_pages];
+}
+
+function bds_filter_valid_listings(array $post_ids): array {
+    global $wpdb;
+    if (empty($post_ids)) {
+        return [];
+    }
+    $ids_csv = implode(',', array_map('intval', $post_ids));
+    $user_posted_rows = $wpdb->get_col(
+        "SELECT post_id FROM {$wpdb->prefix}postmeta
+         WHERE meta_key = '_custom_user_id'
+           AND post_id IN ($ids_csv)
+           AND meta_value != ''"
+    );
+    $user_posted_ids = array_map('intval', $user_posted_rows);
+    if (empty($user_posted_ids)) {
+        return $post_ids;
+    }
+
+    $user_ids_csv = implode(',', $user_posted_ids);
+    $valid_rows = $wpdb->get_col(
+        "SELECT post_id FROM {$wpdb->prefix}custom_post_listings
+         WHERE post_id IN ($user_ids_csv)
+           AND status = 'active'
+           AND (expired_at IS NULL OR expired_at >= CURDATE())"
+    );
+    $valid_user_ids = array_flip(array_map('intval', $valid_rows));
+    $user_posted_lookup = array_flip($user_posted_ids);
+    $result = [];
+    foreach ($post_ids as $pid) {
+        $pid = (int) $pid;
+        $is_user_posted = isset($user_posted_lookup[$pid]);
+
+        if (!$is_user_posted) {
+            $result[] = $pid;
+        } elseif (isset($valid_user_ids[$pid])) {
+            $result[] = $pid;
+        }
+    }
+
+    return $result;
 }

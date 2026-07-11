@@ -360,6 +360,16 @@ if (have_posts()) : while (have_posts()) : the_post();
     $video_id = get_youtube_id_from_url($video);
     $name_custom = rwmb_meta('prefix-name-custom');
     $phone_custom= rwmb_meta('prefix-phone-custom');
+    $author_info         = bds_get_post_author_info(get_the_ID());
+    $author_email        = $author_info['email'];
+    $author_name         = $name_custom ?: $author_info['name'];
+    $author_phone        = $phone_custom ?: $author_info['phone'];
+    $author_post_ct      = $author_info['post_count'];
+    $author_duration     = $author_info['duration_text'];
+    $author_avatar       = $author_info['avatar_html'];
+    $author_id_for_link  = $author_info['author_id_for_link'];
+    $author_link_type    = $author_info['link_type'];
+    $phone_clean         = preg_replace('/[^0-9]/', '', $author_phone);
     $image_360 = rwmb_meta('image360', ['size' => 'thumbnail']);
     $gallerys = rwmb_meta('prefix-image_property', ['size' => 'thumbnail']);
     $has_gallery = !empty($gallerys);
@@ -400,12 +410,6 @@ if (have_posts()) : while (have_posts()) : the_post();
     }
 
     $has_map = ($dt_lat !== '' && $dt_lng !== '' && is_numeric($dt_lat) && is_numeric($dt_lng));
-    $author_email = get_the_author_meta('user_email');
-    $author_name = $name_custom ?: get_the_author_meta('nickname');
-    $author_phone = $phone_custom ?: get_the_author_meta('phone');
-    $author_id  = get_the_author_meta('ID');
-    $author_post_ct = count_user_posts($author_id, 'property');
-    $phone_clean  = preg_replace('/[^0-9]/', '', $author_phone);
     $room_type_ids = array(8, 9, 11);
     $property_type_terms = get_the_terms(get_the_ID(), "property_type");
     $has_rooms = false;
@@ -805,11 +809,14 @@ if (have_posts()) : while (have_posts()) : the_post();
 </main>
 
 <?php
-set_query_var('author_email',   $author_email);
-set_query_var('author_name',    $author_name);
-set_query_var('author_phone',   $author_phone);
-set_query_var('author_id',      $author_id);
-set_query_var('author_post_ct', $author_post_ct);
+set_query_var('author_email',        $author_email);
+set_query_var('author_name',         $author_name);
+set_query_var('author_phone',        $author_phone);
+set_query_var('author_post_ct',      $author_post_ct);
+set_query_var('author_duration',     $author_duration);
+set_query_var('author_avatar',       $author_avatar);
+set_query_var('author_id_for_link',  $author_id_for_link);
+set_query_var('author_link_type',    $author_link_type);
 get_template_part('detail-sidebar');
 ?>
 

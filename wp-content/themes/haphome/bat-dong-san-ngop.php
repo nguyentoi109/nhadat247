@@ -42,9 +42,9 @@ $query = $result['query'];
 
 if (!$query->have_posts()) {
     wp_reset_postdata();
+    set_query_var('is_ngop', false);
     return;
 }
-
 ?>
 
 <div class="popular clear">
@@ -56,6 +56,7 @@ if (!$query->have_posts()) {
                 get_template_part('loop-property/item-property');
             endwhile;
             wp_reset_postdata();
+            set_query_var('is_ngop', false);
             ?>
        </div>
     </div>

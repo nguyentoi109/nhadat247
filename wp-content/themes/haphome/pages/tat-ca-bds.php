@@ -30,7 +30,6 @@ get_header();
 			<?php if ($query->have_posts()) : ?>
                 
                 <?php while ($query->have_posts()) : $query->the_post(); ?>
-                    <?php set_query_var('is_ngop', true);?>
                     <?php get_template_part('loop-property/item-property'); ?>
 
                 <?php endwhile; ?>

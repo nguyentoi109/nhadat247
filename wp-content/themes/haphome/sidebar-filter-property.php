@@ -7,7 +7,7 @@
 .list-style-wrap .list-style.list-all {
   flex: 1;
   min-width: 0;
-  padding-right: 20px;
+  padding-right: 10px;
 }
 .sidebar-filter-property {
   width: 280px;

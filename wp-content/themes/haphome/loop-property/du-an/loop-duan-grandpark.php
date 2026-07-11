@@ -31,7 +31,6 @@ if ($query->have_posts()) :
     </div>
     <div class="list-style list-all container">
         <?php while ($query->have_posts()) : $query->the_post(); ?>
-            <?php set_query_var('is_ngop', true);?>
             <?php get_template_part('loop-property/item-property'); ?>
 
         <?php endwhile; ?>

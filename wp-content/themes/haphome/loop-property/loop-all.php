@@ -12,31 +12,41 @@ get_header();
 		<div class="list-style list-all">
 			<?php
             $paged = max(1, get_query_var('paged'));
-            $query = new WP_Query(array(
-                'post_type'      => 'property',
-                'post_status'    => 'publish',
-                'orderby'        => 'ID',
-                'order'          => 'DESC',
-                'posts_per_page' => 20,
-                'paged'          => $paged
-            ));
+            $price_area_meta_query = bds_filter_price_area_meta_query();
+
+            $query_args = array(
+                'post_type'   => 'property',
+                'post_status' => 'publish',
+            );
+
+            if (!empty($price_area_meta_query)) {
+                $query_args['meta_query'] = $price_area_meta_query;
+            }
+
+            $result = bds_get_sorted_query($query_args, $paged, 20);
+            $query  = $result['query'];
 
             if ($query->have_posts()) :
-                $temp_query = $wp_query;
-                $wp_query = $query;
-				
-				set_query_var('is_ngop', true);
+                set_query_var('is_ngop', true);
             ?>
                 <?php while ($query->have_posts()) : $query->the_post(); ?>
                     <?php get_template_part('loop-property/item-property'); ?>
                 <?php endwhile; ?>
 
                 <div class="pagination">
-                    <?php get_template_part('pagination'); ?>
+                    <?php
+                    if (function_exists('wp_pagenavi')) {
+                        wp_pagenavi(array('query' => $query));
+                    } else {
+                        echo paginate_links(array(
+                            'total'   => $result['max_num_pages'],
+                            'current' => $paged,
+                        ));
+                    }
+                    ?>
                 </div>
 
             <?php
-                $wp_query = $temp_query;
             else :
             ?>
                 <article>
