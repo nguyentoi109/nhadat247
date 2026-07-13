@@ -1,80 +1,3 @@
-<?php
-if (!defined('ABSPATH')) exit;
-$user_id = get_current_user_id();
-
-$vtab = isset($_GET['vtab']) ? sanitize_text_field($_GET['vtab']) : 'available';
-
-$vouchers = [
-    'available' => [
-        [
-            'code'         => 'NEWUSER50',
-            'title'        => 'Giảm 50% gói đăng tin',
-            'desc'         => 'Áp dụng cho lần đầu mua gói đăng tin. Giảm tối đa 200.000 ₫.',
-            'discount'     => '50%',
-            'discount_type'=> 'percent',
-            'expires'      => '30/06/2026',
-            'min_order'    => '200.000 ₫',
-            'color'        => 'red',
-            'category'     => 'Tin đăng',
-        ],
-        [
-            'code'         => 'VIP100K',
-            'title'        => 'Giảm 100.000 ₫ gói VIP',
-            'desc'         => 'Áp dụng khi nâng cấp gói thành viên VIP bất kỳ.',
-            'discount'     => '100K',
-            'discount_type'=> 'fixed',
-            'expires'      => '15/07/2026',
-            'min_order'    => '500.000 ₫',
-            'color'        => 'blue',
-            'category'     => 'Gói thành viên',
-        ],
-        [
-            'code'         => 'PUSH30',
-            'title'        => 'Giảm 30% dịch vụ đẩy tin',
-            'desc'         => 'Áp dụng cho các gói đẩy tin 3 ngày, 7 ngày, 30 ngày.',
-            'discount'     => '30%',
-            'discount_type'=> 'percent',
-            'expires'      => '31/07/2026',
-            'min_order'    => '100.000 ₫',
-            'color'        => 'green',
-            'category'     => 'Đẩy tin',
-        ],
-    ],
-    'used' => [
-        [
-            'code'         => 'WELCOME20',
-            'title'        => 'Chào mừng thành viên mới',
-            'desc'         => 'Giảm 20% đơn hàng đầu tiên.',
-            'discount'     => '20%',
-            'discount_type'=> 'percent',
-            'used_date'    => '01/05/2026',
-            'color'        => 'gray',
-            'category'     => 'Chung',
-        ],
-    ],
-    'expired' => [
-        [
-            'code'         => 'SALE2025',
-            'title'        => 'Khuyến mãi cuối năm 2025',
-            'desc'         => 'Giảm 40% tất cả dịch vụ.',
-            'discount'     => '40%',
-            'discount_type'=> 'percent',
-            'expires'      => '31/12/2025',
-            'color'        => 'gray',
-            'category'     => 'Chung',
-        ],
-    ],
-];
-
-$current_vouchers = $vouchers[$vtab] ?? [];
-$color_map = [
-    'red'   => ['bg' => '#fee2e2', 'text' => '#991b1b', 'border' => '#fca5a5', 'accent' => '#ee0033'],
-    'blue'  => ['bg' => '#dbeafe', 'text' => '#1e40af', 'border' => '#93c5fd', 'accent' => '#2563eb'],
-    'green' => ['bg' => '#d1fae5', 'text' => '#065f46', 'border' => '#6ee7b7', 'accent' => '#10b981'],
-    'gray'  => ['bg' => '#f3f4f6', 'text' => '#6b7280', 'border' => '#d1d5db', 'accent' => '#9ca3af'],
-];
-?>
-
 <style>
 .ql-filter-tab2 {
 	display: flex;
@@ -299,19 +222,47 @@ $color_map = [
 }
 </style>
 
+<?php
+if (!defined('ABSPATH')) exit;
+
+$custom_user = get_current_custom_user();
+if (!$custom_user) {
+    wp_redirect(home_url('/dang-nhap/?redirect=' . urlencode(get_permalink())));
+    exit;
+}
+$user_id = (int) $custom_user->id;
+
+$vtab = isset($_GET['vtab']) ? sanitize_key($_GET['vtab']) : 'available';
+if (!in_array($vtab, ['available', 'used', 'expired'], true)) {
+    $vtab = 'available';
+}
+
+// Toàn bộ SQL/logic nằm trong functions.php — ở đây chỉ gọi và nhận kết quả
+$page_data        = ql_get_voucher_page_data($user_id, $vtab);
+$current_vouchers = $page_data['vouchers'];
+$vouchers_count   = $page_data['counts'];
+
+$color_map = [
+    'red'   => ['bg' => '#fee2e2', 'text' => '#991b1b', 'border' => '#fca5a5', 'accent' => '#ee0033'],
+    'blue'  => ['bg' => '#dbeafe', 'text' => '#1e40af', 'border' => '#93c5fd', 'accent' => '#2563eb'],
+    'green' => ['bg' => '#d1fae5', 'text' => '#065f46', 'border' => '#6ee7b7', 'accent' => '#10b981'],
+    'gray'  => ['bg' => '#f3f4f6', 'text' => '#6b7280', 'border' => '#d1d5db', 'accent' => '#9ca3af'],
+];
+?>
+
 <div class="ql-panel-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
     <h2 class="ql-panel-title">Voucher của tôi</h2>
     <div style="display:flex;gap:6px;">
         <?php
         $vtabs = ['available' => 'Khả dụng', 'used' => 'Đã dùng', 'expired' => 'Hết hạn'];
         foreach ($vtabs as $key => $label):
-            $count = count($vouchers[$key]);
+            $count = $vouchers_count[$key] ?? 0;
         ?>
-            <a href="?tab=voucher&vtab=<?php echo $key; ?>"
+            <a href="?tab=voucher&vtab=<?php echo esc_attr($key); ?>"
                class="ql-filter-tab2 <?php echo $vtab === $key ? 'active' : ''; ?>">
-                <?php echo $label; ?>
+                <?php echo esc_html($label); ?>
                 <?php if ($count > 0): ?>
-                    <span class="ql-vtab-count"><?php echo $count; ?></span>
+                    <span class="ql-vtab-count"><?php echo (int) $count; ?></span>
                 <?php endif; ?>
             </a>
         <?php endforeach; ?>
@@ -323,7 +274,7 @@ $color_map = [
     <div class="ql-voucher-input-box">
         <div class="ql-voucher-input-title">Nhập mã voucher</div>
         <div class="ql-voucher-input-row">
-            <input type="text" class="ql-form-input" placeholder="Nhập mã khuyến mãi (VD: NEWUSER50)" id="ql-voucher-code"
+            <input type="text" class="ql-form-input" placeholder="Nhập mã khuyến mãi (VD: DTT-XXXXXXXX)" id="ql-voucher-code"
                    style="flex:1;" maxlength="50">
             <button class="ql-save-btn" style="white-space:nowrap;" onclick="applyVoucher()">Áp dụng</button>
         </div>
@@ -345,9 +296,9 @@ $color_map = [
             <?php foreach ($current_vouchers as $vc):
                 $c = $color_map[$vc['color']] ?? $color_map['gray'];
             ?>
-            <div class="ql-voucher-card" style="--vc-border:<?php echo $c['border']; ?>;--vc-bg:<?php echo $c['bg']; ?>;--vc-accent:<?php echo $c['accent']; ?>;">
+            <div class="ql-voucher-card" style="--vc-border:<?php echo esc_attr($c['border']); ?>;--vc-bg:<?php echo esc_attr($c['bg']); ?>;--vc-accent:<?php echo esc_attr($c['accent']); ?>;">
 
-                <div class="ql-vc-left" style="background:<?php echo $c['accent']; ?>;">
+                <div class="ql-vc-left" style="background:<?php echo esc_attr($c['accent']); ?>;">
                     <div class="ql-vc-discount"><?php echo esc_html($vc['discount']); ?></div>
                     <div class="ql-vc-dtype"><?php echo $vc['discount_type'] === 'percent' ? 'GIẢM' : 'TIỀN MẶT'; ?></div>
                 </div>
@@ -356,7 +307,7 @@ $color_map = [
                 <div class="ql-vc-notch-bot"></div>
 
                 <div class="ql-vc-mid">
-                    <div class="ql-vc-cat" style="color:<?php echo $c['accent']; ?>;"><?php echo esc_html($vc['category']); ?></div>
+                    <div class="ql-vc-cat" style="color:<?php echo esc_attr($c['accent']); ?>;"><?php echo esc_html($vc['category']); ?></div>
                     <div class="ql-vc-title"><?php echo esc_html($vc['title']); ?></div>
                     <div class="ql-vc-desc"><?php echo esc_html($vc['desc']); ?></div>
                     <div class="ql-vc-meta">
@@ -367,6 +318,9 @@ $color_map = [
                             <span>HSD: <?php echo esc_html($vc['expires']); ?></span>
                         <?php elseif (!empty($vc['used_date'])): ?>
                             <span>Đã dùng: <?php echo esc_html($vc['used_date']); ?></span>
+                        <?php endif; ?>
+                        <?php if ($vc['quantity'] > 0): ?>
+                            <span>Còn lại: <strong><?php echo (int) $vc['quantity']; ?></strong> lượt</span>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -379,7 +333,7 @@ $color_map = [
                         </svg>
                     </div>
                     <?php if ($vtab === 'available'): ?>
-                        <button class="ql-vc-use-btn" style="background:<?php echo $c['accent']; ?>;">Dùng ngay</button>
+                        <button class="ql-vc-use-btn" style="background:<?php echo esc_attr($c['accent']); ?>;">Dùng ngay</button>
                     <?php elseif ($vtab === 'used'): ?>
                         <span class="ql-badge ql-badge-blue">Đã sử dụng</span>
                     <?php else: ?>
@@ -402,10 +356,44 @@ function copyCode(el) {
         if (txt) { const orig = txt.textContent; txt.textContent = '✓ Đã sao chép'; setTimeout(() => { txt.textContent = orig; }, 1500); }
     });
 }
+
 function applyVoucher() {
     const code = document.getElementById('ql-voucher-code').value.trim();
     const msg  = document.getElementById('ql-voucher-msg');
-    if (!code) { msg.style.display='block'; msg.style.color='#991b1b'; msg.textContent='Vui lòng nhập mã voucher.'; return; }
-    msg.style.display='block'; msg.style.color='#065f46'; msg.textContent='Đang kiểm tra mã...';
+
+    if (!code) {
+        msg.style.display = 'block'; msg.style.color = '#991b1b';
+        msg.textContent = 'Vui lòng nhập mã voucher.';
+        return;
+    }
+
+    if (typeof qlt_voucher_ajax === 'undefined') {
+        msg.style.display = 'block'; msg.style.color = '#991b1b';
+        msg.textContent = 'Thiếu cấu hình AJAX, vui lòng tải lại trang.';
+        return;
+    }
+
+    msg.style.display = 'block'; msg.style.color = '#065f46';
+    msg.textContent = 'Đang kiểm tra mã...';
+
+    fetch(qlt_voucher_ajax.ajax_url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'action=ql_check_voucher_code&code=' + encodeURIComponent(code) + '&_nonce=' + encodeURIComponent(qlt_voucher_ajax.nonce)
+    })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                msg.style.color = '#065f46';
+                msg.textContent = data.data.message;
+            } else {
+                msg.style.color = '#991b1b';
+                msg.textContent = data.data.message;
+            }
+        })
+        .catch(() => {
+            msg.style.color = '#991b1b';
+            msg.textContent = 'Không thể kết nối máy chủ, vui lòng thử lại.';
+        });
 }
 </script>

@@ -3148,32 +3148,66 @@ function bds_generate_voucher_code(string $prefix): string {
  
 function bds_issue_member_plan_vouchers(int $user_id, string $plan, string $expired_at, int $member_plan_id): void {
     global $wpdb;
- 
+
     $counts = QL_MEMBER_PLAN_VOUCHERS[$plan];
     $table  = "{$wpdb->prefix}custom_vouchers";
+    $today  = current_time('Y-m-d');
     $voucher_specs = [
         [$counts['post_normal'], 'post', 'post', 'DTT'],
         [$counts['push_normal'], 'post', 'push', 'DAT'],
         [$counts['post_vip'],    'vip',  'post', 'DTV'],
         [$counts['push_vip'],    'vip',  'push', 'DAV'],
     ];
- 
+
     foreach ($voucher_specs as [$qty, $voucher_type, $action_type, $prefix]) {
-        for ($i = 0; $i < (int) $qty; $i++) {
+        $qty = (int) $qty;
+        if ($qty <= 0) {
+            continue;
+        }
+        $existing = $wpdb->get_row($wpdb->prepare(
+            "SELECT id, quantity, quantity_total
+             FROM {$table}
+             WHERE user_id = %d
+               AND voucher_type = %s
+               AND action_type = %s
+               AND source = 'member'
+               AND status = 'active'
+               AND issue_date = %s
+             LIMIT 1",
+            $user_id, $voucher_type, $action_type, $today
+        ));
+
+        if ($existing) {
+            $wpdb->query($wpdb->prepare(
+                "UPDATE {$table}
+                 SET quantity = quantity + %d,
+                     quantity_total = quantity_total + %d,
+                     expired_at = %s
+                 WHERE id = %d",
+                $qty, $qty, $expired_at, $existing->id
+            ));
+
+            if ($wpdb->last_error) {
+                throw new Exception('Không thể cập nhật voucher: ' . $wpdb->last_error);
+            }
+        } else {
             $code = bds_generate_voucher_code($prefix);
             $wpdb->insert($table, [
-                'user_id'      => $user_id,
-                'code'         => $code,
-                'voucher_type' => $voucher_type,
-                'action_type'  => $action_type,
-                'value'        => QL_MEMBER_PLAN_VOUCHER_DISCOUNT_PERCENT,
-                'value_type'   => 'percent',
-                'min_order'    => 0,
-                'max_discount' => null,
-                'source'       => 'member',
-                'expired_at'   => $expired_at,
-                'status'       => 'active',
-                'created_at'   => current_time('mysql'),
+                'user_id'        => $user_id,
+                'code'           => $code,
+                'voucher_type'   => $voucher_type,
+                'action_type'    => $action_type,
+                'value'          => QL_MEMBER_PLAN_VOUCHER_DISCOUNT_PERCENT,
+                'value_type'     => 'percent',
+                'quantity'       => $qty,
+                'quantity_total' => $qty,
+                'min_order'      => 0,
+                'max_discount'   => null,
+                'source'         => 'member',
+                'expired_at'     => $expired_at,
+                'issue_date'     => $today,
+                'status'         => 'active',
+                'created_at'     => current_time('mysql'),
             ]);
             if ($wpdb->last_error) {
                 throw new Exception('Không thể tạo voucher: ' . $wpdb->last_error);
@@ -3196,6 +3230,197 @@ add_action('wp_enqueue_scripts', function () {
         wp_localize_script('goi-thanh-vien-purchase', 'qlt_member_ajax', [
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce'    => wp_create_nonce('ql_member_plan_nonce'),
+        ]);
+    }
+});
+
+//VOUCHER
+function ql_expire_overdue_vouchers(int $user_id): void {
+    global $wpdb;
+    $table = "{$wpdb->prefix}custom_vouchers";
+    $wpdb->query($wpdb->prepare(
+        "UPDATE {$table}
+         SET status = 'expired'
+         WHERE user_id = %d
+           AND status = 'active'
+           AND expired_at IS NOT NULL
+           AND expired_at < CURDATE()",
+        $user_id
+    ));
+}
+
+function ql_get_voucher_counts(int $user_id): array {
+    global $wpdb;
+    $table = "{$wpdb->prefix}custom_vouchers";
+    $rows = $wpdb->get_results($wpdb->prepare(
+        "SELECT status, COUNT(*) as cnt
+         FROM {$table}
+         WHERE user_id = %d
+         GROUP BY status",
+        $user_id
+    ), OBJECT_K);
+    return [
+        'active'  => isset($rows['active'])  ? (int) $rows['active']->cnt  : 0,
+        'used'    => isset($rows['used'])    ? (int) $rows['used']->cnt    : 0,
+        'expired' => isset($rows['expired']) ? (int) $rows['expired']->cnt : 0,
+    ];
+}
+
+function ql_get_vouchers_by_status(int $user_id, string $status): array {
+    global $wpdb;
+    $table = "{$wpdb->prefix}custom_vouchers";
+    $allowed_status = ['active', 'used', 'expired'];
+    if (!in_array($status, $allowed_status, true)) {
+        $status = 'active';
+    }
+    return $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM {$table}
+         WHERE user_id = %d AND status = %s
+         ORDER BY created_at DESC",
+        $user_id, $status
+    ));
+}
+
+function ql_voucher_category_label(string $voucher_type, string $action_type): string {
+    if ($voucher_type === 'vip') {
+        return $action_type === 'push' ? 'Đẩy tin VIP' : 'Đăng tin VIP';
+    }
+    if ($voucher_type === 'discount') {
+        return 'Chung';
+    }
+    return $action_type === 'push' ? 'Đẩy tin' : 'Tin đăng';
+}
+
+function ql_voucher_color(string $voucher_type): string {
+    if ($voucher_type === 'vip') return 'blue';
+    if ($voucher_type === 'discount') return 'green';
+    return 'red';
+}
+
+function ql_voucher_discount_label($value, string $value_type): string {
+    if ($value_type === 'percent') {
+        $trimmed = rtrim(rtrim((string) $value, '0'), '.');
+        return ($trimmed === '' ? '0' : $trimmed) . '%';
+    }
+    return number_format((float) $value, 0, ',', '.') . 'K';
+}
+
+function ql_format_voucher_for_display(object $row): array {
+    return [
+        'code'           => $row->code,
+        'title'          => ql_voucher_category_label($row->voucher_type, $row->action_type). ' -' . ql_voucher_discount_label($row->value, $row->value_type),
+        'desc'           => $row->min_order > 0 ? 'Áp dụng cho đơn hàng từ ' . number_format((float) $row->min_order, 0, ',', '.') . ' ₫ trở lên.' : 'Không giới hạn giá trị đơn hàng tối thiểu.',
+        'discount'       => ql_voucher_discount_label($row->value, $row->value_type),
+        'discount_type'  => $row->value_type,
+        'expires'        => $row->expired_at ? date('d/m/Y', strtotime($row->expired_at)) : '',
+        'used_date'      => $row->used_at ? date('d/m/Y', strtotime($row->used_at)) : '',
+        'min_order'      => $row->min_order > 0 ? number_format((float) $row->min_order, 0, ',', '.') . ' ₫' : '',
+        'color'          => ql_voucher_color($row->voucher_type),
+        'category'       => ql_voucher_category_label($row->voucher_type, $row->action_type),
+        'quantity'       => (int) $row->quantity,
+        'quantity_total' => (int) $row->quantity_total,
+    ];
+}
+
+function ql_consume_voucher(int $voucher_id, int $user_id): bool {
+    global $wpdb;
+    $table = "{$wpdb->prefix}custom_vouchers";
+    $voucher = $wpdb->get_row($wpdb->prepare(
+        "SELECT id, quantity, status, expired_at
+         FROM {$table}
+         WHERE id = %d AND user_id = %d
+         FOR UPDATE",
+        $voucher_id, $user_id
+    ));
+
+    if (!$voucher || $voucher->status !== 'active' || (int) $voucher->quantity <= 0) {
+        return false;
+    }
+
+    if ($voucher->expired_at && strtotime($voucher->expired_at) < strtotime('today')) {
+        $wpdb->update($table, ['status' => 'expired'], ['id' => $voucher_id]);
+        return false;
+    }
+    $new_qty = (int) $voucher->quantity - 1;
+    $new_status = $new_qty <= 0 ? 'used' : 'active';
+    $updated = $wpdb->update(
+        $table,
+        [
+            'quantity' => $new_qty,
+            'status'   => $new_status,
+            'used_at'  => current_time('mysql'),
+        ],
+        ['id' => $voucher_id]
+    );
+    return $updated !== false;
+}
+
+function ql_get_voucher_page_data(int $user_id, string $vtab): array {
+    ql_expire_overdue_vouchers($user_id);
+
+    $status_map = [
+        'available' => 'active',
+        'used'      => 'used',
+        'expired'   => 'expired',
+    ];
+    $db_status = $status_map[$vtab] ?? 'active';
+    $raw_rows = ql_get_vouchers_by_status($user_id, $db_status);
+    $counts   = ql_get_voucher_counts($user_id);
+    $display_vouchers = array_map('ql_format_voucher_for_display', $raw_rows);
+    return [
+        'vouchers' => $display_vouchers,
+        'counts'   => [
+            'available' => $counts['active'],
+            'used'      => $counts['used'],
+            'expired'   => $counts['expired'],
+        ],
+    ];
+}
+
+function ql_check_voucher_code(int $user_id, string $code): array {
+    global $wpdb;
+    $table = "{$wpdb->prefix}custom_vouchers";
+    $code  = strtoupper(trim($code));
+
+    if ($code === '') {
+        return ['valid' => false, 'message' => 'Vui lòng nhập mã voucher.', 'voucher' => null];
+    }
+    $voucher = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$table} WHERE user_id = %d AND code = %s",$user_id, $code));
+
+    if (!$voucher) {
+        return ['valid' => false, 'message' => 'Mã voucher không tồn tại hoặc không thuộc về bạn.', 'voucher' => null];
+    }
+    if ($voucher->status === 'used') {
+        return ['valid' => false, 'message' => 'Mã voucher này đã được sử dụng.', 'voucher' => null];
+    }
+    if ($voucher->status === 'expired' || ($voucher->expired_at && strtotime($voucher->expired_at) < strtotime('today'))) {
+        return ['valid' => false, 'message' => 'Mã voucher này đã hết hạn.', 'voucher' => null];
+    }
+    return ['valid' => true, 'message' => 'Mã voucher hợp lệ! Áp dụng: ' . ql_voucher_discount_label($voucher->value, $voucher->value_type), 'voucher' => $voucher];
+}
+add_action('wp_ajax_ql_check_voucher_code', 'ql_ajax_check_voucher_code');
+function ql_ajax_check_voucher_code() {
+    check_ajax_referer('ql_voucher_nonce', '_nonce');
+    $custom_user = get_current_custom_user();
+    if (!$custom_user) {
+        wp_send_json_error(['message' => 'Bạn cần đăng nhập.'], 401);
+    }
+    $code   = isset($_POST['code']) ? sanitize_text_field(wp_unslash($_POST['code'])) : '';
+    $result = ql_check_voucher_code((int) $custom_user->id, $code);
+
+    if ($result['valid']) {
+        wp_send_json_success(['message' => $result['message']]);
+    } else {
+        wp_send_json_error(['message' => $result['message']]);
+    }
+}
+
+add_action('wp_enqueue_scripts', function () {
+    $is_voucher_tab = is_page('quan-ly-tai-khoan') && get_query_var('tab') === 'voucher';
+    if ($is_voucher_tab) {
+        wp_localize_script('jquery', 'qlt_voucher_ajax', [
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'nonce'    => wp_create_nonce('ql_voucher_nonce'),
         ]);
     }
 });
