@@ -2970,6 +2970,235 @@ add_action('admin_enqueue_scripts', function ($hook) {
 
     wp_enqueue_script('here-mapbox', get_template_directory_uri() . '/js/map-here-mapbox.js',[], null, true);
 });
+
+//UPGRADE MEMBER PLAN
+define('QL_MEMBER_PLAN_PRICES', [
+    'goi1' => 149000,
+    'goi2' => 299000,
+    'goi3' => 599000,
+]);
+ 
+define('QL_MEMBER_PLAN_RANK', [
+    'goi1' => 1,
+    'goi2' => 2,
+    'goi3' => 3,
+]);
+ 
+define('QL_MEMBER_PLAN_NAMES', [
+    'goi1' => 'Gói Khởi Đầu',
+    'goi2' => 'Gói Nâng Cao',
+    'goi3' => 'Gói Toàn Diện',
+]);
+ 
+define('QL_MEMBER_PLAN_VOUCHERS', [
+    'goi1' => ['post_normal' => 10, 'push_normal' => 10, 'post_vip' => 0, 'push_vip' => 0],
+    'goi2' => ['post_normal' => 25, 'push_normal' => 25, 'post_vip' => 1, 'push_vip' => 0],
+    'goi3' => ['post_normal' => 50, 'push_normal' => 50, 'post_vip' => 3, 'push_vip' => 5],
+]);
+ 
+define('QL_MEMBER_PLAN_VOUCHER_DISCOUNT_PERCENT', 10);
+
+function ql_member_plan_key_to_enum(string $plan_key): string {
+    $map = [
+        'goi1' => 'free',
+        'goi2' => 'pro',
+        'goi3' => 'vip',
+    ];
+    return $map[$plan_key] ?? 'free';
+}
+ 
+function ql_member_plan_enum_to_key(string $plan_enum): string {
+    $map = [
+        'free' => 'goi1',
+        'pro'  => 'goi2',
+        'vip'  => 'goi3',
+    ];
+    return $map[$plan_enum] ?? '';
+}
+
+function ql_get_current_member_plan(int $user_id): ?object {
+    global $wpdb;
+    $row = $wpdb->get_row($wpdb->prepare(
+        "SELECT id, plan, expired_at, status
+         FROM {$wpdb->prefix}custom_member_plans
+         WHERE user_id = %d AND status = 'active'
+         ORDER BY id DESC
+         LIMIT 1",
+        $user_id
+    ));
+    if (!$row) {
+        return null;
+    }
+ 
+    $plan_key = ql_member_plan_enum_to_key($row->plan);
+    if (empty($plan_key)) {
+        return null;
+    }
+    return (object) [
+        'id'         => (int) $row->id,
+        'plan_key'   => $plan_key,
+        'plan_enum'  => $row->plan,
+        'expired_at' => $row->expired_at,
+    ];
+}
+ 
+function ql_expire_member_plan_row(int $plan_row_id): bool {
+    global $wpdb;
+    $updated = $wpdb->update(
+        "{$wpdb->prefix}custom_member_plans",
+        ['status' => 'expired', 'updated_at' => current_time('mysql')],
+        ['id' => $plan_row_id],
+        ['%s', '%s'],
+        ['%d']
+    );
+    return $updated !== false;
+}
+
+ 
+add_action('wp_ajax_bds_upgrade_member_plan', 'bds_handle_upgrade_member_plan');
+add_action('wp_ajax_nopriv_bds_upgrade_member_plan', 'bds_handle_upgrade_member_plan');
+function bds_handle_upgrade_member_plan() {
+    check_ajax_referer('ql_member_plan_nonce', '_nonce');
+ 
+    $custom_user = get_current_custom_user();
+    if (!$custom_user) {
+        wp_send_json_error(['message' => 'Bạn cần đăng nhập.'], 401);
+    }
+ 
+    $user_id = (int) $custom_user->id;
+    $plan    = isset($_POST['plan']) ? sanitize_key($_POST['plan']) : '';
+    $prices = QL_MEMBER_PLAN_PRICES;
+    if (!isset($prices[$plan])) {
+        wp_send_json_error(['message' => 'Gói thành viên không hợp lệ.']);
+    }
+    $price = $prices[$plan];
+    $current = ql_get_current_member_plan($user_id);
+    $current_plan_key = $current->plan_key ?? '';
+ 
+    if ($current_plan_key === $plan) {
+        wp_send_json_error(['message' => 'Bạn đang sử dụng gói này rồi.']);
+    }
+ 
+    if (!empty($current_plan_key) && isset(QL_MEMBER_PLAN_RANK[$current_plan_key])) {
+        $current_rank  = QL_MEMBER_PLAN_RANK[$current_plan_key];
+        $selected_rank = QL_MEMBER_PLAN_RANK[$plan];
+        if ($selected_rank < $current_rank) {
+            wp_send_json_error([
+                'message'            => 'Bạn đang có ' . QL_MEMBER_PLAN_NAMES[$current_plan_key] . '. Không thể đăng ký gói thấp hơn.',
+                'downgrade_blocked'  => true,
+                'current_plan'       => $current_plan_key,
+                'current_plan_name'  => QL_MEMBER_PLAN_NAMES[$current_plan_key],
+            ]);
+        }
+    }
+ 
+    global $wpdb;
+    $wpdb->query('START TRANSACTION');
+    try {
+        ql_deduct_wallet_balance(
+            $user_id,
+            $price,
+            'MEMBERPLAN',
+            0,
+            'Đăng ký gói thành viên: ' . $plan
+        );
+ 
+        $started_at = current_time('Y-m-d');
+        $expired_at = date('Y-m-d', strtotime('+30 days'));
+        if ($current) {
+            ql_expire_member_plan_row($current->id);
+        }
+        $wpdb->insert("{$wpdb->prefix}custom_member_plans", [
+            'user_id'      => $user_id,
+            'plan'         => ql_member_plan_key_to_enum($plan),
+            'billing'      => 'monthly',
+            'amount_paid'  => $price,
+            'started_at'   => $started_at,
+            'expired_at'   => $expired_at,
+            'auto_renew'   => 1,
+            'status'       => 'active',
+            'created_at'   => current_time('mysql'),
+            'updated_at'   => current_time('mysql'),
+        ]);
+        $member_plan_id = $wpdb->insert_id;
+        bds_issue_member_plan_vouchers($user_id, $plan, $expired_at, $member_plan_id);
+        $wpdb->query('COMMIT');
+        wp_send_json_success([
+            'message'    => 'Đăng ký gói thành công!',
+            'plan'       => $plan,
+            'expired_at' => $expired_at,
+        ]);
+    } catch (Exception $e) {
+        $wpdb->query('ROLLBACK');
+        ql_send_wallet_error($e);
+    }
+}
+ 
+function bds_generate_voucher_code(string $prefix): string {
+    global $wpdb;
+    do {
+        $code = strtoupper($prefix . '-' . wp_generate_password(8, false, false));
+        $exists = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}custom_vouchers WHERE code = %s",
+            $code
+        ));
+    } while ($exists > 0);
+    return $code;
+}
+ 
+function bds_issue_member_plan_vouchers(int $user_id, string $plan, string $expired_at, int $member_plan_id): void {
+    global $wpdb;
+ 
+    $counts = QL_MEMBER_PLAN_VOUCHERS[$plan];
+    $table  = "{$wpdb->prefix}custom_vouchers";
+    $voucher_specs = [
+        [$counts['post_normal'], 'post', 'post', 'DTT'],
+        [$counts['push_normal'], 'post', 'push', 'DAT'],
+        [$counts['post_vip'],    'vip',  'post', 'DTV'],
+        [$counts['push_vip'],    'vip',  'push', 'DAV'],
+    ];
+ 
+    foreach ($voucher_specs as [$qty, $voucher_type, $action_type, $prefix]) {
+        for ($i = 0; $i < (int) $qty; $i++) {
+            $code = bds_generate_voucher_code($prefix);
+            $wpdb->insert($table, [
+                'user_id'      => $user_id,
+                'code'         => $code,
+                'voucher_type' => $voucher_type,
+                'action_type'  => $action_type,
+                'value'        => QL_MEMBER_PLAN_VOUCHER_DISCOUNT_PERCENT,
+                'value_type'   => 'percent',
+                'min_order'    => 0,
+                'max_discount' => null,
+                'source'       => 'member',
+                'expired_at'   => $expired_at,
+                'status'       => 'active',
+                'created_at'   => current_time('mysql'),
+            ]);
+            if ($wpdb->last_error) {
+                throw new Exception('Không thể tạo voucher: ' . $wpdb->last_error);
+            }
+        }
+    }
+}
+ 
+add_action('wp_enqueue_scripts', function () {
+    $is_member_plan_tab = is_page('quan-ly-tai-khoan') && get_query_var('tab') === 'goi-thanh-vien';
+ 
+    if ($is_member_plan_tab) {
+        wp_enqueue_script(
+            'goi-thanh-vien-purchase',
+            get_stylesheet_directory_uri() . '/js/goi-thanh-vien-purchase.js',
+            ['jquery'],
+            filemtime(get_stylesheet_directory() . '/js/goi-thanh-vien-purchase.js'),
+            true
+        );
+        wp_localize_script('goi-thanh-vien-purchase', 'qlt_member_ajax', [
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'nonce'    => wp_create_nonce('ql_member_plan_nonce'),
+        ]);
+    }
+});
 ///////////////////
 function html5blank_conditional_scripts() {}
 function html5_blank_view_article() {}

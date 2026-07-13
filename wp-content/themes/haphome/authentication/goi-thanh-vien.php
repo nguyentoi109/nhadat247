@@ -1,101 +1,3 @@
-<?php
-    if (!defined('ABSPATH')) exit;
-
-    $user_id      = get_current_user_id();
-    $current_plan = get_user_meta($user_id, 'member_plan',  true) ?: 'free';
-    $plan_expiry  = get_user_meta($user_id, 'plan_expiry',  true) ?: '';
-
-    $plans = [
-        'free' => [
-            'id'           => 'free',
-            'name'         => 'Cơ bản',
-            'desc'         => 'Người mới bắt đầu',
-            'color'        => '#6b7280',
-            'price_m'      => 0,
-            'price_y'      => 0,
-            'badge'        => '',
-            'voucher_post' => 0,
-            'voucher_boost'=> 0,
-            'features'     => [
-                [true,  '3 tin đăng / tháng'],
-                [true,  'Hiển thị 30 ngày'],
-                [true,  'Thông tin liên hệ cơ bản'],
-                [false, 'Voucher đăng tin'],
-                [false, 'Voucher đẩy tin'],
-                [false, 'Ưu tiên hiển thị'],
-                [false, 'Thống kê tin đăng'],
-                [false, 'Nhãn "Chủ nhà uy tín"'],
-            ],
-            'cur_tags' => ['3 tin / tháng', 'Hiển thị 30 ngày'],
-        ],
-        'pro' => [
-            'id'           => 'pro',
-            'name'         => 'Chuyên nghiệp',
-            'desc'         => 'Môi giới cá nhân',
-            'color'        => '#2563eb',
-            'price_m'      => 299000,
-            'price_y'      => 239000,
-            'badge'        => 'Phổ biến nhất',
-            'voucher_post' => 5,
-            'voucher_boost'=> 3,
-            'features'     => [
-                [true,  'Không giới hạn tin đăng'],
-                [true,  'Hiển thị 90 ngày'],
-                [true,  'Thông tin liên hệ đầy đủ'],
-                [true,  '5 voucher đăng tin / tháng', true],
-                [true,  '3 voucher đẩy tin / tháng', true],
-                [true,  'Ưu tiên hiển thị ×2'],
-                [true,  'Thống kê tin đăng'],
-                [false, 'Nhãn "Chủ nhà uy tín"'],
-            ],
-            'cur_tags' => ['Không giới hạn', 'Hiển thị 90 ngày', '5 voucher đăng', '3 voucher đẩy'],
-        ],
-        'vip' => [
-            'id'           => 'vip',
-            'name'         => 'VIP',
-            'desc'         => 'Đại lý & doanh nghiệp',
-            'color'        => '#ee0033',
-            'price_m'      => 599000,
-            'price_y'      => 479000,
-            'badge'        => 'Tốt nhất',
-            'voucher_post' => 15,
-            'voucher_boost'=> 10,
-            'features'     => [
-                [true,  'Không giới hạn tin đăng'],
-                [true,  'Hiển thị 180 ngày'],
-                [true,  'Thông tin liên hệ đầy đủ'],
-                [true,  '15 voucher đăng tin / tháng', true],
-                [true,  '10 voucher đẩy tin / tháng', true],
-                [true,  'Ưu tiên hiển thị ×5'],
-                [true,  'Thống kê nâng cao + hỗ trợ 24/7'],
-                [true,  'Nhãn "Chủ nhà uy tín"', true],
-            ],
-            'cur_tags' => ['Không giới hạn', 'Hiển thị 180 ngày', '15 voucher đăng', '10 voucher đẩy', 'Nhãn uy tín'],
-        ],
-    ];
-
-    $faqs = [
-        ['Voucher đăng tin và voucher đẩy tin khác nhau như thế nào?',
-        'Voucher đăng tin dùng để tạo tin mới miễn phí hoặc giảm giá phí dịch vụ. Voucher đẩy tin dùng để tăng thứ hạng hiển thị cho tin đã đăng, đưa tin lên đầu kết quả tìm kiếm trong một khoảng thời gian nhất định.'],
-        ['Voucher hàng tháng có được cộng dồn không?',
-        'Voucher được cấp đầu mỗi chu kỳ thanh toán, có hiệu lực 30 ngày và không chuyển sang tháng tiếp theo. Hãy sử dụng trước khi hết hạn.'],
-        ['Tôi có thể nâng cấp hoặc hạ cấp gói bất cứ lúc nào không?',
-        'Có. Nâng cấp áp dụng ngay — phần chênh lệch phí tính theo số ngày còn lại trong chu kỳ. Hạ cấp áp dụng từ chu kỳ tiếp theo, quyền lợi hiện tại vẫn giữ đến hết hạn.'],
-        ['Nếu huỷ gói, tin đăng của tôi có bị xoá không?',
-        'Không. Tin giữ nguyên đến ngày hết hạn đã đăng ký. Sau đó tin vẫn xuất hiện bình thường nhưng không còn được ưu tiên hiển thị.'],
-        ['Thanh toán bằng những hình thức nào?',
-        'Số dư tài khoản (nạp trước), chuyển khoản ngân hàng, ví điện tử (MoMo, ZaloPay, VNPay) hoặc thẻ tín dụng/ghi nợ nội địa và quốc tế.'],
-        ['Nhãn "Chủ nhà uy tín" có ý nghĩa gì?',
-        'Nhãn hiển thị trên tất cả tin đăng, giúp tăng độ tin cậy với người mua/thuê. Đây là xác nhận tài khoản đã được xác minh danh tính và có lịch sử giao dịch tốt trên nền tảng.'],
-    ];
-
-    $cp = $plans[$current_plan];
-
-    function gtv_fmt($n) {
-        return $n > 0 ? number_format($n, 0, ',', '.') . ' ₫' : 'Miễn phí';
-    }
-?>
-
 <style>
 .gtv-cur {
 	display: flex;
@@ -197,46 +99,6 @@
 	font-size: 11px;
 	color: var(--ql-muted);
 	line-height: 1.5;
-}
-
-.gtv-billing {
-	display: flex;
-	background: #f3f4f6;
-	border-radius: 8px;
-	padding: 3px;
-	width: fit-content;
-	margin: 12px auto 20px;
-}
-
-.gtv-billing-btn {
-	padding: 7px 18px;
-	border-radius: 6px;
-	border: none;
-	background: none;
-	font-size: 13px;
-	font-weight: 600;
-	color: var(--ql-muted);
-	cursor: pointer;
-	font-family: inherit;
-	transition: all .15s;
-	display: flex;
-	align-items: center;
-	gap: 6px;
-}
-
-.gtv-billing-btn.active {
-	background: #fff;
-	color: var(--ql-text);
-	box-shadow: 0 1px 4px rgba(0, 0, 0, .08);
-}
-
-.gtv-save-tag {
-	background: #d1fae5;
-	color: #065f46;
-	font-size: 10px;
-	font-weight: 700;
-	padding: 1px 6px;
-	border-radius: 4px;
 }
 
 .gtv-grid {
@@ -357,6 +219,16 @@
 	color: #1e40af;
 }
 
+.gtv-vpill-post-vip {
+	background: #fef3c7;
+	color: #92400e;
+}
+
+.gtv-vpill-boost-vip {
+	background: #ede9fe;
+	color: #5b21b6;
+}
+
 .gtv-divider {
 	height: 1px;
 	background: #f3f4f6;
@@ -421,62 +293,52 @@
 	cursor: default;
 }
 
-.gtv-cmp {
-	width: 100%;
-	border-collapse: collapse;
+.gtv-cur-none {
+	--gtv-c: #9ca3af;
+}
+
+.gtv-cur-none-desc {
 	font-size: 12px;
+	color: var(--ql-muted);
+	margin-top: 2px;
+}
+
+.gtv-expiry-notice {
+	display: flex;
+	align-items: flex-start;
+	gap: 14px;
+	background: linear-gradient(135deg, #fff7ed, #fff);
+	border: 1.5px solid #fed7aa;
+	border-radius: 12px;
+	padding: 18px 20px;
 	margin-bottom: 24px;
 }
 
-.gtv-cmp th {
-	padding: 9px 10px;
-	background: #f9fafb;
-	border-bottom: 1px solid var(--ql-border);
-	font-size: 11px;
-	font-weight: 600;
-	color: var(--ql-muted);
-	text-align: center;
+.gtv-expiry-icon {
+	width: 40px;
+	height: 40px;
+	border-radius: 10px;
+	background: #ffedd5;
+	color: #c2410c;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
 }
 
-.gtv-cmp th:first-child {
-	text-align: left;
-}
-
-.gtv-cmp td {
-	padding: 9px 10px;
-	border-bottom: 1px solid #f3f4f6;
-	color: var(--ql-text);
-	text-align: center;
-}
-
-.gtv-cmp td:first-child {
-	text-align: left;
-	font-size: 12px;
-	color: var(--ql-muted);
-}
-
-.gtv-cmp tr:last-child td {
-	border-bottom: none;
-}
-
-.gtv-cmp tr:hover td {
-	background: #fafafa;
-}
-
-.gtv-cmp .hl {
-	background: #fffbfb;
-}
-
-.gtv-ck {
-	color: #059669;
+.gtv-expiry-title {
+	font-size: 13px;
 	font-weight: 700;
+	color: #9a3412;
+	margin-bottom: 4px;
 }
 
-.gtv-cr {
-	color: #d1d5db;
+.gtv-expiry-desc {
+	font-size: 12px;
+	color: #7c2d12;
+	line-height: 1.6;
 }
 
-/* ── FAQ ── */
 .gtv-faq-item {
 	border: 1px solid var(--ql-border);
 	border-radius: 8px;
@@ -561,8 +423,108 @@
 		flex-direction: column;
 		align-items: flex-start;
 	}
+
+	.gtv-expiry-notice {
+		flex-direction: column;
+	}
 }
 </style>
+
+<?php
+    if (!defined('ABSPATH')) exit;
+
+    $custom_user = get_current_custom_user();
+    if (!$custom_user) {
+        wp_redirect(home_url('/dang-nhap/?redirect=' . urlencode(get_permalink())));
+        exit;
+    }
+
+    $user_id = (int) $custom_user->id;
+    $current_plan_info = ql_get_current_member_plan($user_id);
+
+    $current_plan = $current_plan_info->plan_key ?? '';
+    $plan_expiry  = $current_plan_info->expired_at ?? '';
+    $has_plan     = !empty($current_plan);
+
+    $plans = [
+        'goi1' => [
+            'id'           => 'goi1',
+            'name'         => 'Gói Khởi Đầu',
+            'desc'         => 'Người mới bắt đầu',
+            'color'        => '#6b7280',
+            'price_m'      => 149000,
+            'badge'        => '',
+            'rank'         => 1,
+            'voucher_post_vip'   => 0,
+            'voucher_boost_vip'  => 0,
+            'features'     => [
+                [true,  '15 Voucher giảm giá đăng tin thường'],
+                [true,  '15 Voucher giảm giá đẩy tin thường'],
+                [false, 'Voucher giảm giá đăng tin VIP'],
+                [false, 'Voucher giảm giá đẩy tin VIP'],
+            ],
+            'cur_tags' => ['Voucher đăng tin thường', 'Voucher đẩy tin thường'],
+        ],
+        'goi2' => [
+            'id'           => 'goi2',
+            'name'         => 'Gói Nâng Cao',
+            'desc'         => 'Môi giới cá nhân',
+            'color'        => '#2563eb',
+            'price_m'      => 299000,
+            'badge'        => 'Phổ biến nhất',
+            'rank'         => 2,
+            'voucher_post_vip'   => 1,
+            'voucher_boost_vip'  => 0,
+            'features'     => [
+                [true,  '30 Voucher giảm giá đăng tin thường'],
+                [true,  '30 Voucher giảm giá đẩy tin thường'],
+                [true,  '1 voucher giảm giá đăng tin VIP', true],
+                [false, 'Voucher giảm giá đẩy tin VIP'],
+            ],
+            'cur_tags' => ['Voucher đăng tin thường', 'Voucher đẩy tin thường', '1 voucher đăng tin VIP'],
+        ],
+        'goi3' => [
+            'id'           => 'goi3',
+            'name'         => 'Gói Toàn Diện',
+            'desc'         => 'Đại lý & doanh nghiệp',
+            'color'        => '#ee0033',
+            'price_m'      => 599000,
+            'badge'        => 'Tốt nhất',
+            'rank'         => 3,
+            'voucher_post_vip'   => 3,
+            'voucher_boost_vip'  => 5,
+            'features'     => [
+                [true,  '50 Voucher giảm giá đăng tin thường'],
+                [true,  '50 Voucher giảm giá đẩy tin thường'],
+                [true,  '3 voucher giảm giá đăng tin VIP', true],
+                [true,  '5 voucher giảm giá đẩy tin VIP', true],
+            ],
+            'cur_tags' => ['Voucher đăng tin thường', 'Voucher đẩy tin thường', '3 voucher đăng tin VIP', '5 voucher đẩy tin VIP'],
+        ],
+    ];
+
+    $cp = $has_plan && isset($plans[$current_plan]) ? $plans[$current_plan] : null;
+    $current_rank = $cp ? $cp['rank'] : 0;
+
+    $faqs = [
+        ['Voucher đăng tin và voucher đẩy tin khác nhau như thế nào?',
+        'Voucher đăng tin dùng để tạo tin mới miễn phí hoặc giảm giá phí dịch vụ. Voucher đẩy tin dùng để tăng thứ hạng hiển thị cho tin đã đăng, đưa tin lên đầu kết quả tìm kiếm trong một khoảng thời gian nhất định.'],
+        ['Voucher tin thường và voucher tin VIP khác nhau như thế nào?',
+        'Voucher tin thường áp dụng cho tin đăng/đẩy ở gói tin thường. Voucher tin VIP áp dụng riêng cho tin đăng ở các gói VIP (Bạc, Vàng, Kim Cương), giúp bạn tiết kiệm chi phí khi nâng cấp tin lên VIP.'],
+        ['Voucher có hiệu lực trong bao lâu?',
+        'Mỗi voucher có hiệu lực 30 ngày kể từ ngày bạn đăng ký gói thành viên. Sau 30 ngày voucher chưa sử dụng sẽ tự động hết hạn và không được hoàn lại hoặc chuyển sang chu kỳ tiếp theo.'],
+        ['Tôi có thể nâng cấp hoặc hạ cấp gói bất cứ lúc nào không?',
+        'Có thể nâng cấp lên gói cao hơn bất cứ lúc nào. Không thể đăng ký gói thấp hơn gói bạn đang sử dụng — bạn cần chờ gói hiện tại hết hạn trước.'],
+        ['Nếu huỷ gói, tin đăng của tôi có bị xoá không?',
+        'Không. Tin giữ nguyên đến ngày hết hạn đã đăng ký. Sau đó tin vẫn xuất hiện bình thường nhưng không còn được ưu tiên hiển thị.'],
+        ['Thanh toán bằng những hình thức nào?',
+        'Số dư tài khoản (nạp trước), chuyển khoản ngân hàng, ví điện tử (MoMo, ZaloPay, VNPay) hoặc thẻ tín dụng/ghi nợ nội địa và quốc tế.'],
+    ];
+
+    function gtv_fmt($n) {
+        return $n > 0 ? number_format($n, 0, ',', '.') . ' ₫' : 'Miễn phí';
+    }
+?>
 
 <div class="ql-panel-header">
     <h2 class="ql-panel-title">Gói thành viên</h2>
@@ -570,6 +532,7 @@
 
 <div class="ql-panel-body">
 
+    <?php if ($cp): ?>
     <div class="gtv-cur" style="--gtv-c:<?php echo esc_attr($cp['color']); ?>;">
         <div class="gtv-cur-left">
             <div class="gtv-cur-icon" style="background:<?php echo esc_attr($cp['color']); ?>;">
@@ -583,8 +546,6 @@
                 <div class="gtv-cur-exp">
                     <?php if ($plan_expiry): ?>
                         Hết hạn: <?php echo esc_html($plan_expiry); ?>
-                    <?php elseif ($current_plan === 'free'): ?>
-                        Không giới hạn thời gian
                     <?php endif; ?>
                 </div>
             </div>
@@ -595,15 +556,24 @@
                     ✓ <?php echo esc_html($tag); ?>
                 </span>
             <?php endforeach; ?>
-            <?php if ($current_plan !== 'free'): ?>
-                <a href="<?php echo esc_url(add_query_arg('cancel_plan', '1', home_url('/quan-ly-tai-khoan/goi-thanh-vien/'))); ?>"
-                   style="font-size:11px;font-weight:600;color:var(--ql-faint);text-decoration:underline;align-self:center;margin-left:4px;"
-                   onclick="return confirm('Bạn có chắc muốn huỷ gia hạn không?')">
-                   Huỷ gia hạn
-                </a>
-            <?php endif; ?>
         </div>
     </div>
+    <?php else: ?>
+    <div class="gtv-cur gtv-cur-none">
+        <div class="gtv-cur-left">
+            <div class="gtv-cur-icon" style="background:#9ca3af;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5">
+                    <circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div>
+                <div class="gtv-cur-lbl">Gói hiện tại của bạn</div>
+                <div class="gtv-cur-name">Chưa đăng ký gói nào</div>
+                <div class="gtv-cur-none-desc">Chọn 1 trong 3 gói bên dưới để bắt đầu nhận voucher ưu đãi.</div>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <div class="gtv-section-title">Quyền lợi voucher theo gói</div>
     <div class="gtv-v-box">
@@ -614,39 +584,44 @@
                 </svg>
             </div>
             <div>
-                <div class="gtv-v-title">🎟 Voucher đăng tin</div>
-                <div class="gtv-v-desc">Miễn phí / giảm giá khi tạo tin mới.<br>Pro: <strong>5 voucher</strong> · VIP: <strong>15 voucher</strong> / tháng</div>
+                <div class="gtv-v-title">🎟 Voucher tin thường</div>
+                <div class="gtv-v-desc">Giảm 10% khi đăng tin và đẩy tin thường.<br>Áp dụng cho cả 3 gói thành viên.</div>
             </div>
         </div>
         <div class="gtv-v-card">
-            <div class="gtv-v-icon" style="background:#dbeafe;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1e40af" stroke-width="1.8">
+            <div class="gtv-v-icon" style="background:#fef3c7;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="1.8">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div>
+                <div class="gtv-v-title">👑 Voucher đăng tin VIP</div>
+                <div class="gtv-v-desc">Giảm 10% khi đăng tin ở các gói VIP.<br>Gói Nâng Cao: <strong>1 voucher</strong> · Gói Toàn Diện: <strong>3 voucher</strong></div>
+            </div>
+        </div>
+        <div class="gtv-v-card">
+            <div class="gtv-v-icon" style="background:#ede9fe;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5b21b6" stroke-width="1.8">
                     <path d="M5 15l7-7 7 7" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </div>
             <div>
-                <div class="gtv-v-title">🚀 Voucher đẩy tin</div>
-                <div class="gtv-v-desc">Đưa tin lên đầu tìm kiếm miễn phí.<br>Pro: <strong>3 voucher</strong> · VIP: <strong>10 voucher</strong> / tháng</div>
+                <div class="gtv-v-title">🚀 Voucher đẩy tin VIP</div>
+                <div class="gtv-v-desc">Giảm 10% khi đẩy tin ở các gói VIP.<br>Gói Toàn Diện: <strong>5 voucher</strong></div>
             </div>
         </div>
     </div>
 
-    <div style="text-align:center;margin-bottom:8px;">
+    <div style="text-align:center;margin-bottom:20px;">
         <div style="font-size:16px;font-weight:700;color:var(--ql-text);">Chọn gói phù hợp với bạn</div>
-        <div style="font-size:12px;color:var(--ql-muted);margin-top:4px;">Thanh toán hàng năm tiết kiệm đến 20%</div>
-    </div>
-    <div class="gtv-billing">
-        <button class="gtv-billing-btn active" data-billing="monthly">Hàng tháng</button>
-        <button class="gtv-billing-btn" data-billing="yearly">
-            Hàng năm <span class="gtv-save-tag">–20%</span>
-        </button>
+        <div style="font-size:12px;color:var(--ql-muted);margin-top:4px;">Đăng ký theo tháng, sử dụng linh hoạt</div>
     </div>
 
     <div class="gtv-grid">
         <?php foreach ($plans as $plan):
-            $is_cur    = $plan['id'] === $current_plan;
-            $price_m   = gtv_fmt($plan['price_m']);
-            $price_y   = gtv_fmt($plan['price_y']);
+            $is_cur      = $has_plan && $plan['id'] === $current_plan;
+            $is_downgrade = $has_plan && !$is_cur && $plan['rank'] < $current_rank;
+            $price_m     = gtv_fmt($plan['price_m']);
         ?>
         <div class="gtv-card <?php echo $is_cur ? 'is-active' : ''; ?> <?php echo $plan['badge'] === 'Phổ biến nhất' ? 'featured' : ''; ?>"
              style="--gtvc:<?php echo esc_attr($plan['color']); ?>;">
@@ -663,24 +638,18 @@
             <div class="gtv-card-desc"><?php echo esc_html($plan['desc']); ?></div>
 
             <div class="gtv-price-row">
-                <span class="gtv-price-num"
-                      data-monthly="<?php echo esc_attr($price_m); ?>"
-                      data-yearly="<?php echo esc_attr($price_y); ?>">
-                    <?php echo esc_html($price_m); ?>
-                </span>
-                <?php if ($plan['price_m'] > 0): ?>
-                    <span class="gtv-price-per"
-                          data-monthly="/ tháng"
-                          data-yearly="/ tháng (tính năm)">
-                        &nbsp;/ tháng
-                    </span>
-                <?php endif; ?>
+                <span class="gtv-price-num"><?php echo esc_html($price_m); ?></span>
+                <span class="gtv-price-per">&nbsp;/ tháng</span>
             </div>
 
             <div class="gtv-vpills">
-                <?php if ($plan['voucher_post'] > 0): ?>
-                    <span class="gtv-vpill gtv-vpill-post">🎟 <?php echo $plan['voucher_post']; ?> đăng tin</span>
-                    <span class="gtv-vpill gtv-vpill-boost">🚀 <?php echo $plan['voucher_boost']; ?> đẩy tin</span>
+                <span class="gtv-vpill gtv-vpill-post">🎟 Đăng tin thường</span>
+                <span class="gtv-vpill gtv-vpill-boost">🚀 Đẩy tin thường</span>
+                <?php if ($plan['voucher_post_vip'] > 0): ?>
+                    <span class="gtv-vpill gtv-vpill-post-vip">👑 <?php echo $plan['voucher_post_vip']; ?> đăng tin VIP</span>
+                <?php endif; ?>
+                <?php if ($plan['voucher_boost_vip'] > 0): ?>
+                    <span class="gtv-vpill gtv-vpill-boost-vip">🚀 <?php echo $plan['voucher_boost_vip']; ?> đẩy tin VIP</span>
                 <?php endif; ?>
             </div>
 
@@ -702,65 +671,40 @@
 
             <?php if ($is_cur): ?>
                 <button class="gtv-btn gtv-btn-gray" disabled>Đang sử dụng</button>
-            <?php elseif ($plan['id'] === 'free'): ?>
-                <a href="<?php echo esc_url(add_query_arg('downgrade', 'free', home_url('/quan-ly-tai-khoan/goi-thanh-vien/'))); ?>"
-                   class="gtv-btn"
-                   style="background:#fff;color:var(--ql-muted);border:1.5px solid var(--ql-border);">
-                   Hạ xuống miễn phí
-                </a>
-            <?php else: ?>
-                <a href="<?php echo esc_url(add_query_arg('upgrade', $plan['id'], home_url('/quan-ly-tai-khoan/nap-tien/'))); ?>"
-                   class="gtv-btn"
+            <?php else:
+                $item_labels = array_map(function($t){ return $t; }, $plan['cur_tags']);
+            ?>
+                <button type="button"
+                   class="gtv-btn bds-purchase-btn"
+                   data-ajax-action="bds_upgrade_member_plan"
+                   data-title="<?php echo esc_attr($plan['name']); ?>"
+                   data-subtitle="Đăng ký gói thành viên hàng tháng"
+                   data-price="<?php echo esc_attr(gtv_fmt($plan['price_m'])); ?> / tháng"
+                   data-items='<?php echo esc_attr(wp_json_encode($item_labels)); ?>'
+                   data-payload='<?php echo esc_attr(wp_json_encode(['plan' => $plan['id']])); ?>'
+                   data-success-title="Đăng ký gói thành công!"
+                   data-success-redirect=""
+                   data-is-downgrade="<?php echo $is_downgrade ? '1' : '0'; ?>"
+                   data-current-plan-name="<?php echo $cp ? esc_attr($cp['name']) : ''; ?>"
                    style="background:<?php echo esc_attr($plan['color']); ?>;">
-                    <?php echo $current_plan === 'free' ? 'Nâng cấp ngay' : 'Chuyển sang gói này'; ?>
-                </a>
+                    Đăng ký gói này
+                </button>
             <?php endif; ?>
 
         </div>
         <?php endforeach; ?>
     </div>
 
-    <div class="gtv-section-title">So sánh chi tiết các gói</div>
-    <div style="overflow-x:auto;margin-bottom:24px;">
-        <table class="gtv-cmp">
-            <thead>
-                <tr>
-                    <th style="width:38%;">Tính năng</th>
-                    <th>Cơ bản</th>
-                    <th class="hl">Chuyên nghiệp</th>
-                    <th>VIP</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                $rows = [
-                    ['Tin đăng / tháng',        '3 tin',          'Không giới hạn',     'Không giới hạn'],
-                    ['Thời hạn hiển thị',        '30 ngày',        '90 ngày',            '180 ngày'],
-                    ['Voucher đăng tin / tháng', '—',              '5 voucher',          '15 voucher'],
-                    ['Voucher đẩy tin / tháng',  '—',              '3 voucher',          '10 voucher'],
-                    ['Ưu tiên hiển thị',         false,            '×2',                 '×5'],
-                    ['Thông tin liên hệ',         'Cơ bản',         'Đầy đủ',             'Đầy đủ'],
-                    ['Thống kê tin đăng',         false,            true,                 'Nâng cao'],
-                    ['Hỗ trợ ưu tiên 24/7',      false,            false,                true],
-                    ['Nhãn "Chủ nhà uy tín"',    false,            false,                true],
-                    ['Tự động gia hạn tin',       false,            false,                true],
-                ];
-                foreach ($rows as [$feat,$f,$p,$v]):
-                    $cell = fn($val) => match(true) {
-                        $val === true  => '<span class="gtv-ck">✓</span>',
-                        $val === false => '<span class="gtv-cr">—</span>',
-                        default        => esc_html($val),
-                    };
-                ?>
-                <tr>
-                    <td><?php echo esc_html($feat); ?></td>
-                    <td><?php echo $cell($f); ?></td>
-                    <td class="hl"><?php echo $cell($p); ?></td>
-                    <td><?php echo $cell($v); ?></td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+    <div class="gtv-expiry-notice">
+        <div>
+            <div class="gtv-expiry-title">⏰ Voucher có hiệu lực 30 ngày</div>
+            <div class="gtv-expiry-desc">
+                Toàn bộ voucher trong gói thành viên (đăng tin, đẩy tin, tin thường và tin VIP)
+                sẽ có hiệu lực sử dụng trong vòng <strong>30 ngày kể từ ngày đăng ký gói</strong>.
+                Voucher chưa sử dụng sau 30 ngày sẽ tự động hết hạn và không được hoàn lại hoặc chuyển sang chu kỳ tiếp theo.
+                Hãy sử dụng voucher trước khi hết hạn để không bỏ lỡ ưu đãi.
+            </div>
+        </div>
     </div>
 
     <div class="gtv-section-title">❓ Câu hỏi thường gặp</div>
@@ -786,24 +730,21 @@
            Nạp tiền →
         </a>
     </div>
+</div>
 
+<div class="confirm-popup">
+    <?php get_template_part('popup/popup-confirm-purchase'); ?>
+</div>
+
+<div class="balance-popup">
+    <?php get_template_part('authentication/popup-insufficient-balance'); ?>
+</div>
+
+<div class="downgrade-popup">
+    <?php get_template_part('popup/popup-downgrade-blocked'); ?>
 </div>
 
 <script>
-    document.querySelectorAll('.gtv-billing-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.gtv-billing-btn').forEach(function(b) { b.classList.remove('active'); });
-            btn.classList.add('active');
-            var type = btn.dataset.billing;
-            document.querySelectorAll('.gtv-price-num[data-monthly]').forEach(function(el) {
-                el.textContent = type === 'yearly' ? el.dataset.yearly : el.dataset.monthly;
-            });
-            document.querySelectorAll('.gtv-price-per[data-monthly]').forEach(function(el) {
-                el.textContent = '\u00a0' + (type === 'yearly' ? el.dataset.yearly : el.dataset.monthly);
-            });
-        });
-    });
-
     function gtvFaq(i) {
         var item = document.getElementById('gtv-faq-' + i);
         var wasOpen = item.classList.contains('open');

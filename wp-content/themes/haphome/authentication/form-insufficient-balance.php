@@ -1,3 +1,10 @@
+<?php
+if (!defined('ABSPATH')) exit;
+$message = get_query_var('balance_popup_message', '');
+if (empty($message)) {
+    $message = 'Số dư trong ví của bạn không đủ để thực hiện thao tác này. Vui lòng nạp thêm tiền để tiếp tục.';
+}
+?>
 <section class="section-form-balance">
     <div class="balance-icon">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="1.5">
@@ -12,7 +19,7 @@
     </div>
 
     <div class="balance-message" id="balance-popup-message">
-        Số dư trong ví của bạn không đủ để thực hiện thao tác này. Vui lòng nạp thêm tiền để tiếp tục.
+        <?php echo esc_html($message); ?>
     </div>
 
     <div class="balance-actions">

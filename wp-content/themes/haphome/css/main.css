@@ -9702,7 +9702,7 @@ select.form-control option {
     height: 42px;
     border-radius: 50%;
     overflow: hidden;
-    background: var(--ql-red);
+    background: #e00333;
     color: #fff;
     font-weight: 700;
     font-size: 14px;
