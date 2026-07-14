@@ -2953,8 +2953,6 @@ function get_youtube_id_from_url($url) {
     return '';
 }
 
-//PAYMENT
-require_once get_template_directory() . '/payment/ajax-handler.php';
 require_once get_template_directory() . '/config.php';
 add_action('wp_enqueue_scripts', function () {
     if (is_singular('property') || is_page('dang-tin')) {
@@ -3424,6 +3422,180 @@ add_action('wp_enqueue_scripts', function () {
         ]);
     }
 });
+
+//PAYMENT
+require_once get_stylesheet_directory() . '/inc/payment-config.php';
+require_once get_stylesheet_directory() . '/inc/payment-functions.php';
+add_action('wp_enqueue_scripts', function () {
+    $is_naptien_tab = is_page('quan-ly-tai-khoan') && get_query_var('tab') === 'nap-tien';
+ 
+    if ($is_naptien_tab) {
+        wp_enqueue_script(
+            'nt-nap-tien',
+            get_stylesheet_directory_uri() . '/js/nap-tien.js',
+            ['jquery'],
+            filemtime(get_stylesheet_directory() . '/js/nap-tien.js'),
+            true
+        );
+        wp_localize_script('nt-nap-tien', 'qlt_nap_tien_ajax', [
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'nonce'    => wp_create_nonce('bds_deposit_nonce'),
+        ]);
+    }
+});
+
+//TRANSACTION
+function lsgd_get_transactions($user_id, $args = []) {
+    global $wpdb;
+ 
+    $user_id  = (int) $user_id;
+    $tx_table = $wpdb->prefix . 'custom_transactions';
+ 
+    $defaults = [
+        'type'     => '',
+        'month'    => '',
+        'paged'    => 1,
+        'per_page' => 15,
+    ];
+    $args = wp_parse_args($args, $defaults);
+    $type_map_ui_to_db = [
+        'nap'  => ['deposit', 'bonus'],
+        'chi'  => ['withdraw', 'purchase', 'transfer'],
+        'hoan' => ['refund'],
+    ];
+ 
+    $where  = ['user_id = %d', "status != 'pending'"];
+    $params = [$user_id];
+ 
+    if ($args['type'] && isset($type_map_ui_to_db[$args['type']])) {
+        $types        = $type_map_ui_to_db[$args['type']];
+        $placeholders = implode(',', array_fill(0, count($types), '%s'));
+        $where[]      = "transaction_type IN ($placeholders)";
+        foreach ($types as $t) {
+            $params[] = $t;
+        }
+    }
+ 
+    if ($args['month'] && preg_match('/^\d{4}-\d{2}$/', $args['month'])) {
+        [$y, $m]   = explode('-', $args['month']);
+        $where[]   = 'YEAR(created_at) = %d AND MONTH(created_at) = %d';
+        $params[]  = (int) $y;
+        $params[]  = (int) $m;
+    }
+ 
+    $where_sql = implode(' AND ', $where);
+    $count_sql   = "SELECT COUNT(*) FROM $tx_table WHERE $where_sql";
+    $total_items = (int) $wpdb->get_var($wpdb->prepare($count_sql, $params));
+    $per_page    = max(1, (int) $args['per_page']);
+    $total_pages = max(1, (int) ceil($total_items / $per_page));
+    $paged       = min(max(1, (int) $args['paged']), $total_pages);
+    $offset      = ($paged - 1) * $per_page;
+     $list_sql    = "SELECT * FROM $tx_table WHERE $where_sql ORDER BY created_at DESC LIMIT %d OFFSET %d";
+    $list_params = array_merge($params, [$per_page, $offset]);
+    $transactions = $wpdb->get_results($wpdb->prepare($list_sql, $list_params));
+ 
+    return [
+        'items'       => $transactions,
+        'total_items' => $total_items,
+        'total_pages' => $total_pages,
+        'paged'       => $paged,
+        'per_page'    => $per_page,
+        'offset'      => $offset,
+    ];
+}
+ 
+function lsgd_get_month_summary($user_id) {
+    global $wpdb;
+ 
+    $user_id  = (int) $user_id;
+    $tx_table = $wpdb->prefix . 'custom_transactions';
+    $year     = (int) date('Y');
+    $month    = (int) date('n');
+ 
+    $nap = (float) $wpdb->get_var($wpdb->prepare(
+        "SELECT COALESCE(SUM(amount),0) FROM $tx_table
+         WHERE user_id = %d AND status = 'completed'
+         AND transaction_type IN ('deposit','bonus','refund')
+         AND YEAR(created_at) = %d AND MONTH(created_at) = %d",
+        $user_id, $year, $month
+    ));
+ 
+    $chi = (float) $wpdb->get_var($wpdb->prepare(
+        "SELECT COALESCE(SUM(amount),0) FROM $tx_table
+         WHERE user_id = %d AND status = 'completed'
+         AND transaction_type IN ('withdraw','purchase','transfer')
+         AND YEAR(created_at) = %d AND MONTH(created_at) = %d",
+        $user_id, $year, $month
+    ));
+ 
+    return ['nap' => $nap, 'chi' => $chi];
+}
+ 
+function lsgd_get_wallet_balance($user_id) {
+    global $wpdb;
+ 
+    $user_id       = (int) $user_id;
+    $wallets_table = $wpdb->prefix . 'custom_wallets';
+ 
+    $wallet = $wpdb->get_row($wpdb->prepare(
+        "SELECT balance_main, balance_bonus FROM $wallets_table WHERE user_id = %d",
+        $user_id
+    ));
+ 
+    $main  = $wallet ? (float) $wallet->balance_main : 0;
+    $bonus = $wallet ? (float) $wallet->balance_bonus : 0;
+ 
+    return [
+        'main'  => $main,
+        'bonus' => $bonus,
+        'total' => $main + $bonus,
+    ];
+}
+ 
+if (!function_exists('lsgd_fmt')) {
+    function lsgd_fmt($n) {
+        return number_format((float) $n, 0, ',', '.') . ' ₫';
+    }
+}
+ 
+if (!function_exists('lsgd_type_meta')) {
+    function lsgd_type_meta($db_type) {
+        $map = [
+            'deposit'  => ['label' => 'Nạp tiền',    'ui' => 'nap',  'sign' => '+'],
+            'bonus'    => ['label' => 'Khuyến mãi',  'ui' => 'nap',  'sign' => '+'],
+            'refund'   => ['label' => 'Hoàn tiền',   'ui' => 'hoan', 'sign' => '+'],
+            'withdraw' => ['label' => 'Rút tiền',    'ui' => 'chi',  'sign' => '-'],
+            'purchase' => ['label' => 'Thanh toán',  'ui' => 'chi',  'sign' => '-'],
+            'transfer' => ['label' => 'Chuyển tiền', 'ui' => 'chi',  'sign' => '-'],
+        ];
+        return $map[$db_type] ?? ['label' => ucfirst($db_type), 'ui' => 'chi', 'sign' => '-'];
+    }
+}
+ 
+if (!function_exists('lsgd_method_label')) {
+    function lsgd_method_label($method) {
+        $map = [
+            'momo'    => 'MoMo',
+            'zalopay' => 'ZaloPay',
+            'vnpay'   => 'VNPay',
+            'bank'    => 'Ngân hàng',
+            'wallet'  => 'Ví nội bộ',
+            'system'  => 'Hệ thống',
+        ];
+        return $map[$method] ?? ($method ?: '—');
+    }
+}
+ 
+if (!function_exists('lsgd_status_meta')) {
+    function lsgd_status_meta($status) {
+        $map = [
+            'completed' => ['label' => 'Thành công', 'css' => 'lsgd-status-completed'],
+            'failed'    => ['label' => 'Thất bại',   'css' => 'lsgd-status-failed'],
+            'cancelled' => ['label' => 'Đã huỷ',     'css' => 'lsgd-status-cancelled'],
+        ];
+        return $map[$status] ?? ['label' => ucfirst($status), 'css' => 'lsgd-status-other'];
+    }
+}
 ///////////////////
 function html5blank_conditional_scripts() {}
 function html5_blank_view_article() {}

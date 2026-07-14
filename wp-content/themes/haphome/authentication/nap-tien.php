@@ -1,62 +1,3 @@
-<?php
-if (!defined('ABSPATH')) exit;
-
-$user_id      = get_current_user_id();
-$balance_main = (float) get_user_meta($user_id, 'balance_main',  true);
-$balance_promo= (float) get_user_meta($user_id, 'balance_promo', true);
-
-$methods = [
-    [
-        'id'    => 'qr',
-        'label' => 'Thanh toán bằng mã QR',
-        'desc'  => 'Quét mã QR từ ứng dụng ngân hàng và ví điện tử',
-        'color' => '#ee0033',
-        'bg'    => '#fde8ec',
-        'svg'   => '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="5" y="5" width="3" height="3"/><rect x="16" y="5" width="3" height="3"/><rect x="5" y="16" width="3" height="3"/><path d="M14 14h3v3M17 17h3v3M14 20h3" stroke-linecap="round"/>',
-    ],
-    [
-        'id'    => 'bank',
-        'label' => 'Chuyển khoản ngân hàng định danh',
-        'desc'  => 'Tài khoản định danh, nạp tiền nhanh chóng',
-        'color' => '#0ea5e9',
-        'bg'    => '#e0f2fe',
-        'svg'   => '<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><rect x="9" y="13" width="6" height="8"/>',
-    ],
-    [
-        'id'    => 'atm',
-        'label' => 'Thanh toán bằng thẻ ATM nội địa',
-        'desc'  => 'Thẻ ATM có đăng ký Internet Banking',
-        'color' => '#f59e0b',
-        'bg'    => '#fef3c7',
-        'svg'   => '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4" stroke-linecap="round"/>',
-    ],
-    [
-        'id'    => 'intl',
-        'label' => 'Thẻ quốc tế, Apple Pay, Google Pay',
-        'desc'  => 'Visa, Mastercard, JCB và ví số',
-        'color' => '#374151',
-        'bg'    => '#f3f4f6',
-        'svg'   => '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20" stroke-linecap="round"/><circle cx="17" cy="15" r="2"/><circle cx="14" cy="15" r="2"/>',
-    ],
-    [
-        'id'    => 'momo',
-        'label' => 'Thanh toán bằng ví MoMo',
-        'desc'  => 'Thanh toán nhanh qua ví MoMo',
-        'color' => '#a21caf',
-        'bg'    => '#fae8ff',
-        'svg'   => '<circle cx="12" cy="12" r="9"/><path d="M8 12c0-2.2 1.8-4 4-4s4 1.8 4 4-1.8 4-4 4" stroke-linecap="round"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/>',
-    ],
-    [
-        'id'    => 'credit',
-        'label' => 'Trả góp qua thẻ tín dụng',
-        'desc'  => 'Visa, Mastercard, JCB — 0% lãi suất',
-        'color' => '#dc2626',
-        'bg'    => '#fee2e2',
-        'svg'   => '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h2M10 15h4" stroke-linecap="round"/>',
-    ],
-];
-?>
-
 <style>
 .nt-bal-grid {
 	display: grid;
@@ -253,6 +194,16 @@ $methods = [
 	border-color: var(--ql-red);
 }
 
+.nt-amount-hint {
+	font-size: 11px;
+	color: var(--ql-muted);
+	margin-top: 4px;
+}
+
+.nt-amount-hint.nt-error {
+	color: #dc2626;
+}
+
 .nt-bonus-box {
 	background: #fffbea;
 	border: 1px solid #fde68a;
@@ -295,6 +246,11 @@ $methods = [
 	background: var(--ql-red-dark, #cc0022);
 }
 
+.nt-submit-btn:disabled {
+	background: #d1d5db;
+	cursor: not-allowed;
+}
+
 @media(max-width:700px) {
 	.nt-methods-grid {
 		grid-template-columns: 1fr;
@@ -303,8 +259,74 @@ $methods = [
 	.nt-bal-grid {
 		grid-template-columns: 1fr;
 	}
+
+	.nt-input-row {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.nt-input-group {
+		max-width: none;
+	}
 }
 </style>
+
+<?php
+if (!defined('ABSPATH')) exit;
+
+$custom_user = function_exists('custom_get_user') ? custom_get_user() : null;
+
+if (!$custom_user) {
+    echo '<div class="ql-panel-body"><p>Vui lòng đăng nhập để sử dụng chức năng nạp tiền.</p></div>';
+    return;
+}
+
+global $wpdb;
+$wallets_table = $wpdb->prefix . 'custom_wallets';
+$wallet = $wpdb->get_row($wpdb->prepare(
+    "SELECT balance_main, balance_bonus FROM $wallets_table WHERE user_id = %d",
+    $custom_user->id
+));
+
+$balance_main  = $wallet ? (float) $wallet->balance_main  : 0;
+$balance_bonus = $wallet ? (float) $wallet->balance_bonus : 0;
+$amount_presets = [100000, 200000, 500000, 1000000, 2000000, 5000000];
+
+$methods = [
+    [
+        'id'    => 'qr',
+        'label' => 'Thanh toán bằng mã QR',
+        'desc'  => 'Quét mã QR từ ứng dụng ngân hàng và ví điện tử',
+        'color' => '#ee0033',
+        'bg'    => '#fde8ec',
+        'svg'   => '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="5" y="5" width="3" height="3"/><rect x="16" y="5" width="3" height="3"/><rect x="5" y="16" width="3" height="3"/><path d="M14 14h3v3M17 17h3v3M14 20h3" stroke-linecap="round"/>',
+    ],
+    [
+        'id'    => 'atm',
+        'label' => 'Chuyển khoản ngân hàng / Thẻ ATM nội địa',
+        'desc'  => 'Tài khoản định danh hoặc thẻ ATM có đăng ký Internet Banking',
+        'color' => '#0ea5e9',
+        'bg'    => '#e0f2fe',
+        'svg'   => '<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><rect x="9" y="13" width="6" height="8"/>',
+    ],
+    [
+        'id'    => 'credit',
+        'label' => 'Thẻ quốc tế / Trả góp',
+        'desc'  => 'Visa, Mastercard, JCB, Apple Pay, Google Pay',
+        'color' => '#dc2626',
+        'bg'    => '#fee2e2',
+        'svg'   => '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h2M10 15h4" stroke-linecap="round"/>',
+    ],
+    [
+        'id'    => 'momo',
+        'label' => 'Thanh toán bằng ví MoMo',
+        'desc'  => 'Thanh toán nhanh qua ví MoMo',
+        'color' => '#a21caf',
+        'bg'    => '#fae8ff',
+        'svg'   => '<circle cx="12" cy="12" r="9"/><path d="M8 12c0-2.2 1.8-4 4-4s4 1.8 4 4-1.8 4-4 4" stroke-linecap="round"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/>',
+    ],
+];
+?>
 
 <div class="ql-panel-header">
     <h2 class="ql-panel-title">Nạp tiền</h2>
@@ -318,11 +340,38 @@ $methods = [
         </div>
         <div class="nt-bal-card">
             <div class="nt-bal-label">Tài khoản khuyến mãi</div>
-            <div class="nt-bal-value"><?php echo number_format($balance_promo, 0, ',', '.'); ?> ₫</div>
+            <div class="nt-bal-value"><?php echo number_format($balance_bonus, 0, ',', '.'); ?> ₫</div>
         </div>
     </div>
 
-    <div class="nt-section-title">Phương thức nạp tiền</div>
+    <div class="nt-section-title">Số tiền muốn nạp</div>
+    <div class="nt-section-sub">Chọn nhanh một mức hoặc tự nhập số tiền (tối thiểu 10.000 ₫)</div>
+
+    <div class="nt-chips">
+        <?php foreach ($amount_presets as $i => $preset): ?>
+        <button type="button"
+                class="nt-chip <?php echo $i === 2 ? 'active' : ''; ?>"
+                data-amount="<?php echo esc_attr($preset); ?>"
+                onclick="ntSelectAmountChip(this)">
+            <?php echo number_format($preset, 0, ',', '.'); ?> ₫
+        </button>
+        <?php endforeach; ?>
+    </div>
+
+    <div class="nt-input-row">
+        <div class="nt-input-group">
+            <label class="nt-input-label" for="nt-custom-amount">Hoặc nhập số tiền khác</label>
+            <input type="text" inputmode="numeric" id="nt-custom-amount" class="nt-input"
+                   placeholder="Ví dụ: 300.000" oninput="ntOnCustomAmountInput(this)">
+            <div class="nt-amount-hint" id="nt-amount-hint">
+                Số tiền đã chọn: <strong id="nt-amount-display"><?php echo number_format($amount_presets[2], 0, ',', '.'); ?> ₫</strong>
+            </div>
+        </div>
+    </div>
+    <!-- Input ẩn để nap-tien.js đọc giá trị số tiền cuối cùng đã chọn -->
+    <input type="hidden" id="nt-selected-amount" value="<?php echo esc_attr($amount_presets[2]); ?>">
+
+    <div class="nt-section-title" style="margin-top:24px;">Phương thức nạp tiền</div>
     <div class="nt-section-sub">Bạn hãy chọn một trong các hình thức thanh toán dưới đây</div>
 
     <div class="nt-methods-grid">
@@ -386,5 +435,45 @@ function ntSelectMethod(card) {
     card.classList.add('selected');
     window.ntSelectedMethod = card.dataset.method;
     window.ntSelectedLabel  = card.dataset.label;
+}
+
+function ntSelectAmountChip(chip) {
+    document.querySelectorAll('.nt-chip').forEach(function (c) {
+        c.classList.remove('active');
+    });
+    chip.classList.add('active');
+
+    var amount = parseInt(chip.dataset.amount, 10) || 0;
+    document.getElementById('nt-selected-amount').value = amount;
+    document.getElementById('nt-custom-amount').value = '';
+    ntUpdateAmountDisplay(amount);
+}
+
+function ntOnCustomAmountInput(input) {
+    document.querySelectorAll('.nt-chip').forEach(function (c) {
+        c.classList.remove('active');
+    });
+
+    var raw = input.value.replace(/[^0-9]/g, '');
+    var amount = parseInt(raw, 10) || 0;
+
+    input.value = amount ? amount.toLocaleString('vi-VN') : '';
+    document.getElementById('nt-selected-amount').value = amount;
+    ntUpdateAmountDisplay(amount);
+}
+
+function ntUpdateAmountDisplay(amount) {
+    var $hint = document.getElementById('nt-amount-hint');
+    var $display = document.getElementById('nt-amount-display');
+
+    if (!amount || amount < 10000) {
+        $display.textContent = '0 ₫';
+        $hint.classList.add('nt-error');
+        $hint.innerHTML = 'Số tiền nạp tối thiểu là <strong>10.000 ₫</strong>.';
+    } else {
+        $hint.classList.remove('nt-error');
+        $display.textContent = amount.toLocaleString('vi-VN') + ' ₫';
+        $hint.innerHTML = 'Số tiền đã chọn: <strong id="nt-amount-display">' + amount.toLocaleString('vi-VN') + ' ₫</strong>';
+    }
 }
 </script>

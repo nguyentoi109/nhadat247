@@ -1,63 +1,3 @@
-<?php
-if (!defined('ABSPATH')) exit;
-
-$user_id = get_current_user_id();
-$filter_type  = isset($_GET['type'])  ? sanitize_text_field($_GET['type'])  : '';
-$filter_month = isset($_GET['month']) ? sanitize_text_field($_GET['month']) : '';
-$paged        = max(1, (int) ($_GET['paged'] ?? 1));
-$per_page     = 15;
-
-$meta_query = [];
-if ($filter_type) {
-    $meta_query[] = ['key' => 'tx_type', 'value' => $filter_type, 'compare' => '='];
-}
-$date_query = [];
-if ($filter_month) {
-    [$y, $m]    = explode('-', $filter_month);
-    $date_query = [
-        'year'  => (int)$y,
-        'month' => (int)$m,
-    ];
-}
-
-$query_args = [
-    'post_type'      => 'giao-dich',  
-    'author'         => $user_id,
-    'post_status'    => 'publish',
-    'posts_per_page' => $per_page,
-    'paged'          => $paged,
-    'orderby'        => 'date',
-    'order'          => 'DESC',
-];
-if (!empty($meta_query)) $query_args['meta_query'] = $meta_query;
-if (!empty($date_query)) $query_args['date_query']  = [$date_query];
-
-$tx_query    = new WP_Query($query_args);
-$transactions= $tx_query->posts;
-$total_pages = $tx_query->max_num_pages;
-
-$this_month_nap = 0;
-$this_month_chi = 0;
-$all_this_month = get_posts([
-    'post_type'      => 'giao-dich',
-    'author'         => $user_id,
-    'post_status'    => 'publish',
-    'posts_per_page' => -1,
-    'date_query'     => [['year' => date('Y'), 'month' => date('n')]],
-    'fields'         => 'ids',
-]);
-foreach ($all_this_month as $tid) {
-    $t = get_post_meta($tid, 'tx_type', true);
-    $a = (float) get_post_meta($tid, 'tx_amount', true);
-    if ($t === 'nap' || $t === 'hoan') $this_month_nap += $a;
-    if ($t === 'chi') $this_month_chi += $a;
-}
-
-function lsgd_fmt($n) { return number_format($n, 0, ',', '.') . ' ₫'; }
-
-$current_url = home_url('/quan-ly-tai-khoan/lich-su-giao-dich/');
-?>
-
 <style>
 .lsgd-summary {
 	display: grid;
@@ -118,6 +58,27 @@ $current_url = home_url('/quan-ly-tai-khoan/lich-su-giao-dich/');
 .lsgd-filter select:focus,
 .lsgd-filter input[type=month]:focus {
 	border-color: var(--ql-red);
+}
+
+.lsgd-select-wrap {
+	position: relative;
+	display: inline-block;
+}
+
+.lsgd-select-wrap select {
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	padding-right: 32px;
+}
+
+.lsgd-select-arrow {
+	position: absolute;
+	top: 50%;
+	right: 10px;
+	transform: translateY(-50%);
+	color: #6b7280;
+	pointer-events: none;
 }
 
 .lsgd-filter-btn {
@@ -215,6 +176,37 @@ $current_url = home_url('/quan-ly-tai-khoan/lich-su-giao-dich/');
 	color: #92400e;
 }
 
+.lsgd-status-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	padding: 2px 9px;
+	border-radius: 20px;
+	font-size: 11px;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.lsgd-status-completed {
+	background: #d1fae5;
+	color: #065f46;
+}
+
+.lsgd-status-failed {
+	background: #fee2e2;
+	color: #991b1b;
+}
+
+.lsgd-status-cancelled {
+	background: #f3f4f6;
+	color: #4b5563;
+}
+
+.lsgd-status-other {
+	background: #e0e7ff;
+	color: #3730a3;
+}
+
 .lsgd-amount-plus {
 	font-weight: 700;
 	color: #059669;
@@ -276,6 +268,38 @@ $current_url = home_url('/quan-ly-tai-khoan/lich-su-giao-dich/');
 }
 </style>
 
+<?php
+if (!defined('ABSPATH')) exit;
+
+$custom_user = function_exists('custom_get_user') ? custom_get_user() : null;
+if (!$custom_user) {
+    echo '<div class="ql-panel-body"><p>Vui lòng đăng nhập để xem lịch sử giao dịch.</p></div>';
+    return;
+}
+
+$user_id = (int) $custom_user->id;
+$filter_type_ui = isset($_GET['type']) ? sanitize_text_field($_GET['type']) : '';
+$filter_month   = isset($_GET['month']) ? sanitize_text_field($_GET['month']) : '';
+$paged          = max(1, (int) ($_GET['paged'] ?? 1));
+$result = lsgd_get_transactions($user_id, [
+    'type'  => $filter_type_ui,
+    'month' => $filter_month,
+    'paged' => $paged,
+]);
+$transactions = $result['items'];
+$total_items  = $result['total_items'];
+$total_pages  = $result['total_pages'];
+$paged        = $result['paged'];
+$offset       = $result['offset'];
+$month_summary   = lsgd_get_month_summary($user_id);
+$this_month_nap  = $month_summary['nap'];
+$this_month_chi  = $month_summary['chi'];
+$wallet         = lsgd_get_wallet_balance($user_id);
+$balance_total  = $wallet['total'];
+
+$current_url = home_url('/quan-ly-tai-khoan/lich-su-giao-dich/');
+?>
+
 <div class="ql-panel-header">
     <h2 class="ql-panel-title">Lịch sử giao dịch</h2>
 </div>
@@ -293,35 +317,23 @@ $current_url = home_url('/quan-ly-tai-khoan/lich-su-giao-dich/');
         </div>
         <div class="lsgd-sum-card">
             <div class="lsgd-sum-label">Số dư hiện tại</div>
-            <div class="lsgd-sum-val">
-                <?php echo lsgd_fmt(
-                    (float) get_user_meta($user_id, 'balance_main', true)
-                  + (float) get_user_meta($user_id, 'balance_promo', true)
-                ); ?>
-            </div>
+            <div class="lsgd-sum-val"><?php echo lsgd_fmt($balance_total); ?></div>
         </div>
     </div>
 
     <form method="get" action="<?php echo esc_url($current_url); ?>">
         <div class="lsgd-filter">
-            <select name="type">
-                <option value="" <?php selected($filter_type, ''); ?>>Tất cả loại</option>
-                <option value="nap"  <?php selected($filter_type, 'nap');  ?>>Nạp tiền</option>
-                <option value="chi"  <?php selected($filter_type, 'chi');  ?>>Chi tiêu</option>
-                <option value="hoan" <?php selected($filter_type, 'hoan'); ?>>Hoàn tiền</option>
-            </select>
-            <input type="month" name="month"
-                   value="<?php echo esc_attr($filter_month); ?>"
-                   max="<?php echo date('Y-m'); ?>">
-            <button type="submit" class="lsgd-filter-btn">Lọc</button>
-            <?php if ($filter_type || $filter_month): ?>
-                <a href="<?php echo esc_url($current_url); ?>" class="lsgd-reset-btn">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M6 18L18 6M6 6l12 12" stroke-linecap="round"/>
-                    </svg>
-                    Xoá lọc
-                </a>
-            <?php endif; ?>
+            <div class="lsgd-select-wrap">
+                <select name="type" onchange="this.form.submit()">
+                    <option value="" <?php selected($filter_type_ui, ''); ?>>Tất cả loại</option>
+                    <option value="nap"  <?php selected($filter_type_ui, 'nap');  ?>>Nạp tiền</option>
+                    <option value="chi"  <?php selected($filter_type_ui, 'chi');  ?>>Chi tiêu</option>
+                    <option value="hoan" <?php selected($filter_type_ui, 'hoan'); ?>>Hoàn tiền</option>
+                </select>
+                <svg class="lsgd-select-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
         </div>
     </form>
 
@@ -347,38 +359,44 @@ $current_url = home_url('/quan-ly-tai-khoan/lich-su-giao-dich/');
                         <th>Số tiền</th>
                         <th>Số dư sau</th>
                         <th>Phương thức</th>
+                        <th>Trạng thái</th>
                         <th>Thời gian</th>
                     </tr>
                 </thead>
                 <tbody>
                 <?php
-                $stt_start = ($paged - 1) * $per_page + 1;
+                $stt_start = $offset + 1;
                 foreach ($transactions as $i => $tx):
-                    $type    = get_post_meta($tx->ID, 'tx_type', true);
-                    $amount  = (float) get_post_meta($tx->ID, 'tx_amount', true);
-                    $balance = (float) get_post_meta($tx->ID, 'tx_balance_after', true);
-                    $method  = get_post_meta($tx->ID, 'tx_method', true) ?: '—';
-                    $desc    = get_post_meta($tx->ID, 'tx_desc', true) ?: get_the_title($tx->ID);
-                    $type_labels = ['nap' => 'Nạp tiền', 'chi' => 'Chi tiêu', 'hoan' => 'Hoàn tiền'];
-                    $type_label  = $type_labels[$type] ?? ucfirst($type);
+                    $meta   = lsgd_type_meta($tx->transaction_type);
+                    $amount = (float) $tx->amount;
+                    $balance = (float) $tx->balance_after;
+                    $method  = lsgd_method_label($tx->payment_method);
+                    $desc    = $tx->description ?: $meta['label'];
+                    $is_out  = $meta['sign'] === '-';
+                    $status_meta = lsgd_status_meta($tx->status);
                 ?>
                     <tr>
                         <td style="color:#9ca3af;font-size:12px;"><?php echo $stt_start + $i; ?></td>
                         <td>
-                            <span class="lsgd-type-pill lsgd-type-<?php echo esc_attr($type); ?>">
-                                <?php echo esc_html($type_label); ?>
+                            <span class="lsgd-type-pill lsgd-type-<?php echo esc_attr($meta['ui']); ?>">
+                                <?php echo esc_html($meta['label']); ?>
                             </span>
                         </td>
                         <td style="color:#6b7280;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="<?php echo esc_attr($desc); ?>">
                             <?php echo esc_html($desc); ?>
                         </td>
-                        <td class="<?php echo $type === 'chi' ? 'lsgd-amount-minus' : 'lsgd-amount-plus'; ?>">
-                            <?php echo ($type === 'chi' ? '−' : '+') . lsgd_fmt($amount); ?>
+                        <td class="<?php echo $is_out ? 'lsgd-amount-minus' : 'lsgd-amount-plus'; ?>">
+                            <?php echo $meta['sign'] . lsgd_fmt($amount); ?>
                         </td>
                         <td style="font-size:12px;"><?php echo lsgd_fmt($balance); ?></td>
                         <td style="font-size:12px;color:#6b7280;"><?php echo esc_html($method); ?></td>
+                        <td>
+                            <span class="lsgd-status-pill <?php echo esc_attr($status_meta['css']); ?>">
+                                <?php echo esc_html($status_meta['label']); ?>
+                            </span>
+                        </td>
                         <td style="font-size:12px;color:#9ca3af;white-space:nowrap;">
-                            <?php echo esc_html(get_the_date('d/m/Y H:i', $tx->ID)); ?>
+                            <?php echo esc_html(mysql2date('d/m/Y H:i', $tx->created_at)); ?>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -389,7 +407,7 @@ $current_url = home_url('/quan-ly-tai-khoan/lich-su-giao-dich/');
         <?php if ($total_pages > 1): ?>
         <div class="lsgd-pagination">
             <?php if ($paged > 1): ?>
-                <a href="<?php echo esc_url(add_query_arg(['paged' => $paged - 1, 'type' => $filter_type, 'month' => $filter_month], $current_url)); ?>" class="lsgd-page-btn">←</a>
+                <a href="<?php echo esc_url(add_query_arg(['paged' => $paged - 1, 'type' => $filter_type_ui, 'month' => $filter_month], $current_url)); ?>" class="lsgd-page-btn">←</a>
             <?php else: ?>
                 <button class="lsgd-page-btn" disabled>←</button>
             <?php endif; ?>
@@ -397,7 +415,7 @@ $current_url = home_url('/quan-ly-tai-khoan/lich-su-giao-dich/');
             <?php for ($p = 1; $p <= $total_pages; $p++):
                 if ($p === 1 || $p === $total_pages || abs($p - $paged) <= 1):
             ?>
-                <a href="<?php echo esc_url(add_query_arg(['paged' => $p, 'type' => $filter_type, 'month' => $filter_month], $current_url)); ?>"
+                <a href="<?php echo esc_url(add_query_arg(['paged' => $p, 'type' => $filter_type_ui, 'month' => $filter_month], $current_url)); ?>"
                    class="lsgd-page-btn <?php echo $p === $paged ? 'active' : ''; ?>">
                     <?php echo $p; ?>
                 </a>
@@ -407,13 +425,11 @@ $current_url = home_url('/quan-ly-tai-khoan/lich-su-giao-dich/');
             <?php endfor; ?>
 
             <?php if ($paged < $total_pages): ?>
-                <a href="<?php echo esc_url(add_query_arg(['paged' => $paged + 1, 'type' => $filter_type, 'month' => $filter_month], $current_url)); ?>" class="lsgd-page-btn">→</a>
+                <a href="<?php echo esc_url(add_query_arg(['paged' => $paged + 1, 'type' => $filter_type_ui, 'month' => $filter_month], $current_url)); ?>" class="lsgd-page-btn">→</a>
             <?php else: ?>
                 <button class="lsgd-page-btn" disabled>→</button>
             <?php endif; ?>
         </div>
         <?php endif; ?>
-
     <?php endif; ?>
-
 </div>

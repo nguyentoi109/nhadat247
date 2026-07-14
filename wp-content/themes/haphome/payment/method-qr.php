@@ -1,66 +1,19 @@
 <?php
 if (!defined('ABSPATH')) exit;
 
-function bds_render_qr($amount, $order_id) {
-    $bank_id      = 'bidv';
-    $account      = '3144065637';
-    $account_name = 'Nguyễn Tới';
-    $template     = 'compact2';
-    $desc         = 'NAP' . $order_id;
-    $qr_url = "https://img.vietqr.io/image/{$bank_id}-{$account}-{$template}.png"
-            . '?amount='      . urlencode($amount)
-            . '&addInfo='     . urlencode($desc)
-            . '&accountName=' . urlencode('CONG TY HAP HOME');
-
-    ob_start(); ?>
-    <div class="pm-qr-wrap">
-        <p class="pm-qr-note"> Mở app ngân hàng hoặc ví điện tử, quét mã QR để thanh toán.<br></p>
-
-        <div class="pm-qr-img-wrap">
-            <img src="<?php echo esc_url($qr_url); ?>"
-                 alt="QR thanh toán" class="pm-qr-img"
-                 onerror="this.parentNode.innerHTML='<p style=\'color:#ee0033;font-size:13px;\'>Không tải được mã QR.<br>Vui lòng chuyển khoản thủ công theo thông tin bên dưới.</p>'">
-            <div class="pm-qr-expire">
-                Mã hết hạn sau <strong id="pp-countdown">05:00</strong>
-            </div>
-        </div>
-
-        <div class="pm-bank-info">
-            <div class="pm-bank-row">
-                <span>Ngân hàng</span>
-                <strong>BIDV SmartBanking</strong>
-            </div>
-            <div class="pm-bank-row">
-                <span>Chủ tài khoản</span>
-                <strong><?php echo esc_html($account_name); ?></strong>
-            </div>
-            <div class="pm-bank-row">
-                <span>Số tài khoản</span>
-                <strong>
-                    <?php echo esc_html($account); ?>
-                    <button class="pm-copy-btn"
-                            onclick="pmCopy('<?php echo esc_js($account); ?>', this)">Sao chép</button>
-                </strong>
-            </div>
-            <div class="pm-bank-row">
-                <span>Nội dung CK</span>
-                <strong>
-                    <?php echo esc_html($desc); ?>
-                    <button class="pm-copy-btn"
-                            onclick="pmCopy('<?php echo esc_js($desc); ?>', this)">Sao chép</button>
-                </strong>
-            </div>
-            <div class="pm-bank-row">
-                <span>Số tiền</span>
-                <strong class="pm-highlight"><?php echo number_format($amount, 0, ',', '.'); ?> ₫</strong>
-            </div>
-        </div>
-
-        <div class="pm-status-check">
-            <div class="pm-status-dot"></div>
-            <span>Đang chờ xác nhận thanh toán...</span>
-        </div>
-    </div>
-    <?php
-    return ob_get_clean();
+function bds_create_payment_qr($order_id, $order_code, $amount) {
+    // Trước đây hardcode '' khiến VNPay hiện lại màn chọn phương thức.
+    // Nay lấy đúng mã 'VNPAYQR' từ bds_vnpay_bank_code_for_method() để trỏ thẳng
+    // vào màn quét mã QR (giống ảnh sandbox bạn gửi, mục "App Ngân hàng và Ví điện tử").
+    //
+    // LƯU Ý QUAN TRỌNG: nếu VNPay trả về trang lỗi "Ngân hàng thanh toán không
+    // được hỗ trợ" (Payment/Error.html?code=76) ngay khi vừa redirect sang,
+    // đây KHÔNG phải lỗi code — vnp_BankCode=VNPAYQR đã đúng chuẩn tài liệu.
+    // Nguyên nhân là TmnCode sandbox (tự đăng ký qua devreg) có thể CHƯA được
+    // cấp quyền test kênh VNPAYQR (khác với VNBANK/NCB vốn luôn bật sẵn cho
+    // mọi TmnCode demo). Dùng script tools/check-bank-list.php để tự kiểm tra
+    // TmnCode của bạn được phép dùng những bankCode nào, hoặc liên hệ
+    // hotrovnpay@vnpay.vn để xin bật kênh QR cho tài khoản sandbox.
+    $bank_code = bds_vnpay_bank_code_for_method('qr');
+    return bds_vnpay_build_payment_url($order_id, $order_code, $amount, 'qr', $bank_code);
 }

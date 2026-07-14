@@ -1,88 +1,81 @@
 <?php
 if (!defined('ABSPATH')) exit;
 
-define('MOMO_PHONE', '0343930613');
-define('MOMO_NAME',  'NGUYỄN TỚI');
-define('MOMO_PERSONAL_LINK', 'https://me.momo.vn/nguyentoi');
+function bds_create_payment_momo($order_id, $order_code, $amount) {
+    $cfg = bds_momo_config();
 
-function bds_render_momo(int $amount, string $order_id): string {
-    $order_code = (int) substr(preg_replace('/[^0-9]/', '', $order_id), 0, 9);
-    $desc       = 'NAP' . $order_code;
-    $qr_url = 'https://img.vietqr.io/image/MOMO-' . MOMO_PHONE . '-compact2.png'
-            . '?amount='      . $amount
-            . '&addInfo='     . urlencode($desc)
-            . '&accountName=' . urlencode(MOMO_NAME);
+    if (empty($cfg['partnerCode']) || empty($cfg['accessKey']) || empty($cfg['secretKey'])) {
+        error_log('[MoMo][CREATE] Thiếu cấu hình partnerCode/accessKey/secretKey — không thể tạo giao dịch.');
+        return new WP_Error('momo_config_missing', 'Phương thức MoMo đang bảo trì, vui lòng chọn phương thức khác.');
+    }
 
-    bds_payos_save_order($order_code, $amount, get_current_user_id(), 'momo', '');
+    $request_id = uniqid('bds_', true);
+    $order_id_momo = (string) $order_code; 
+    $order_info = 'Nap tien vao vi don hang ' . $order_code;
+    $extra_data = '';
+    $raw_signature =
+        'accessKey=' . $cfg['accessKey'] .
+        '&amount=' . $amount .
+        '&extraData=' . $extra_data .
+        '&ipnUrl=' . $cfg['ipnUrl'] .
+        '&orderId=' . $order_id_momo .
+        '&orderInfo=' . $order_info .
+        '&partnerCode=' . $cfg['partnerCode'] .
+        '&redirectUrl=' . $cfg['redirectUrl'] .
+        '&requestId=' . $request_id .
+        '&requestType=' . $cfg['requestType'];
 
-    ob_start(); ?>
-    <div style="text-align:center;padding:6px 0 4px;">
-        <p style="font-size:13px;color:#6b7280;margin-bottom:14px;line-height:1.7;">
-            Mở app <strong style="color:#111;">MoMo</strong> →
-            chọn <strong style="color:#111;">Quét mã</strong> →
-            quét QR bên dưới
-        </p>
+    $signature = hash_hmac('sha256', $raw_signature, $cfg['secretKey']);
 
-        <div style="display:inline-block;padding:14px;background:#fff; border:1px solid #2c2c2c;border-radius:14px;margin-bottom:10px;">
-            <img src="<?php echo esc_url($qr_url); ?>"
-                alt="QR MoMo"
-                id="momo-qr-img"
-                style="width:200px;height:200px;border-radius:8px;display:block;"
-                onerror="document.getElementById('momo-qr-err').style.display='block';this.style.display='none';">
-        </div>
+    $body = [
+        'partnerCode' => $cfg['partnerCode'],
+        'partnerName' => get_bloginfo('name'),
+        'storeId'     => get_bloginfo('name'),
+        'requestId'   => $request_id,
+        'amount'      => (string) $amount,
+        'orderId'     => $order_id_momo,
+        'orderInfo'   => $order_info,
+        'redirectUrl' => $cfg['redirectUrl'],
+        'ipnUrl'      => $cfg['ipnUrl'],
+        'lang'        => $cfg['lang'],
+        'extraData'   => $extra_data,
+        'requestType' => $cfg['requestType'],
+        'signature'   => $signature,
+    ];
 
-        <div id="momo-qr-err"
-            style="display:none;color:#a21caf;font-size:13px;
-                    padding:16px;background:#fdf4ff;border-radius:8px;margin-bottom:10px;">
-            Không tải được QR. Vui lòng dùng link bên dưới.
-        </div>
-        <div style="clear:both;"></div>
-        <div style="font-size:13px;color:#6b7280;background:#f9fafb;
-                    border-radius:8px;padding:7px 16px;
-                    width:fit-content;margin:0 auto 18px;">
-            Hết hạn sau <strong style="color:#a21caf;" id="pp-countdown">05:00</strong>
-        </div>
+    $response = wp_remote_post($cfg['endpoint'], [
+        'headers'   => ['Content-Type' => 'application/json'],
+        'body'      => wp_json_encode($body),
+        'timeout'   => 30,
+        'sslverify' => true,
+    ]);
 
-        <div style="background:#f9fafb;border:1px solid #f0f0f0;border-radius:8px;
-                    text-align:left;overflow:hidden;margin-bottom:14px;font-size:13px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;
-                        padding:10px 14px;border-bottom:1px solid #f0f0f0;">
-                <span style="color:#6b7280;">Số điện thoại</span>
-                <strong><?php echo esc_html(MOMO_PHONE); ?>
-                    <button class="pm-copy-btn"
-                            onclick="pmCopy('<?php echo esc_js(MOMO_PHONE); ?>', this)">Sao chép</button>
-                </strong>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;
-                        padding:10px 14px;border-bottom:1px solid #f0f0f0;">
-                <span style="color:#6b7280;">Tên tài khoản</span>
-                <strong><?php echo esc_html(MOMO_NAME); ?></strong>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;
-                        padding:10px 14px;border-bottom:1px solid #f0f0f0;">
-                <span style="color:#6b7280;">Số tiền</span>
-                <strong style="color:#a21caf;font-size:15px;">
-                    <?php echo number_format($amount, 0, ',', '.'); ?> đ
-                </strong>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;
-                        padding:10px 14px;">
-                <span style="color:#6b7280;">Nội dung</span>
-                <strong><?php echo esc_html($desc); ?>
-                    <button class="pm-copy-btn"
-                            onclick="pmCopy('<?php echo esc_js($desc); ?>', this)">Sao chép</button>
-                </strong>
-            </div>
-        </div>
+    if (is_wp_error($response)) {
+        error_log('[MoMo][CREATE] Lỗi kết nối: ' . $response->get_error_message());
+        return new WP_Error('momo_request_failed', 'Không thể kết nối tới MoMo, vui lòng thử lại.');
+    }
 
-        <div style="background:#fdf4ff;border:1px solid #e9d5ff;border-radius:8px;
-                    padding:10px 14px;font-size:12px;color:#6b21a8;
-                    text-align:left;margin-bottom:14px;">
-            ⚠️ <strong>Quan trọng:</strong> Nhập đúng nội dung
-            <strong><?php echo esc_html($desc); ?></strong>
-            để hệ thống tự xác nhận. Sai nội dung vui lòng liên hệ hỗ trợ.
-        </div>
-    </div>
-    <?php
-    return ob_get_clean();
+    $code = wp_remote_retrieve_response_code($response);
+    $data = json_decode(wp_remote_retrieve_body($response), true);
+
+    if ($code !== 200 && $code !== 201) {
+        error_log('[MoMo][CREATE] HTTP ' . $code . ' — ' . wp_remote_retrieve_body($response));
+        return new WP_Error('momo_http_error', 'Cổng MoMo trả về lỗi, vui lòng thử lại sau.');
+    }
+
+    if (empty($data['payUrl']) || (int) ($data['resultCode'] ?? -1) !== 0) {
+        error_log('[MoMo][CREATE] resultCode=' . ($data['resultCode'] ?? '?') . ' message=' . ($data['message'] ?? '?'));
+        return new WP_Error('momo_create_failed', $data['message'] ?? 'Không thể tạo giao dịch MoMo.');
+    }
+
+    global $wpdb;
+    $wpdb->update(
+        $wpdb->prefix . 'bds_payment_orders',
+        ['bank' => 'momo:' . $request_id],
+        ['id' => $order_id],
+        ['%s'],
+        ['%d']
+    );
+
+    return $data['payUrl'];
 }
