@@ -3596,6 +3596,268 @@ if (!function_exists('lsgd_status_meta')) {
         return $map[$status] ?? ['label' => ucfirst($status), 'css' => 'lsgd-status-other'];
     }
 }
+
+// OVERVIEW
+function bds_get_user_balance($user_id) {
+    global $wpdb;
+
+    $wallet = $wpdb->get_row($wpdb->prepare(
+        "SELECT balance_main, balance_bonus FROM {$wpdb->prefix}custom_wallets WHERE user_id = %d",
+        $user_id
+    ));
+    $main  = $wallet ? (float) $wallet->balance_main  : 0;
+    $bonus = $wallet ? (float) $wallet->balance_bonus : 0;
+ 
+    return [
+        'main'  => $main,
+        'bonus' => $bonus,
+        'total' => $main + $bonus,
+    ];
+}
+ 
+function bds_get_user_listing_stats($user_id) {
+    if (!function_exists('ql_get_listings_categorized')) {
+        return ['hien_thi' => 0, 'het_han' => 0, 'vip' => 0, 'thuong' => 0];
+    }
+ 
+    $categorized = ql_get_listings_categorized($user_id);
+    $vip_count = 0;
+    $thuong_count = 0;
+    foreach ($categorized['active'] as $post) {
+        $vip = get_post_meta($post->ID, 'vip_level', true);
+        if ($vip) {
+            $vip_count++;
+        } else {
+            $thuong_count++;
+        }
+    }
+    return [
+        'hien_thi' => count($categorized['active']),
+        'het_han'  => count($categorized['expired']),
+        'vip'      => $vip_count,
+        'thuong'   => $thuong_count,
+    ];
+}
+ 
+function bds_get_user_post_ids($user_id) {
+    $query = new WP_Query([
+        'post_type'      => 'property',
+        'author'         => $user_id,
+        'post_status'    => ['publish', 'pending', 'draft'],
+        'posts_per_page' => -1,
+        'fields'         => 'ids',
+        'no_found_rows'  => true,
+    ]);
+    return $query->posts;
+}
+ 
+function bds_get_user_views_stats($user_id) {
+    global $wpdb;
+ 
+    $post_ids = bds_get_user_post_ids($user_id);
+ 
+    if (empty($post_ids)) {
+        return ['hom_nay' => 0, 'thang' => 0, 'tong' => 0];
+    }
+ 
+    $placeholders = implode(',', array_fill(0, count($post_ids), '%d'));
+    $total_views = (int) $wpdb->get_var($wpdb->prepare(
+        "SELECT SUM(CAST(meta_value AS UNSIGNED))
+         FROM {$wpdb->postmeta}
+         WHERE meta_key = 'post_views_count' AND post_id IN ($placeholders)",
+        $post_ids
+    ));
+    return [
+        'hom_nay' => $total_views, 
+        'thang'   => $total_views, 
+        'tong'    => $total_views,
+    ];
+}
+ 
+function bds_get_user_favorites_received($user_id) {
+    global $wpdb;
+    $favorites_table  = "{$wpdb->prefix}custom_favorites";
+ 
+    $post_ids = bds_get_user_post_ids($user_id);
+ 
+    if (empty($post_ids)) {
+        return ['tong' => 0, 'thang' => 0];
+    }
+ 
+    $placeholders = implode(',', array_fill(0, count($post_ids), '%d'));
+    $tong = (int) $wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM $favorites_table WHERE post_id IN ($placeholders)",
+        $post_ids
+    ));
+    $thang = (int) $wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM $favorites_table
+         WHERE post_id IN ($placeholders)
+         AND created_at >= DATE_FORMAT(NOW(), '%%Y-%%m-01')",
+        $post_ids
+    ));
+ 
+    return ['tong' => $tong, 'thang' => $thang];
+}
+ 
+function bds_get_user_current_plan($user_id) {
+    global $wpdb;
+    $table = "{$wpdb->prefix}custom_member_plans";
+ 
+    $row = $wpdb->get_row($wpdb->prepare(
+        "SELECT * FROM $table
+         WHERE user_id = %d AND status = 'active'
+         ORDER BY expired_at DESC
+         LIMIT 1",
+        $user_id
+    ));
+ 
+    if (!$row) {
+        return [
+            'plan'          => 'free',
+            'billing'       => null,
+            'expired_at'    => null,
+            'ngay_con_lai'  => 0,
+            'phan_tram_han' => 0,
+            'ten_hien_thi'  => 'Gói miễn phí',
+        ];
+    }
+ 
+    $ten_map = [
+        'free' => 'Gói miễn phí',
+        'pro'  => 'Gói Chuyên Nghiệp',
+        'vip'  => 'Gói VIP',
+    ];
+ 
+    $ngay_con_lai = 0;
+    $phan_tram_han = 0;
+    if ($row->expired_at) {
+        $now = new DateTime();
+        $expired = new DateTime($row->expired_at);
+        $diff = $now->diff($expired);
+        $ngay_con_lai = $expired > $now ? $diff->days : 0;
+         $chu_ky = $row->billing === 'yearly' ? 365 : 30;
+        $phan_tram_han = min(100, round($ngay_con_lai / $chu_ky * 100));
+    }
+ 
+    return [
+        'plan'          => $row->plan,
+        'billing'       => $row->billing,
+        'expired_at'    => $row->expired_at,
+        'ngay_con_lai'  => $ngay_con_lai,
+        'phan_tram_han' => $phan_tram_han,
+        'ten_hien_thi'  => $ten_map[$row->plan] ?? 'Gói miễn phí',
+    ];
+}
+ 
+function bds_get_user_quota($user_id) {
+    global $wpdb;
+    $table = "{$wpdb->prefix}custom_user_quotas";
+    $row = $wpdb->get_row($wpdb->prepare(
+        "SELECT * FROM $table WHERE user_id = %d",
+        $user_id
+    ));
+    return [
+        'vip_quota'         => $row ? (int) $row->vip_quota         : 0,
+        'push_vip_quota'    => $row ? (int) $row->push_vip_quota    : 0,
+        'push_normal_quota' => $row ? (int) $row->push_normal_quota : 0,
+    ];
+}
+ 
+function bds_get_user_recent_pushes($user_id, $limit = 5) {
+    global $wpdb;
+    $pushes_table = "{$wpdb->prefix}custom_post_pushes";
+ 
+    $rows = $wpdb->get_results($wpdb->prepare(
+        "SELECT p.push_type, wp.post_title
+         FROM $pushes_table p
+         INNER JOIN {$wpdb->posts} wp ON wp.ID = p.post_id
+         WHERE p.user_id = %d
+         ORDER BY p.created_at DESC
+         LIMIT %d",
+        $user_id, $limit
+    ));
+ 
+    $result = [];
+    foreach ($rows as $r) {
+        $result[] = [
+            'title' => $r->post_title,
+            'loai'  => $r->push_type === 'vip' ? 'vip' : 'thuong',
+        ];
+    }
+    return $result;
+}
+ 
+function bds_get_user_recent_listings($user_id, $limit = 5) {
+    $query = new WP_Query([
+        'post_type'      => 'property',
+        'author'         => $user_id,
+        'post_status'    => ['publish', 'pending', 'draft'],
+        'posts_per_page' => $limit,
+        'orderby'        => 'date',
+        'order'          => 'DESC',
+        'no_found_rows'  => true,
+    ]);
+ 
+    $result = [];
+    foreach ($query->posts as $post) {
+        $post_id  = $post->ID;
+        $views    = (int) get_post_meta($post_id, 'post_views_count', true);
+        $gia_raw  = get_post_meta($post_id, 'prefix-price', true); // đúng key theo quan-ly-tin.php
+        $gia      = function_exists('ql_format_price') ? ql_format_price($gia_raw) : ($gia_raw ?: '—');
+        $vip      = get_post_meta($post_id, 'vip_level', true);
+        $loai     = $vip ? 'vip' : 'thuong'; // chỉ 1 nhãn VIP duy nhất, không phân cấp
+        $thumb_url = get_the_post_thumbnail_url($post_id, 'medium') ?: '';
+         $status_hienthi = 'cho_duyet';
+        if ($post->post_status === 'pending') {
+            $status_hienthi = 'cho_duyet';
+        } else {
+            $expired_raw = function_exists('ql_get_expired_at') ? ql_get_expired_at($post_id) : null;
+            $is_overdue  = $expired_raw && strtotime($expired_raw) < time();
+            if ($is_overdue || $post->post_status !== 'publish') {
+                $status_hienthi = 'het_han';
+            } else {
+                $days_left = $expired_raw ? (new DateTime())->diff(new DateTime($expired_raw))->days : 999;
+                $status_hienthi = ($days_left <= 3) ? 'sap_het_han' : 'hien_thi';
+            }
+        }
+ 
+        $result[] = [
+            'post_id'   => $post_id,
+            'title'     => $post->post_title,
+            'loai'      => $loai,
+            'gia'       => $gia,
+            'views'     => $views,
+            'status'    => $status_hienthi,
+            'thumb_url' => $thumb_url,
+        ];
+    }
+    return $result;
+}
+ 
+function bds_get_dashboard_overview_data($user_id) {
+    $balance         = bds_get_user_balance($user_id);
+    $listing_stats   = bds_get_user_listing_stats($user_id);
+    $views_stats     = bds_get_user_views_stats($user_id);
+    $favorites       = bds_get_user_favorites_received($user_id);
+    $plan            = bds_get_user_current_plan($user_id);
+    $quota           = bds_get_user_quota($user_id);
+    $recent_pushes   = bds_get_user_recent_pushes($user_id, 5);
+    $recent_listings = bds_get_user_recent_listings($user_id, 5);
+ 
+    return [
+        'balance'         => $balance,
+        'listing_stats'   => $listing_stats,
+        'views_stats'     => $views_stats,
+        'favorites'       => $favorites,
+        'plan'            => $plan,
+        'push' => [
+            'vip_con_lai'    => $quota['push_vip_quota'],
+            'thuong_con_lai' => $quota['push_normal_quota'],
+        ],
+        'recent_pushes'   => $recent_pushes,
+        'recent_listings' => $recent_listings,
+    ];
+}
 ///////////////////
 function html5blank_conditional_scripts() {}
 function html5_blank_view_article() {}

@@ -1,85 +1,3 @@
-<?php
-if (!defined('ABSPATH')) exit;
-$user = wp_get_current_user();
-
-$so_du            = 1250000;
-$luot_day_vip     = 8;
-$luot_vip_tong    = 15;
-$luot_day_thuong  = 24;
-$luot_thuong_tong = 30;
-$goi_ten          = 'Gói Chuyên Nghiệp';
-$goi_loai         = 'vip_gold';
-$goi_het_han      = '2026-07-02';
-$goi_gioi_han     = 50;
-
-$tin_hien_thi     = 12;
-$tin_vip_count    = 8;
-$tin_thuong_count = 4;
-$tin_het_han_count= 3;
-
-$luot_xem_hom_nay = 248;
-$luot_xem_thang   = 4120;
-$luot_yeu_thich   = 37;
-$luot_yt_thang    = 312;
-
-$xem_vip          = 1240;
-$xem_thuong       = 496;
-$xem_tong         = $xem_vip + $xem_thuong;
-$pct_xem_vip      = round($xem_vip / $xem_tong * 100);
-$pct_xem_thuong   = 100 - $pct_xem_vip;
-
-$chart_data = [30, 44, 26, 56, 38, 48, 60];
-$chart_days = ['T2','T3','T4','T5','T6','T7','CN'];
-$chart_tong = array_sum($chart_data);
-$chart_max  = max($chart_data);
-
-$ngay_con_lai  = (new DateTime())->diff(new DateTime($goi_het_han))->days;
-$phan_tram_han = min(100, round($ngay_con_lai / 30 * 100));
-
-$luot_vip_da_dung    = $luot_vip_tong    - $luot_day_vip;
-$luot_thuong_da_dung = $luot_thuong_tong - $luot_day_thuong;
-$pct_vip    = round($luot_vip_da_dung    / $luot_vip_tong    * 100);
-$pct_thuong = round($luot_thuong_da_dung / $luot_thuong_tong * 100);
-
-$tin_gan_day = [
-    ['title'=>'Căn hộ 2PN Quận 7, 68m²',   'loai'=>'vip3',  'gia'=>'3,5 tỷ',       'views'=>128, 'status'=>'hien_thi'],
-    ['title'=>'Nhà phố Bình Thạnh, 4 tầng', 'loai'=>'vip1',  'gia'=>'6,2 tỷ',       'views'=>74,  'status'=>'hien_thi'],
-    ['title'=>'Biệt thự Thảo Điền 320m²',   'loai'=>'vip3',  'gia'=>'28 tỷ',        'views'=>61,  'status'=>'hien_thi'],
-    ['title'=>'Đất nền Nhà Bè 120m²',       'loai'=>'thuong','gia'=>'1,8 tỷ',       'views'=>52,  'status'=>'sap_het_han'],
-    ['title'=>'Văn phòng cho thuê Q1',       'loai'=>'thuong','gia'=>'25 tr/tháng',  'views'=>31,  'status'=>'het_han'],
-];
-
-$push_history = [
-    ['title'=>'Căn hộ 2PN Quận 7',   'loai'=>'vip'],
-    ['title'=>'Biệt thự Thảo Điền',  'loai'=>'vip'],
-    ['title'=>'Đất nền Nhà Bè',      'loai'=>'thuong'],
-];
-
-function ql_goi_badge($loai) {
-    switch ($loai) {
-        case 'vip_gold':   return ['bdg-gold',  'ti-crown', 'VIP Gold'];
-        case 'vip_silver': return ['bdg-silver','ti-award', 'VIP Silver'];
-        default:           return ['bdg-gray',  'ti-user',  'Miễn phí'];
-    }
-}
-function ql_tin_loai($loai) {
-    switch ($loai) {
-        case 'vip3': return ['bdg-vip3','ti-crown',       'VIP 3','vip3-dot','V3'];
-        case 'vip1': return ['bdg-vip1','ti-crown',       'VIP 1','vip1-dot','V1'];
-        default:     return ['bdg-gray','ti-speakerphone','Thường','',       ''];
-    }
-}
-function ql_tin_status($s) {
-    switch ($s) {
-        case 'hien_thi':    return ['bdg-green','Đang hiển thị'];
-        case 'sap_het_han': return ['bdg-amber','Sắp hết hạn'];
-        case 'het_han':     return ['bdg-red',  'Hết hạn'];
-        default:            return ['bdg-gray',  'Chờ duyệt'];
-    }
-}
-[$goi_badge_class, $goi_icon, $goi_label] = ql_goi_badge($goi_loai);
-?>
-
 <style>
 :root {
 	--red: #E24B4A;
@@ -96,41 +14,6 @@ function ql_tin_status($s) {
 	font-family: inherit;
 	color: var(--ql-text, #111);
   padding: 15px;
-}
-
-.qbar {
-	display: flex;
-	gap: 8px;
-	flex-wrap: wrap;
-	margin-bottom: 14px;
-}
-
-.qbar-btn {
-	display: inline-flex;
-	align-items: center;
-	gap: 5px;
-	padding: 8px 16px;
-	border-radius: 8px;
-	font-size: 13px;
-	font-weight: 600;
-	cursor: pointer;
-	text-decoration: none;
-	border: none;
-}
-
-.qbar-primary {
-	background: var(--red);
-	color: #fff;
-}
-
-.qbar-outline {
-	background: #fff;
-	color: var(--ql-text, #111);
-	border: 1px solid var(--ql-border, #e5e7eb);
-}
-
-.qbar-outline:hover {
-	background: #f9fafb;
 }
 
 .stats-grid {
@@ -335,14 +218,10 @@ function ql_tin_status($s) {
 	color: #633806;
 }
 
-.bdg-vip3 {
+.bdg-vip {
 	background: #FCEBEB;
 	color: #791F1F;
-}
-
-.bdg-vip1 {
-	background: #FAEEDA;
-	color: #633806;
+	border: 1px solid #f8d7d7;
 }
 
 .bdg-green {
@@ -566,6 +445,7 @@ function ql_tin_status($s) {
 	flex-shrink: 0;
 	border: 1px solid #e5e7eb;
 	position: relative;
+	overflow: hidden;
 }
 
 .vdot {
@@ -583,14 +463,17 @@ function ql_tin_status($s) {
 	border: 1.5px solid #fff;
 }
 
-.vdot-v3 {
-	background: #E24B4A;
-	color: #fff;
-}
-
-.vdot-v1 {
-	background: #BA7517;
-	color: #fff;
+.tin-thumb-badge {
+	position: absolute;
+	top: 4px;
+	left: 4px;
+	background: #FBBF24;
+	color: #78350f;
+	font-size: 9px;
+	font-weight: 800;
+	padding: 1px 6px;
+	border-radius: 4px;
+	line-height: 1.4;
 }
 
 .tin-info {
@@ -636,72 +519,62 @@ function ql_tin_status($s) {
 	color: #9ca3af;
 }
 
-.chart-wrap {
-	padding: 12px 16px 0;
-}
-
-.chart-sub {
-	font-size: 11px;
-	color: #6b7280;
-	margin-bottom: 10px;
-}
-
-.chart-bars {
-	display: flex;
-	align-items: flex-end;
-	gap: 5px;
-	height: 64px;
-}
-
-.bar-col {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 3px;
-	flex: 1;
-}
-
-.cbar {
-	width: 100%;
-	border-radius: 3px 3px 0 0;
-	background: #f3f4f6;
-}
-
-.cbar.act {
-	background: var(--red);
-}
-
-.bday {
-	font-size: 10px;
+.empty-state {
+	padding: 24px 16px;
+	text-align: center;
 	color: #9ca3af;
-}
-
-.bday.act {
-	color: var(--red-dk);
-	font-weight: 600;
-}
-
-.chart-seg {
-	padding: 12px 16px;
-}
-
-.seg-row {
-	margin-bottom: 7px;
-}
-
-.seg-lbl-row {
-	display: flex;
-	justify-content: space-between;
-	font-size: 11px;
-	color: #6b7280;
-	margin-bottom: 3px;
-}
-
-.seg-lbl-row span:last-child {
-	font-weight: 600;
-	color: var(--ql-text, #111);
+	font-size: 12px;
 }
 </style>
+
+<?php
+if (!defined('ABSPATH')) exit;
+
+$custom_user = function_exists('custom_get_user') ? custom_get_user() : null;
+
+if (!$custom_user) {
+    echo '<div class="db"><p>Vui lòng đăng nhập để xem tổng quan tài khoản.</p></div>';
+    return;
+}
+
+$data = bds_get_dashboard_overview_data($custom_user->id);
+$so_du            = $data['balance']['main']; 
+$tin_hien_thi     = $data['listing_stats']['hien_thi'];
+$tin_vip_count    = $data['listing_stats']['vip'];
+$tin_thuong_count = $data['listing_stats']['thuong'];
+$tin_het_han_count= $data['listing_stats']['het_han'];
+
+$luot_xem_hom_nay = $data['views_stats']['hom_nay'];
+$luot_xem_thang   = $data['views_stats']['thang'];
+$luot_yeu_thich   = $data['favorites']['tong'];
+$luot_yt_thang    = $data['favorites']['thang'];
+$goi_ten          = $data['plan']['ten_hien_thi'];
+$goi_loai         = $data['plan']['plan'] === 'vip' ? 'vip_gold' : ($data['plan']['plan'] === 'pro' ? 'vip_silver' : 'free');
+$goi_het_han      = $data['plan']['expired_at'];
+$ngay_con_lai     = $data['plan']['ngay_con_lai'];
+$phan_tram_han    = $data['plan']['phan_tram_han'];
+$luot_day_vip     = $data['push']['vip_con_lai'];
+$luot_day_thuong  = $data['push']['thuong_con_lai'];
+$push_history = $data['recent_pushes'];
+$tin_gan_day  = $data['recent_listings'];
+
+function ql_goi_badge($loai) {
+    switch ($loai) {
+        case 'vip_gold':   return ['bdg-gold',  'ti-crown', 'VIP Gold'];
+        case 'vip_silver': return ['bdg-silver','ti-award', 'VIP Silver'];
+        default:           return ['bdg-gray',  'ti-user',  'Miễn phí'];
+    }
+}
+function ql_tin_status($s) {
+    switch ($s) {
+        case 'hien_thi':    return ['bdg-green','Đang hiển thị'];
+        case 'sap_het_han': return ['bdg-amber','Sắp hết hạn'];
+        case 'het_han':     return ['bdg-red',  'Hết hạn'];
+        default:            return ['bdg-gray',  'Chờ duyệt'];
+    }
+}
+[$goi_badge_class, $goi_icon, $goi_label] = ql_goi_badge($goi_loai);
+?>
 
 <div class="db">
 <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
@@ -716,21 +589,6 @@ function ql_tin_status($s) {
             <i class="ti ti-circle-check" style="font-size:12px"></i> Hoạt động
         </span>
     </div>
-</div>
-
-<div class="qbar">
-    <a class="qbar-btn qbar-primary" href="<?php echo esc_url(home_url('/dang-tin')); ?>">
-        <i class="ti ti-plus" style="font-size:14px"></i> Đăng tin mới
-    </a>
-    <a class="qbar-btn qbar-outline" href="<?php echo esc_url(add_query_arg(['tab'=>'tin-dang'], get_permalink())); ?>">
-        <i class="ti ti-list" style="font-size:14px"></i> Quản lý tin
-    </a>
-    <a class="qbar-btn qbar-outline" href="<?php echo esc_url(add_query_arg(['tab'=>'day-tin'], get_permalink())); ?>">
-        <i class="ti ti-rocket" style="font-size:14px"></i> Đẩy tin ngay
-    </a>
-    <a class="qbar-btn qbar-outline" href="<?php echo esc_url(add_query_arg(['tab'=>'thong-ke'], get_permalink())); ?>">
-        <i class="ti ti-chart-bar" style="font-size:14px"></i> Thống kê
-    </a>
 </div>
 
 <div class="stats-grid">
@@ -794,6 +652,7 @@ function ql_tin_status($s) {
                     </span>
                 </div>
             </div>
+            <?php if ($goi_het_han): ?>
             <div class="prog-wrap">
                 <div class="prog-lbl">
                     <span>Thời hạn còn lại</span>
@@ -808,19 +667,10 @@ function ql_tin_status($s) {
                     <span class="pkg-row-lbl"><i class="ti ti-calendar" style="font-size:13px"></i> Ngày hết hạn</span>
                     <span class="pkg-row-val"><?php echo date('d/m/Y', strtotime($goi_het_han)); ?></span>
                 </div>
-                <div class="pkg-row">
-                    <span class="pkg-row-lbl"><i class="ti ti-building" style="font-size:13px"></i> Giới hạn tin</span>
-                    <span class="pkg-row-val"><?php echo $goi_gioi_han; ?> tin / tháng</span>
-                </div>
-                <div class="pkg-row">
-                    <span class="pkg-row-lbl"><i class="ti ti-photo" style="font-size:13px"></i> Ảnh mỗi tin</span>
-                    <span class="pkg-row-val">Tối đa 20 ảnh</span>
-                </div>
-                <div class="pkg-row">
-                    <span class="pkg-row-lbl"><i class="ti ti-refresh" style="font-size:13px"></i> Tự động đẩy tin</span>
-                    <span class="pkg-row-val green">Có hỗ trợ</span>
-                </div>
             </div>
+            <?php else: ?>
+            <div class="empty-state">Bạn đang dùng gói miễn phí. Nâng cấp để có thêm ưu đãi.</div>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -837,12 +687,6 @@ function ql_tin_status($s) {
                     </div>
                     <div class="push-item-val"><?php echo $luot_day_vip; ?></div>
                     <div class="push-item-sub">lượt còn lại</div>
-                    <div style="margin-top:8px;">
-                        <div class="prog-lbl" style="font-size:10px;margin-bottom:3px;">
-                            <span>Đã dùng <?php echo $luot_vip_da_dung; ?>/<?php echo $luot_vip_tong; ?></span>
-                        </div>
-                        <div class="prog-bar"><div class="prog-fill fill-gold" style="width:<?php echo $pct_vip; ?>%"></div></div>
-                    </div>
                 </div>
                 <div class="push-item">
                     <div class="push-item-lbl">
@@ -850,57 +694,61 @@ function ql_tin_status($s) {
                     </div>
                     <div class="push-item-val"><?php echo $luot_day_thuong; ?></div>
                     <div class="push-item-sub">lượt còn lại</div>
-                    <div style="margin-top:8px;">
-                        <div class="prog-lbl" style="font-size:10px;margin-bottom:3px;">
-                            <span>Đã dùng <?php echo $luot_thuong_da_dung; ?>/<?php echo $luot_thuong_tong; ?></span>
-                        </div>
-                        <div class="prog-bar"><div class="prog-fill fill-blue" style="width:<?php echo $pct_thuong; ?>%"></div></div>
-                    </div>
                 </div>
             </div>
             <div style="border-top:1px solid #f3f4f6;padding-top:10px;">
                 <div style="font-size:12px;color:#6b7280;margin-bottom:7px;">Lịch sử đẩy tin gần đây</div>
-                <?php foreach ($push_history as $ph): $iv = $ph['loai'] === 'vip'; ?>
-                <div class="ph-item">
-                    <span class="ph-title"><?php echo esc_html($ph['title']); ?></span>
-                    <span class="bdg <?php echo $iv ? 'bdg-gold' : 'bdg-blue'; ?>">
-                        <i class="ti <?php echo $iv ? 'ti-crown' : 'ti-speakerphone'; ?>" style="font-size:9px"></i>
-                        <?php echo $iv ? 'VIP' : 'Thường'; ?>
-                    </span>
-                </div>
-                <?php endforeach; ?>
+                <?php if (empty($push_history)): ?>
+                    <div class="empty-state">Chưa có lượt đẩy tin nào.</div>
+                <?php else: ?>
+                    <?php foreach ($push_history as $ph): $iv = $ph['loai'] === 'vip'; ?>
+                    <div class="ph-item">
+                        <span class="ph-title"><?php echo esc_html($ph['title']); ?></span>
+                        <span class="bdg <?php echo $iv ? 'bdg-gold' : 'bdg-blue'; ?>">
+                            <i class="ti <?php echo $iv ? 'ti-crown' : 'ti-speakerphone'; ?>" style="font-size:9px"></i>
+                            <?php echo $iv ? 'VIP' : 'Thường'; ?>
+                        </span>
+                    </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </div>
     </div>
 </div>
 
-<div class="row2">
-
-    <div class="card">
-        <div class="card-hd">
-            <div class="card-hd-t"><i class="ti ti-building" aria-hidden="true"></i> Tin đăng gần đây</div>
-            <a class="lnk-red" href="#">Xem tất cả <i class="ti ti-chevron-right" style="font-size:11px"></i></a>
-        </div>
+<div class="card">
+    <div class="card-hd">
+        <div class="card-hd-t"><i class="ti ti-building" aria-hidden="true"></i> Tin đăng gần đây</div>
+        <a class="lnk-red" href="http://localhost/nhadat247/quan-ly-tai-khoan/quan-ly-tin">Xem tất cả <i class="ti ti-chevron-right" style="font-size:11px"></i></a>
+    </div>
+    <?php if (empty($tin_gan_day)): ?>
+        <div class="empty-state">Bạn chưa có tin đăng nào. <a href="<?php echo esc_url(home_url('/dang-tin')); ?>" style="color:var(--red-dk);">Đăng tin ngay</a></div>
+    <?php else: ?>
         <?php foreach ($tin_gan_day as $tin):
-            [$lc, $li, $ll, $dc, $dt] = ql_tin_loai($tin['loai']);
+            $is_vip = $tin['loai'] === 'vip';
             [$sc, $sl] = ql_tin_status($tin['status']);
-            $dot_cls = $dc === 'vip3-dot' ? 'vdot vdot-v3' : ($dc === 'vip1-dot' ? 'vdot vdot-v1' : '');
         ?>
         <div class="tin-item">
             <div class="tin-thumb">
-                <i class="ti ti-building" style="color:#9ca3af"></i>
-                <?php if ($dot_cls): ?><div class="<?php echo $dot_cls; ?>"><?php echo $dt; ?></div><?php endif; ?>
+                <?php if (!empty($tin['thumb_url'])): ?>
+                    <img src="<?php echo esc_url($tin['thumb_url']); ?>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:6px;">
+                <?php else: ?>
+                    <i class="ti ti-photo" style="color:#c1c5cb;font-size:18px"></i>
+                <?php endif; ?>
+                <?php if ($is_vip): ?><div class="tin-thumb-badge">VIP</div><?php endif; ?>
             </div>
             <div class="tin-info">
                 <div class="tin-ttl"><?php echo esc_html($tin['title']); ?></div>
                 <div class="tin-meta">
-                    <span class="bdg <?php echo esc_attr($lc); ?>" style="font-size:10px;padding:1px 6px;">
-                        <i class="ti <?php echo esc_attr($li); ?>" style="font-size:9px"></i> <?php echo esc_html($ll); ?>
-                    </span>
                     <span class="bdg <?php echo esc_attr($sc); ?>" style="font-size:10px;padding:1px 6px;">
                         <?php echo esc_html($sl); ?>
                     </span>
-                    <span class="tin-gia"><?php echo esc_html($tin['gia']); ?></span>
+                    <?php if ($is_vip): ?>
+                    <span class="bdg bdg-vip" style="font-size:10px;padding:1px 6px;">
+                        <i class="ti ti-star" style="font-size:9px"></i> VIP
+                    </span>
+                    <?php endif; ?>
+                    <span class="tin-gia">Giá: <strong style="color:#e84118;"><?php echo esc_html($tin['gia']); ?></strong></span>
                 </div>
             </div>
             <div class="tin-rt">
@@ -909,44 +757,6 @@ function ql_tin_status($s) {
             </div>
         </div>
         <?php endforeach; ?>
-    </div>
-
-    <div class="card">
-        <div class="card-hd">
-            <div class="card-hd-t"><i class="ti ti-chart-bar" aria-hidden="true"></i> Lượt xem 7 ngày</div>
-        </div>
-        <div class="chart-wrap">
-            <div class="chart-sub">Tổng: <strong style="color:var(--ql-text,#111);font-weight:600;"><?php echo number_format($chart_tong); ?> lượt</strong></div>
-            <div class="chart-bars">
-                <?php foreach ($chart_data as $i => $val):
-                    $h    = round($val / $chart_max * 60);
-                    $last = ($i === count($chart_data) - 1);
-                ?>
-                <div class="bar-col">
-                    <div class="cbar <?php echo $last ? 'act' : ''; ?>" style="height:<?php echo $h; ?>px;"></div>
-                    <div class="bday <?php echo $last ? 'act' : ''; ?>"><?php echo $chart_days[$i]; ?></div>
-                </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
-        <div class="chart-seg">
-            <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">Phân loại lượt xem</div>
-            <div class="seg-row">
-                <div class="seg-lbl-row">
-                    <span>Tin VIP</span>
-                    <span><?php echo number_format($xem_vip); ?> lượt (<?php echo $pct_xem_vip; ?>%)</span>
-                </div>
-                <div class="prog-bar"><div class="prog-fill fill-gold" style="width:<?php echo $pct_xem_vip; ?>%"></div></div>
-            </div>
-            <div class="seg-row" style="margin-bottom:0;">
-                <div class="seg-lbl-row">
-                    <span>Tin thường</span>
-                    <span><?php echo number_format($xem_thuong); ?> lượt (<?php echo $pct_xem_thuong; ?>%)</span>
-                </div>
-                <div class="prog-bar"><div class="prog-fill fill-blue" style="width:<?php echo $pct_xem_thuong; ?>%"></div></div>
-            </div>
-        </div>
-    </div>
+    <?php endif; ?>
 </div>
-
 </div>
