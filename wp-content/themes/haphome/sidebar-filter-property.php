@@ -12,6 +12,7 @@
 .sidebar-filter-property {
   width: 280px;
   flex-shrink: 0;
+  margin-left: 10px;
 }
 .filter-box {
   background: #fff;

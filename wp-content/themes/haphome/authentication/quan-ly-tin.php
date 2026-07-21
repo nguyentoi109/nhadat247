@@ -1013,6 +1013,10 @@ function ql_format_price($price): string {
     <?php get_template_part('authentication/popup-repost'); ?>
 </div>
 
+<div class="history-popup">
+    <?php get_template_part('authentication/popup-history'); ?>
+</div>
+
 <script>
 function qltSearch(q) {
    q = q.toLowerCase().trim();
@@ -1053,7 +1057,7 @@ function qltSearch(q) {
          repost: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" stroke-linecap="round"/></svg>`,
       };
 
-      let html = `<a href="${d.historyUrl}">${ico.history} Xem lịch sử</a>`;
+      let html = `<button onclick="qltViewHistory(${d.postId});document.getElementById('qlt-portal').classList.remove('open')">${ico.history} Xem lịch sử</button>`;
       html += `<button onclick="qltShare('${d.postUrl}','${d.postTitle.replace(/'/g,"\\'")}');document.getElementById('qlt-portal').classList.remove('open')">${ico.share} Chia sẻ</button>`;
       if (st === 'publish' || st === 'pending') html += `<a href="${d.editUrl}">${ico.edit} Chỉnh sửa</a>`;
       if (st === 'draft') html += `<button onclick="qltRepost(${d.postId});close()">${ico.repost} Đăng lại</button>`;

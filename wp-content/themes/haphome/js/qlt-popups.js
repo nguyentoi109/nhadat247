@@ -170,6 +170,7 @@ jQuery(function ($) {
         });
     });
 
+
     window.qltDelete = function (postId) {
         document.getElementById('qlt-portal')?.classList.remove('open');
         $('#delete-popup-post-id').val(postId);
@@ -303,6 +304,51 @@ jQuery(function ($) {
             $err.addClass('show').text('Không thể kết nối máy chủ, vui lòng thử lại.');
         });
     });
+
+    $('.history-popup .qlp-mask, .close-history-popup').on('click', function () {
+        closePopup($('.history-popup'));
+    });
+    window.qltViewHistory = function (postId) {
+        document.getElementById('qlt-portal')?.classList.remove('open');
+        $('#history-popup-post-id').val(postId);
+        $('.history-popup .history-error').removeClass('show').text('');
+        $('#history-popup-list').html('<div class="history-loading">Đang tải...</div>');
+        openPopup($('.history-popup'));
+
+        const icons = {
+            created: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+            vip:     '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke-linecap="round"/></svg>',
+            repost:  '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" stroke-linecap="round"/></svg>',
+        };
+
+        $.post(qlt_ajax.ajax_url, {
+            action: 'ql_get_post_history',
+            post_id: postId,
+            _nonce: qlt_ajax.nonce
+        }).done(function (data) {
+            const $list = $('#history-popup-list');
+            if (data.success && data.data.items.length) {
+                let html = '';
+                data.data.items.forEach(function (item) {
+                    html += `<div class="history-item">
+                        <div class="history-icon ${item.type}">${icons[item.type] || ''}</div>
+                        <div class="history-info">
+                            <div class="history-label">${item.label}</div>
+                            <div class="history-date">${item.date}</div>
+                        </div>
+                        ${item.extra ? `<div class="history-extra">${item.extra}</div>` : ''}
+                    </div>`;
+                });
+                $list.html(html);
+            } else if (data.success) {
+                $list.html('<div class="history-empty">Chưa có lịch sử.</div>');
+            } else {
+                $list.html('<div class="history-empty">' + (data.data?.message || 'Có lỗi xảy ra.') + '</div>');
+            }
+        }).fail(function () {
+            $('#history-popup-list').html('<div class="history-empty">Không thể kết nối máy chủ.</div>');
+        });
+    };
 });
 
 jQuery(function ($) {

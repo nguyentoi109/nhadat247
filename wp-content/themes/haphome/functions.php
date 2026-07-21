@@ -2953,13 +2953,6 @@ function get_youtube_id_from_url($url) {
     return '';
 }
 
-require_once get_template_directory() . '/config.php';
-add_action('wp_enqueue_scripts', function () {
-    if (is_singular('property') || is_page('dang-tin')) {
-        wp_enqueue_script('here-mapbox', get_template_directory_uri() . '/js/map-here-mapbox.js',[], null, true);
-    }
-});
-
 add_action('admin_enqueue_scripts', function ($hook) {
     if (!in_array($hook, ['post.php', 'post-new.php'])) return;
     global $post;
@@ -3857,6 +3850,89 @@ function bds_get_dashboard_overview_data($user_id) {
         'recent_pushes'   => $recent_pushes,
         'recent_listings' => $recent_listings,
     ];
+}
+
+//HISTORY
+add_action('wp_ajax_ql_get_post_history', 'ql_handle_get_post_history');
+add_action('wp_ajax_nopriv_ql_get_post_history', 'ql_handle_get_post_history');
+function ql_handle_get_post_history() {
+    check_ajax_referer('ql_listing_nonce', '_nonce');
+
+    $custom_user = get_current_custom_user();
+    if (!$custom_user) {
+        wp_send_json_error(['message' => 'Bạn cần đăng nhập.'], 401);
+    }
+    $user_id = (int) $custom_user->id;
+    $post_id = isset($_POST['post_id']) ? (int) $_POST['post_id'] : 0;
+    if (!$post_id) {
+        wp_send_json_error(['message' => 'Tin đăng không hợp lệ.']);
+    }
+
+    $owner_id = (int) get_post_meta($post_id, '_custom_user_id', true);
+    if ($owner_id && $owner_id !== $user_id) {
+        wp_send_json_error(['message' => 'Bạn không có quyền với tin đăng này.'], 403);
+    }
+    $timeline = ql_get_post_history_timeline($post_id);
+    $items = array_map(function ($ev) {
+        return [
+            'type'  => $ev['type'],
+            'label' => $ev['label'],
+            'date'  => date('H:i d/m/Y', strtotime($ev['date'])),
+            'extra' => isset($ev['extra']) && $ev['extra'] > 0
+                ? number_format($ev['extra'], 0, ',', '.') . 'đ'
+                : (isset($ev['extra']) ? 'Miễn phí' : null),
+        ];
+    }, array_reverse($timeline)); 
+    wp_send_json_success(['items' => $items]);
+}
+
+function ql_get_post_history_timeline(int $post_id): array {
+    global $wpdb;
+    $timeline = [];
+
+    $post = get_post($post_id);
+    if ($post) {
+        $timeline[] = [
+            'type'  => 'created',
+            'label' => 'Đăng tin',
+            'date'  => $post->post_date,
+        ];
+    }
+
+    $vips = $wpdb->get_results($wpdb->prepare(
+        "SELECT started_at, days, amount_paid
+         FROM {$wpdb->prefix}custom_vip_posts
+         WHERE post_id = %d ORDER BY started_at ASC",
+        $post_id
+    ));
+    foreach ($vips as $v) {
+        $timeline[] = [
+            'type'  => 'vip',
+            'label' => 'Nâng cấp VIP (' . (int) $v->days . ' ngày)',
+            'date'  => $v->started_at,
+            'extra' => (float) $v->amount_paid,
+        ];
+    }
+
+    $reposts = $wpdb->get_results($wpdb->prepare(
+        "SELECT created_at, amount
+         FROM {$wpdb->prefix}custom_transactions
+         WHERE related_id = %d
+           AND reference_code LIKE 'REPOST-%%'
+           AND status = 'completed'
+         ORDER BY created_at ASC",
+        $post_id
+    ));
+    foreach ($reposts as $r) {
+        $timeline[] = [
+            'type'  => 'repost',
+            'label' => 'Đăng lại tin',
+            'date'  => $r->created_at,
+            'extra' => (float) $r->amount,
+        ];
+    }
+    usort($timeline, fn($a, $b) => strtotime($a['date']) <=> strtotime($b['date']));
+    return $timeline;
 }
 ///////////////////
 function html5blank_conditional_scripts() {}
