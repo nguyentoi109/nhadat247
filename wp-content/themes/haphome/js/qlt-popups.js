@@ -349,6 +349,34 @@ jQuery(function ($) {
             $('#history-popup-list').html('<div class="history-empty">Không thể kết nối máy chủ.</div>');
         });
     };
+
+    $('.share-popup .qlp-mask, .close-share-popup').on('click', function () {
+        closePopup($('.share-popup'));
+    });
+
+    window.qltShare = function (url, title) {
+        $('#share-popup-url').val(url);
+        $('#share-popup-link-text').text(url);
+
+        const encodedUrl   = encodeURIComponent(url);
+        const encodedTitle = encodeURIComponent(title);
+
+        $('#share-fb-btn').attr('href', 'https://www.facebook.com/sharer/sharer.php?u=' + encodedUrl);
+        $('#share-zalo-btn').attr('href', 'https://sp.zalo.me/share?u=' + encodedUrl + '&d=' + encodedTitle);
+
+        openPopup($('.share-popup'));
+    };
+    $('#share-copy-btn').on('click', function () {
+        const url = $('#share-popup-url').val();
+        navigator.clipboard.writeText(url).then(function () {
+            qltToast('Đã sao chép liên kết!');
+        }).catch(function () {
+            const $tmp = $('<input>').val(url).appendTo('body').select();
+            document.execCommand('copy');
+            $tmp.remove();
+            qltToast('Đã sao chép liên kết!');
+        });
+    });
 });
 
 jQuery(function ($) {

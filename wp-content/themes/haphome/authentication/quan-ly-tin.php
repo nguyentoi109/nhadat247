@@ -1017,6 +1017,10 @@ function ql_format_price($price): string {
     <?php get_template_part('authentication/popup-history'); ?>
 </div>
 
+<div class="share-popup">
+    <?php get_template_part('authentication/popup-share'); ?>
+</div>
+
 <script>
 function qltSearch(q) {
    q = q.toLowerCase().trim();
@@ -1058,7 +1062,8 @@ function qltSearch(q) {
       };
 
       let html = `<button onclick="qltViewHistory(${d.postId});document.getElementById('qlt-portal').classList.remove('open')">${ico.history} Xem lịch sử</button>`;
-      html += `<button onclick="qltShare('${d.postUrl}','${d.postTitle.replace(/'/g,"\\'")}');document.getElementById('qlt-portal').classList.remove('open')">${ico.share} Chia sẻ</button>`;
+      if (st === 'publish') {
+      html += `<button onclick="qltShare('${d.postUrl}','${d.postTitle.replace(/'/g,"\\'")}');document.getElementById('qlt-portal').classList.remove('open')">${ico.share} Chia sẻ</button>`;}
       if (st === 'publish' || st === 'pending') html += `<a href="${d.editUrl}">${ico.edit} Chỉnh sửa</a>`;
       if (st === 'draft') html += `<button onclick="qltRepost(${d.postId});close()">${ico.repost} Đăng lại</button>`;
       if (!vp) html += `<button onclick="qltUpgradeVip(${d.postId});document.getElementById('qlt-portal').classList.remove('open')">${ico.vip} Nâng cấp VIP</button>`;
