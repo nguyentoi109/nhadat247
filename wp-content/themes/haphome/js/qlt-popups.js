@@ -129,22 +129,53 @@ jQuery(function ($) {
     window.qltUpgradeVip = function (postId) {
         $('#vip-popup-post-id').val(postId);
         $('.vip-popup .vip-error').removeClass('show').text('');
+
+        $('#vip-popup-vouchers').html('<div class="push-voucher-loading">Đang kiểm tra voucher...</div>');
+        $.post(qlt_ajax.ajax_url, {
+            action: 'ql_get_vip_vouchers',
+            _nonce: qlt_ajax.nonce
+        }).done(function (data) {
+            if (data.success && data.data.vouchers.length) {
+                let html = '<div class="push-options vip-voucher-list">';
+                data.data.vouchers.forEach(function (v) {
+                    html += `
+                        <label class="push-option vip-voucher-item">
+                            <input type="radio" name="vip_voucher" value="${v.id}">
+                            <span class="push-option-title">${v.label}</span>
+                        </label>`;
+                });
+                html += `
+                    <label class="push-option vip-voucher-item">
+                        <input type="radio" name="vip_voucher" value="" checked>
+                        <span class="push-option-title">Không dùng voucher</span>
+                    </label>
+                </div>`;
+                $('#vip-popup-vouchers').html(html);
+            } else {
+                $('#vip-popup-vouchers').html('');
+            }
+        }).fail(function () {
+            $('#vip-popup-vouchers').html('');
+        });
+
         openPopup($('.vip-popup'));
     };
 
     $('#vip-popup-confirm-btn').on('click', function () {
         const postId = $('#vip-popup-post-id').val();
+        const voucherId = $('input[name="vip_voucher"]:checked').val();
         const $btn = $(this);
         const $err = $('.vip-popup .vip-error');
 
         $btn.prop('disabled', true).text('Đang xử lý...');
         $err.removeClass('show').text('');
         const startedAt = Date.now();
-        qltShowLoading(); 
+        qltShowLoading();
 
         $.post(qlt_ajax.ajax_url, {
             action: 'ql_upgrade_vip',
             post_id: postId,
+            voucher_id: voucherId,
             _nonce: qlt_ajax.nonce
         }).done(function (data) {
             $btn.prop('disabled', false).text('Đồng ý nâng cấp');
@@ -156,7 +187,7 @@ jQuery(function ($) {
                     window.location.reload();
                 });
             } else if (data.data?.insufficient_balance) {
-                qltHideLoading(); 
+                qltHideLoading();
                 closePopup($('.vip-popup'));
                 qltOpenBalancePopup('Số dư không đủ để nâng cấp VIP (cần 150.000đ). Vui lòng nạp thêm tiền.');
             } else {
@@ -164,7 +195,7 @@ jQuery(function ($) {
                 $err.addClass('show').text(data.data?.message || 'Có lỗi xảy ra khi nâng cấp VIP.');
             }
         }).fail(function () {
-            qltHideLoading(); 
+            qltHideLoading();
             $btn.prop('disabled', false).text('Đồng ý nâng cấp');
             $err.addClass('show').text('Không thể kết nối máy chủ, vui lòng thử lại.');
         });
@@ -222,10 +253,41 @@ jQuery(function ($) {
                 ? 'Đẩy tin VIP này lên đầu danh sách tin VIP. Xác nhận để tiếp tục.'
                 : 'Đẩy tin thường này lên đầu danh sách tin thường. Xác nhận để tiếp tục.'
         );
+
+        $('#push-popup-vouchers').html('<div class="push-voucher-loading">Đang kiểm tra voucher...</div>');
+        $.post(qlt_ajax.ajax_url, {
+            action: 'ql_get_push_vouchers',
+            post_id: postId,
+            _nonce: qlt_ajax.nonce
+        }).done(function (data) {
+            if (data.success && data.data.vouchers.length) {
+                let html = '<div class="push-options push-voucher-list">';
+                data.data.vouchers.forEach(function (v) {
+                    html += `
+                        <label class="push-option push-voucher-item">
+                            <input type="radio" name="push_voucher" value="${v.id}">
+                            <span class="push-option-title">${v.label}</span>
+                        </label>`;
+                });
+                html += `
+                    <label class="push-option push-voucher-item">
+                        <input type="radio" name="push_voucher" value="" checked>
+                        <span class="push-option-title">Không dùng voucher</span>
+                    </label>
+                </div>`;
+                $('#push-popup-vouchers').html(html);
+            } else {
+                $('#push-popup-vouchers').html('');
+            }
+        }).fail(function () {
+            $('#push-popup-vouchers').html('');
+        });
         openPopup($('.push-popup'));
     };
+
     $('#push-popup-confirm-btn').on('click', function () {
         const postId = $('#push-popup-post-id').val();
+        const voucherId = $('input[name="push_voucher"]:checked').val();
         const $btn = $(this);
         const $err = $('.push-popup .push-error');
         $btn.prop('disabled', true).text('Đang xử lý...');
@@ -236,6 +298,7 @@ jQuery(function ($) {
         $.post(qlt_ajax.ajax_url, {
             action: 'ql_push_listing',
             post_id: postId,
+            voucher_id: voucherId,
             _nonce: qlt_ajax.nonce
         }).done(function (data) {
             $btn.prop('disabled', false).text('Xác nhận đẩy tin');
@@ -462,7 +525,7 @@ jQuery(function ($) {
         $box[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    $('#confirm-post-confirm-btn').on('click', function () {
+    $('#confirm-post-confirm-btn').off('click').on('click', function () {
         const $btn = $(this);
         const $err = $('.confirm-post-popup .confirm-post-error');
 

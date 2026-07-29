@@ -2456,56 +2456,79 @@ add_action('wp_ajax_ql_upgrade_vip', 'ql_handle_upgrade_vip');
 add_action('wp_ajax_nopriv_ql_upgrade_vip', 'ql_handle_upgrade_vip');
 function ql_handle_upgrade_vip() {
     check_ajax_referer('ql_listing_nonce', '_nonce');
- 
+
     $custom_user = get_current_custom_user();
     if (!$custom_user) {
         wp_send_json_error(['message' => 'Bạn cần đăng nhập.'], 401);
     }
-    $user_id = (int) $custom_user->id;
-    $post_id = isset($_POST['post_id']) ? (int) $_POST['post_id'] : 0;
- 
+    $user_id    = (int) $custom_user->id;
+    $post_id    = isset($_POST['post_id']) ? (int) $_POST['post_id'] : 0;
+    $voucher_id = isset($_POST['voucher_id']) && $_POST['voucher_id'] !== '' ? (int) $_POST['voucher_id'] : 0;
+
     if (!$post_id) {
         wp_send_json_error(['message' => 'Tin đăng không hợp lệ.']);
     }
- 
+
     $owner_id = (int) get_post_meta($post_id, '_custom_user_id', true);
     if ($owner_id && $owner_id !== $user_id) {
         wp_send_json_error(['message' => 'Bạn không có quyền với tin đăng này.'], 403);
     }
- 
+
     global $wpdb;
     $price = QL_VIP_PRICE;
     $days  = QL_VIP_DAYS;
     $wpdb->query('START TRANSACTION');
     try {
-        $quota = $wpdb->get_row($wpdb->prepare(
-            "SELECT * FROM {$wpdb->prefix}custom_user_quotas WHERE user_id = %d FOR UPDATE",
-            $user_id
-        ));
-        $used_quota  = false;
-        $amount_paid = $price;
-        if ($quota && (int) $quota->vip_quota > 0) {
-            $wpdb->update(
-                "{$wpdb->prefix}custom_user_quotas",
-                ['vip_quota' => $quota->vip_quota - 1, 'updated_at' => current_time('mysql')],
-                ['user_id' => $user_id]
-            );
-            $used_quota  = true;
-            $amount_paid = 0;
- 
+        $used_quota   = false;
+        $used_voucher = false;
+        $amount_paid  = $price;
+
+        if ($voucher_id) {
+            $voucher = $wpdb->get_row($wpdb->prepare(
+                "SELECT * FROM {$wpdb->prefix}custom_vouchers WHERE id = %d AND user_id = %d FOR UPDATE",
+                $voucher_id, $user_id
+            ));
+
+            if (!$voucher || $voucher->action_type !== 'post' || $voucher->voucher_type !== 'vip' || $voucher->status !== 'active' || (int) $voucher->quantity <= 0 || ($voucher->expired_at && strtotime($voucher->expired_at) < strtotime('today'))
+            ) {
+                throw new Exception('Voucher không hợp lệ hoặc đã hết hạn.');
+            }
+            $consumed = ql_consume_voucher($voucher_id, $user_id);
+            if (!$consumed) {
+                throw new Exception('Không thể áp dụng voucher. Vui lòng thử lại.');
+            }
+
+            $used_voucher = true;
+            $amount_paid  = 0;
+
         } else {
-            ql_deduct_wallet_balance(
-                $user_id, $price, 'VIP', $post_id,
-                'Nâng cấp tin VIP (trừ bonus trước, main sau)'
-            );
+            $quota = $wpdb->get_row($wpdb->prepare(
+                "SELECT * FROM {$wpdb->prefix}custom_user_quotas WHERE user_id = %d FOR UPDATE",
+                $user_id
+            ));
+            if ($quota && (int) $quota->vip_quota > 0) {
+                $wpdb->update(
+                    "{$wpdb->prefix}custom_user_quotas",
+                    ['vip_quota' => $quota->vip_quota - 1, 'updated_at' => current_time('mysql')],
+                    ['user_id' => $user_id]
+                );
+                $used_quota  = true;
+                $amount_paid = 0;
+            } else {
+                ql_deduct_wallet_balance(
+                    $user_id, $price, 'VIP', $post_id,
+                    'Nâng cấp tin VIP (trừ bonus trước, main sau)'
+                );
+            }
         }
+
         $current_vip = $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM {$wpdb->prefix}custom_vip_posts
              WHERE post_id = %d AND status = 'active' AND expired_at >= CURDATE()
              ORDER BY expired_at DESC LIMIT 1",
             $post_id
         ));
- 
+
         $start_from = $current_vip ? $current_vip->expired_at : current_time('mysql');
         $started_at = current_time('Y-m-d');
         $expired_at = date('Y-m-d', strtotime($start_from . " +{$days} days"));
@@ -2525,7 +2548,7 @@ function ql_handle_upgrade_vip() {
             'status'      => 'active',
             'created_at'  => current_time('mysql'),
         ]);
- 
+
         update_post_meta($post_id, 'vip_level', 'vip');
         update_post_meta($post_id, 'vip_expired_at', $expired_at);
         $wpdb->query('COMMIT');
@@ -2535,6 +2558,7 @@ function ql_handle_upgrade_vip() {
             'expired_at' => $expired_at,
             'expired_at_formatted' => date('d/m/Y', strtotime($expired_at)),
             'used_quota' => $used_quota,
+            'used_voucher' => $used_voucher,
         ]);
     } catch (Exception $e) {
         $wpdb->query('ROLLBACK');
@@ -2605,109 +2629,149 @@ add_action('wp_ajax_ql_push_listing', 'ql_handle_push_listing');
 add_action('wp_ajax_nopriv_ql_push_listing', 'ql_handle_push_listing');
 function ql_handle_push_listing() {
     check_ajax_referer('ql_listing_nonce', '_nonce');
- 
+
     $custom_user = get_current_custom_user();
     if (!$custom_user) {
         wp_send_json_error(['message' => 'Bạn cần đăng nhập.'], 401);
     }
- 
-    $user_id = (int) $custom_user->id;
-    $post_id = isset($_POST['post_id']) ? (int) $_POST['post_id'] : 0;
- 
+
+    $user_id    = (int) $custom_user->id;
+    $post_id    = isset($_POST['post_id']) ? (int) $_POST['post_id'] : 0;
+    $voucher_id = isset($_POST['voucher_id']) && $_POST['voucher_id'] !== '' ? (int) $_POST['voucher_id'] : 0;
+
     if (!$post_id) {
         wp_send_json_error(['message' => 'Tin đăng không hợp lệ.']);
     }
- 
+
     $owner_id = (int) get_post_meta($post_id, '_custom_user_id', true);
     if ($owner_id && $owner_id !== $user_id) {
         wp_send_json_error(['message' => 'Bạn không có quyền với tin đăng này.'], 403);
     }
+
     $vip_check = function_exists('bds_check_post_vip') ? bds_check_post_vip($post_id) : ['is_vip' => false];
     $push_type = $vip_check['is_vip'] ? 'vip' : 'normal';
     $price     = ($push_type === 'vip') ? 20000 : 10000;
     $hours     = ($push_type === 'vip') ? QL_PUSH_VIP_HOURS : QL_PUSH_NORMAL_HOURS;
     $quota_col = ($push_type === 'vip') ? 'push_vip_quota' : 'push_normal_quota';
+
     global $wpdb;
     $wpdb->query('START TRANSACTION');
     try {
-        $quota = $wpdb->get_row($wpdb->prepare(
-            "SELECT * FROM {$wpdb->prefix}custom_user_quotas WHERE user_id = %d FOR UPDATE",
-            $user_id
-        ));
- 
-        $used_quota = false;
-        if ($quota && (int) $quota->$quota_col > 0) {
-            $wpdb->update(
-                "{$wpdb->prefix}custom_user_quotas",
-                [$quota_col => $quota->$quota_col - 1, 'updated_at' => current_time('mysql')],
-                ['user_id' => $user_id]
-            );
-            $used_quota = true;
-            $source = 'quota';
- 
+        $used_quota   = false;
+        $used_voucher = false;
+        $source       = 'purchase';
+
+        if ($voucher_id) {
+            $voucher_type = ($push_type === 'vip') ? 'vip' : 'post';
+            $voucher = $wpdb->get_row($wpdb->prepare(
+                "SELECT * FROM {$wpdb->prefix}custom_vouchers
+                 WHERE id = %d AND user_id = %d
+                 FOR UPDATE",
+                $voucher_id, $user_id
+            ));
+
+            if (!$voucher
+                || $voucher->action_type !== 'push'
+                || $voucher->voucher_type !== $voucher_type
+                || $voucher->status !== 'active'
+                || (int) $voucher->quantity <= 0
+                || ($voucher->expired_at && strtotime($voucher->expired_at) < strtotime('today'))
+            ) {
+                throw new Exception('Voucher không hợp lệ hoặc đã hết hạn.');
+            }
+
+            $consumed = ql_consume_voucher($voucher_id, $user_id);
+            if (!$consumed) {
+                throw new Exception('Không thể áp dụng voucher. Vui lòng thử lại.');
+            }
+            $used_voucher = true;
+            $source       = 'voucher';
+
         } else {
-            $wallet = $wpdb->get_row($wpdb->prepare(
-                "SELECT * FROM {$wpdb->prefix}custom_wallets WHERE user_id = %d FOR UPDATE",
+            $quota = $wpdb->get_row($wpdb->prepare(
+                "SELECT * FROM {$wpdb->prefix}custom_user_quotas WHERE user_id = %d FOR UPDATE",
                 $user_id
             ));
- 
-            if (!$wallet) {
-                throw new Exception('INSUFFICIENT_BALANCE');
+
+            if ($quota && (int) $quota->$quota_col > 0) {
+                $wpdb->update(
+                    "{$wpdb->prefix}custom_user_quotas",
+                    [$quota_col => $quota->$quota_col - 1, 'updated_at' => current_time('mysql')],
+                    ['user_id' => $user_id]
+                );
+                $used_quota = true;
+                $source     = 'quota';
+
+            } else {
+                $wallet = $wpdb->get_row($wpdb->prepare(
+                    "SELECT * FROM {$wpdb->prefix}custom_wallets WHERE user_id = %d FOR UPDATE",
+                    $user_id
+                ));
+
+                if (!$wallet) {
+                    throw new Exception('INSUFFICIENT_BALANCE');
+                }
+
+                $balance_bonus = (float) $wallet->balance_bonus;
+                $balance_main  = (float) $wallet->balance_main;
+                $total         = $balance_bonus + $balance_main;
+
+                if ($total < $price) {
+                    throw new Exception('INSUFFICIENT_BALANCE');
+                }
+
+                $remaining = $price;
+                $use_bonus = min($balance_bonus, $remaining);
+                $remaining -= $use_bonus;
+                $use_main  = min($balance_main, $remaining);
+
+                $wpdb->update(
+                    "{$wpdb->prefix}custom_wallets",
+                    [
+                        'balance_bonus' => $balance_bonus - $use_bonus,
+                        'balance_main'  => $balance_main - $use_main,
+                        'updated_at'    => current_time('mysql'),
+                    ],
+                    ['user_id' => $user_id]
+                );
+
+                $source = ($use_bonus > 0 && $use_main > 0) ? 'bonus+main' : (($use_bonus > 0) ? 'bonus' : 'main');
+                $wpdb->insert("{$wpdb->prefix}custom_transactions", [
+                    'user_id'          => $user_id,
+                    'transaction_type' => 'purchase',
+                    'wallet_type'      => ($use_bonus > 0 && $use_main > 0) ? 'both' : (($use_bonus > 0) ? 'bonus' : 'main'),
+                    'amount'           => $price,
+                    'balance_after'    => $balance_main - $use_main,
+                    'payment_method'   => 'wallet',
+                    'reference_code'   => 'PUSH-' . $post_id . '-' . time(),
+                    'related_table'    => "{$wpdb->prefix}custom_post_pushes",
+                    'related_id'       => $post_id,
+                    'status'           => 'completed',
+                    'description'      => 'Đẩy tin ' . ($push_type === 'vip' ? 'VIP' : 'thường'),
+                    'created_at'       => current_time('mysql'),
+                ]);
             }
- 
-            $balance_bonus = (float) $wallet->balance_bonus;
-            $balance_main  = (float) $wallet->balance_main;
-            $total         = $balance_bonus + $balance_main;
- 
-            if ($total < $price) {
-                throw new Exception('INSUFFICIENT_BALANCE');
-            }
- 
-            $remaining = $price;
-            $use_bonus = min($balance_bonus, $remaining);
-            $remaining -= $use_bonus;
-            $use_main  = min($balance_main, $remaining);
-            $wpdb->update(
-                "{$wpdb->prefix}custom_wallets",
-                [
-                    'balance_bonus' => $balance_bonus - $use_bonus,
-                    'balance_main'  => $balance_main - $use_main,
-                    'updated_at'    => current_time('mysql'),
-                ],
-                ['user_id' => $user_id]
-            );
-            $source = ($use_bonus > 0 && $use_main > 0) ? 'bonus+main' : (($use_bonus > 0) ? 'bonus' : 'main');
-            $wpdb->insert("{$wpdb->prefix}custom_transactions", [
-                'user_id'          => $user_id,
-                'transaction_type' => 'purchase',
-                'wallet_type'      => ($use_bonus > 0 && $use_main > 0) ? 'both' : (($use_bonus > 0) ? 'bonus' : 'main'),
-                'amount'           => $price,
-                'balance_after'    => $balance_main - $use_main,
-                'payment_method'   => 'wallet',
-                'reference_code'   => 'PUSH-' . $post_id . '-' . time(),
-                'related_table'    => "{$wpdb->prefix}custom_post_pushes",
-                'related_id'       => $post_id,
-                'status'           => 'completed',
-                'description'      => 'Đẩy tin ' . ($push_type === 'vip' ? 'VIP' : 'thường'),
-                'created_at'       => current_time('mysql'),
-            ]);
         }
+
         $wpdb->update(
             "{$wpdb->prefix}custom_post_pushes",
             ['status' => 'expired'],
             ['post_id' => $post_id, 'push_type' => $push_type, 'status' => 'active']
         );
+
         $expired_at = date('Y-m-d H:i:s', current_time('timestamp') + ($hours * HOUR_IN_SECONDS));
+        $push_source = $used_voucher ? 'voucher' : ($used_quota ? 'quota' : 'purchase');
         $wpdb->insert("{$wpdb->prefix}custom_post_pushes", [
-            'post_id'     => $post_id,
-            'user_id'     => $user_id,
-            'push_type'   => $push_type,
-            'source'      => $used_quota ? 'quota' : 'purchase',
-            'started_at'  => current_time('mysql'),
-            'expired_at'  => $expired_at,
-            'status'      => 'active',
-            'created_at'  => current_time('mysql'),
+            'post_id'    => $post_id,
+            'user_id'    => $user_id,
+            'push_type'  => $push_type,
+            'source'     => $push_source,
+            'started_at' => current_time('mysql'),
+            'expired_at' => $expired_at,
+            'status'     => 'active',
+            'created_at' => current_time('mysql'),
         ]);
+
         $wpdb->update(
             "{$wpdb->prefix}custom_post_listings",
             ['push_count' => $wpdb->get_var($wpdb->prepare(
@@ -2715,15 +2779,13 @@ function ql_handle_push_listing() {
             )) + 1, 'updated_at' => current_time('mysql')],
             ['post_id' => $post_id]
         );
- 
         $wpdb->query('COMMIT');
- 
         wp_send_json_success([
-            'message'   => 'Đẩy tin ' . ($push_type === 'vip' ? 'VIP' : 'thường') . ' thành công! Hiệu lực đến ' . date('H:i d/m/Y', strtotime($expired_at)),
-            'push_type' => $push_type,
+            'message'    => 'Đẩy tin ' . ($push_type === 'vip' ? 'VIP' : 'thường') . ' thành công! Hiệu lực đến ' . date('H:i d/m/Y', strtotime($expired_at)),
+            'push_type'  => $push_type,
             'expired_at' => $expired_at,
+            'source'     => $push_source,
         ]);
- 
     } catch (Exception $e) {
         $wpdb->query('ROLLBACK');
         if ($e->getMessage() === 'INSUFFICIENT_BALANCE') {
@@ -3415,6 +3477,72 @@ add_action('wp_enqueue_scripts', function () {
         ]);
     }
 });
+
+function ql_get_available_push_vouchers(int $user_id, bool $is_vip_post): array {
+    global $wpdb;
+    $table = "{$wpdb->prefix}custom_vouchers";
+
+    $voucher_type = $is_vip_post ? 'vip' : 'post';
+
+    return $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM {$table}
+         WHERE user_id = %d
+           AND action_type = 'push'
+           AND voucher_type = %s
+           AND status = 'active'
+           AND quantity > 0
+           AND (expired_at IS NULL OR expired_at >= CURDATE())
+         ORDER BY expired_at ASC",
+        $user_id, $voucher_type
+    ));
+}
+
+function ql_get_available_vip_vouchers(int $user_id): array {
+    global $wpdb;
+    $table = "{$wpdb->prefix}custom_vouchers";
+
+    return $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM {$table}
+         WHERE user_id = %d
+           AND action_type = 'post'
+           AND voucher_type = 'vip'
+           AND status = 'active'
+           AND quantity > 0
+           AND (expired_at IS NULL OR expired_at >= CURDATE())
+         ORDER BY expired_at ASC",
+        $user_id
+    ));
+}
+
+add_action('wp_ajax_ql_get_push_vouchers', 'ql_ajax_get_push_vouchers');
+add_action('wp_ajax_nopriv_ql_get_push_vouchers', 'ql_ajax_get_push_vouchers');
+function ql_ajax_get_push_vouchers() {
+    check_ajax_referer('ql_listing_nonce', '_nonce');
+
+    $custom_user = get_current_custom_user();
+    if (!$custom_user) {
+        wp_send_json_error(['message' => 'Bạn cần đăng nhập.'], 401);
+    }
+
+    $post_id = isset($_POST['post_id']) ? (int) $_POST['post_id'] : 0;
+    if (!$post_id) {
+        wp_send_json_error(['message' => 'Tin đăng không hợp lệ.']);
+    }
+
+    $vip_check = function_exists('bds_check_post_vip') ? bds_check_post_vip($post_id) : ['is_vip' => false];
+    $vouchers  = ql_get_available_push_vouchers((int) $custom_user->id, $vip_check['is_vip']);
+
+    $formatted = array_map(function ($v) {
+        return [
+            'id'       => (int) $v->id,
+            'code'     => $v->code,
+            'label'    => ql_voucher_discount_label($v->value, $v->value_type) . ' giảm giá đẩy tin',
+            'expires'  => $v->expired_at ? date('d/m/Y', strtotime($v->expired_at)) : '',
+        ];
+    }, $vouchers);
+
+    wp_send_json_success(['vouchers' => $formatted]);
+}
 
 //PAYMENT
 require_once get_stylesheet_directory() . '/inc/payment-config.php';
